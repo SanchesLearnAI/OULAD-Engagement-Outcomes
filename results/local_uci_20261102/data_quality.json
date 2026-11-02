@@ -1,0 +1,43 @@
+{
+  "student_info_rows": 32593,
+  "student_info_missing_core_rows": 0,
+  "student_info_duplicate_keys": 0,
+  "vle_duplicate_keys": 0,
+  "vle_missing_core_rows": 0,
+  "window_rows": 2112323,
+  "window_missing_core_rows": 0,
+  "window_distinct_rows": 1971731,
+  "window_distinct_student_site_days": 1669690,
+  "negative_click_rows": 0,
+  "orphan_student_events": 0,
+  "unmatched_vle_events": 0,
+  "feature_rows": 32593,
+  "unique_students": 28785,
+  "zero_click_students": 4707,
+  "label_counts": {
+    "Pass": 12361,
+    "Withdrawn": 10156,
+    "Fail": 7052,
+    "Distinction": 3024
+  },
+  "resource_types": [
+    "dataplus",
+    "dualpane",
+    "externalquiz",
+    "forumng",
+    "glossary",
+    "homepage",
+    "htmlactivity",
+    "oucollaborate",
+    "oucontent",
+    "ouelluminate",
+    "ouwiki",
+    "page",
+    "questionnaire",
+    "quiz",
+    "resource",
+    "sharedsubpage",
+    "subpage",
+    "url"
+  ]
+}

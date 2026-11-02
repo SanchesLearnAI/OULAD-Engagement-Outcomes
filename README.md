@@ -29,7 +29,7 @@ Split by student ID before modeling. Compare models on the same unmatched held-o
 
 ## Collaboration
 
-Use GitHub Issues to track tasks and decisions. Keep data processing rules, matching thresholds, random seeds, and model settings documented so results can be reproduced. Do not commit student-level raw data or personal identifiers to this repository.
+Use GitHub Issues to track tasks and decisions. Keep data processing rules, matching thresholds, random seeds, and model settings documented so results can be reproduced. The public UCI dataset archive is stored in `data/oulad.zip`; do not commit extracted CSVs, private data, or row-level model predictions.
 
 ## Python environment
 
@@ -40,3 +40,33 @@ python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+
+## Run the analysis
+
+Extract the public archive at `data/oulad.zip` into a local directory. The
+workflow requires `studentInfo.csv`, `studentVle.csv` and `vle.csv`. Run:
+
+```bash
+python -m oulad_analysis --data-dir /path/to/oulad --output-dir outputs/run_001
+```
+
+The command creates a feature table and quality report, similar-click
+comparisons, cluster profiles and plots, and grouped-holdout model results.
+Individual stages can be run with `--stage features|compare|cluster|model`;
+the latter three read `features.parquet` from the output directory. See
+[METHODS.md](METHODS.md) for feature definitions, inclusion rules and model
+settings. A synthetic end-to-end check is available with
+`python -m unittest discover -s tests -v`.
+
+The raw data are from the [UCI OULAD release](https://doi.org/10.24432/C5KK69)
+by Kuzilek, Hlosta and Zdrahal, licensed CC BY 4.0. The unmodified source
+archive is committed with [source and checksum details](data/README.md).
+Extracted CSVs and student-level outputs are excluded from Git. The
+`results/local_uci_20261102` directory contains preliminary aggregate results.
+
+For HPC Phase II, [jobs/oulad_cpu.slurm](jobs/oulad_cpu.slurm) requests four
+CPU cores, 16 GB RAM and 30 minutes on `i64m512u`. Verify the remote project,
+environment and raw-data paths first. The script can extract an official
+OULAD ZIP on the compute node if the CSVs are absent. Set a new `RUN_DIR` when
+submitting; the script refuses to overwrite an existing run directory. No GPU
+is requested.

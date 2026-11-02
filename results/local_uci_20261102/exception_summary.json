@@ -1,0 +1,354 @@
+[
+  {
+    "module": "AAA",
+    "presentation": "2013J",
+    "group": "high_activity_fail",
+    "count": 5,
+    "share_of_presentation": 0.015479876160990712,
+    "median_clicks": 643.0
+  },
+  {
+    "module": "AAA",
+    "presentation": "2013J",
+    "group": "low_activity_success",
+    "count": 57,
+    "share_of_presentation": 0.17647058823529413,
+    "median_clicks": 106.0
+  },
+  {
+    "module": "AAA",
+    "presentation": "2014J",
+    "group": "high_activity_fail",
+    "count": 1,
+    "share_of_presentation": 0.0033444816053511705,
+    "median_clicks": 577.0
+  },
+  {
+    "module": "AAA",
+    "presentation": "2014J",
+    "group": "low_activity_success",
+    "count": 55,
+    "share_of_presentation": 0.18394648829431437,
+    "median_clicks": 62.0
+  },
+  {
+    "module": "BBB",
+    "presentation": "2013B",
+    "group": "high_activity_fail",
+    "count": 61,
+    "share_of_presentation": 0.04833597464342314,
+    "median_clicks": 389.0
+  },
+  {
+    "module": "BBB",
+    "presentation": "2013B",
+    "group": "low_activity_success",
+    "count": 114,
+    "share_of_presentation": 0.09033280507131537,
+    "median_clicks": 37.0
+  },
+  {
+    "module": "BBB",
+    "presentation": "2013J",
+    "group": "high_activity_fail",
+    "count": 65,
+    "share_of_presentation": 0.04080351537978657,
+    "median_clicks": 259.0
+  },
+  {
+    "module": "BBB",
+    "presentation": "2013J",
+    "group": "low_activity_success",
+    "count": 179,
+    "share_of_presentation": 0.11236660389202763,
+    "median_clicks": 10.0
+  },
+  {
+    "module": "BBB",
+    "presentation": "2014B",
+    "group": "high_activity_fail",
+    "count": 53,
+    "share_of_presentation": 0.04719501335707925,
+    "median_clicks": 281.0
+  },
+  {
+    "module": "BBB",
+    "presentation": "2014B",
+    "group": "low_activity_success",
+    "count": 120,
+    "share_of_presentation": 0.10685663401602849,
+    "median_clicks": 11.5
+  },
+  {
+    "module": "BBB",
+    "presentation": "2014J",
+    "group": "high_activity_fail",
+    "count": 59,
+    "share_of_presentation": 0.03823720025923526,
+    "median_clicks": 254.0
+  },
+  {
+    "module": "BBB",
+    "presentation": "2014J",
+    "group": "low_activity_success",
+    "count": 238,
+    "share_of_presentation": 0.1542449773169151,
+    "median_clicks": 24.0
+  },
+  {
+    "module": "CCC",
+    "presentation": "2014B",
+    "group": "high_activity_fail",
+    "count": 38,
+    "share_of_presentation": 0.036608863198458574,
+    "median_clicks": 517.5
+  },
+  {
+    "module": "CCC",
+    "presentation": "2014B",
+    "group": "low_activity_success",
+    "count": 99,
+    "share_of_presentation": 0.0953757225433526,
+    "median_clicks": 84.0
+  },
+  {
+    "module": "CCC",
+    "presentation": "2014J",
+    "group": "high_activity_fail",
+    "count": 52,
+    "share_of_presentation": 0.036593947923997186,
+    "median_clicks": 531.5
+  },
+  {
+    "module": "CCC",
+    "presentation": "2014J",
+    "group": "low_activity_success",
+    "count": 185,
+    "share_of_presentation": 0.1301900070372977,
+    "median_clicks": 83.0
+  },
+  {
+    "module": "DDD",
+    "presentation": "2013B",
+    "group": "high_activity_fail",
+    "count": 56,
+    "share_of_presentation": 0.0642939150401837,
+    "median_clicks": 518.5
+  },
+  {
+    "module": "DDD",
+    "presentation": "2013B",
+    "group": "low_activity_success",
+    "count": 63,
+    "share_of_presentation": 0.07233065442020666,
+    "median_clicks": 83.0
+  },
+  {
+    "module": "DDD",
+    "presentation": "2013J",
+    "group": "high_activity_fail",
+    "count": 58,
+    "share_of_presentation": 0.046141607000795545,
+    "median_clicks": 384.0
+  },
+  {
+    "module": "DDD",
+    "presentation": "2013J",
+    "group": "low_activity_success",
+    "count": 125,
+    "share_of_presentation": 0.09944311853619729,
+    "median_clicks": 57.0
+  },
+  {
+    "module": "DDD",
+    "presentation": "2014B",
+    "group": "high_activity_fail",
+    "count": 33,
+    "share_of_presentation": 0.044715447154471545,
+    "median_clicks": 437.0
+  },
+  {
+    "module": "DDD",
+    "presentation": "2014B",
+    "group": "low_activity_success",
+    "count": 61,
+    "share_of_presentation": 0.08265582655826559,
+    "median_clicks": 59.0
+  },
+  {
+    "module": "DDD",
+    "presentation": "2014J",
+    "group": "high_activity_fail",
+    "count": 33,
+    "share_of_presentation": 0.028546712802768166,
+    "median_clicks": 339.0
+  },
+  {
+    "module": "DDD",
+    "presentation": "2014J",
+    "group": "low_activity_success",
+    "count": 130,
+    "share_of_presentation": 0.11245674740484429,
+    "median_clicks": 52.0
+  },
+  {
+    "module": "EEE",
+    "presentation": "2013J",
+    "group": "high_activity_fail",
+    "count": 24,
+    "share_of_presentation": 0.029666254635352288,
+    "median_clicks": 610.0
+  },
+  {
+    "module": "EEE",
+    "presentation": "2013J",
+    "group": "low_activity_success",
+    "count": 104,
+    "share_of_presentation": 0.12855377008652658,
+    "median_clicks": 160.5
+  },
+  {
+    "module": "EEE",
+    "presentation": "2014B",
+    "group": "high_activity_fail",
+    "count": 14,
+    "share_of_presentation": 0.026871401151631478,
+    "median_clicks": 450.5
+  },
+  {
+    "module": "EEE",
+    "presentation": "2014B",
+    "group": "low_activity_success",
+    "count": 50,
+    "share_of_presentation": 0.09596928982725528,
+    "median_clicks": 116.5
+  },
+  {
+    "module": "EEE",
+    "presentation": "2014J",
+    "group": "high_activity_fail",
+    "count": 23,
+    "share_of_presentation": 0.026077097505668934,
+    "median_clicks": 530.0
+  },
+  {
+    "module": "EEE",
+    "presentation": "2014J",
+    "group": "low_activity_success",
+    "count": 116,
+    "share_of_presentation": 0.13151927437641722,
+    "median_clicks": 119.0
+  },
+  {
+    "module": "FFF",
+    "presentation": "2013B",
+    "group": "high_activity_fail",
+    "count": 51,
+    "share_of_presentation": 0.04239401496259352,
+    "median_clicks": 899.0
+  },
+  {
+    "module": "FFF",
+    "presentation": "2013B",
+    "group": "low_activity_success",
+    "count": 122,
+    "share_of_presentation": 0.10141313383208644,
+    "median_clicks": 159.5
+  },
+  {
+    "module": "FFF",
+    "presentation": "2013J",
+    "group": "high_activity_fail",
+    "count": 51,
+    "share_of_presentation": 0.03171641791044776,
+    "median_clicks": 892.0
+  },
+  {
+    "module": "FFF",
+    "presentation": "2013J",
+    "group": "low_activity_success",
+    "count": 159,
+    "share_of_presentation": 0.09888059701492537,
+    "median_clicks": 124.0
+  },
+  {
+    "module": "FFF",
+    "presentation": "2014B",
+    "group": "high_activity_fail",
+    "count": 42,
+    "share_of_presentation": 0.04046242774566474,
+    "median_clicks": 806.5
+  },
+  {
+    "module": "FFF",
+    "presentation": "2014B",
+    "group": "low_activity_success",
+    "count": 89,
+    "share_of_presentation": 0.08574181117533719,
+    "median_clicks": 113.0
+  },
+  {
+    "module": "FFF",
+    "presentation": "2014J",
+    "group": "high_activity_fail",
+    "count": 33,
+    "share_of_presentation": 0.02185430463576159,
+    "median_clicks": 924.0
+  },
+  {
+    "module": "FFF",
+    "presentation": "2014J",
+    "group": "low_activity_success",
+    "count": 172,
+    "share_of_presentation": 0.11390728476821192,
+    "median_clicks": 144.5
+  },
+  {
+    "module": "GGG",
+    "presentation": "2013J",
+    "group": "high_activity_fail",
+    "count": 61,
+    "share_of_presentation": 0.06884875846501129,
+    "median_clicks": 92.0
+  },
+  {
+    "module": "GGG",
+    "presentation": "2013J",
+    "group": "low_activity_success",
+    "count": 114,
+    "share_of_presentation": 0.12866817155756208,
+    "median_clicks": 0.0
+  },
+  {
+    "module": "GGG",
+    "presentation": "2014B",
+    "group": "high_activity_fail",
+    "count": 39,
+    "share_of_presentation": 0.05320600272851296,
+    "median_clicks": 114.0
+  },
+  {
+    "module": "GGG",
+    "presentation": "2014B",
+    "group": "low_activity_success",
+    "count": 84,
+    "share_of_presentation": 0.1145975443383356,
+    "median_clicks": 4.0
+  },
+  {
+    "module": "GGG",
+    "presentation": "2014J",
+    "group": "high_activity_fail",
+    "count": 33,
+    "share_of_presentation": 0.052969502407704656,
+    "median_clicks": 155.0
+  },
+  {
+    "module": "GGG",
+    "presentation": "2014J",
+    "group": "low_activity_success",
+    "count": 83,
+    "share_of_presentation": 0.1332263242375602,
+    "median_clicks": 3.0
+  }
+]

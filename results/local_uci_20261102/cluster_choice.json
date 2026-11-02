@@ -1,0 +1,12 @@
+{
+  "selection": {
+    "algorithm": "kmeans",
+    "k": 2,
+    "silhouette": 0.15391664850744188,
+    "stability_ari": 0.9585096341948542,
+    "min_cluster_share": 0.3248
+  },
+  "sample_rows": 2500,
+  "population_rows": 27886,
+  "selection_uses_outcome": false
+}
