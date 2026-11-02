@@ -30,3 +30,13 @@ Split by student ID before modeling. Compare models on the same unmatched held-o
 ## Collaboration
 
 Use GitHub Issues to track tasks and decisions. Keep data processing rules, matching thresholds, random seeds, and model settings documented so results can be reproduced. Do not commit student-level raw data or personal identifiers to this repository.
+
+## Python environment
+
+The project uses Python 3.11. Install the core analysis libraries from `requirements.txt`; `requirements-lock.txt` records the versions verified on the course HPC environment. The core workflow uses CPU-based data processing and classical machine learning, so no GPU framework is required for setup.
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
