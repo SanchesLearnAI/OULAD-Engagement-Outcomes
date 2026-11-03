@@ -6,10 +6,17 @@ Group 9 data mining project using the [Open University Learning Analytics Datase
 
 Within the same module presentation, among students with comparable VLE click
 volume observed by 21 or 28 days after the first positive-weight tutor-marked
-assignment (TMA) deadline, which submission, timing, and resource-use patterns
-are associated with eventual Pass/Distinction rather than Fail? The two cutoffs
+assignment (TMA) deadline, which **post-deadline** submission, activity-timing,
+and resource-use patterns are associated with eventual Pass/Distinction rather
+than Fail? The two cutoffs
 are separate analyses. The VLE observation window starts 13 days before the
 deadline; Withdrawn is described separately.
+
+The main pairs currently match clicks over the entire window, including the
+14 pre-deadline days. A smaller sensitivity subset also limits post-deadline
+click differences. The primary match therefore supports a pre/post allocation
+comparison; a strict same-post-click question needs a separate post-click
+matching analysis. Clustering is not required to answer the behavioral question.
 
 The implemented TMA analysis matches Fail with Pass/Distinction records at each
 cutoff within a module presentation and compares submission, timing, and

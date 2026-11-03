@@ -80,6 +80,9 @@ zero, while active-day differences remain negative. These are post-selection
 sensitivity checks, not independently matched primary cohorts. Conditioning
 on post volume changes the estimand and can select on an outcome-associated
 behavior; it should not be used to claim an independent causal effect.
+If the question requires similar **post-deadline** click totals, these
+selected-pair subsets are not a replacement for rematching on post clicks
+within each presentation and checking pre-deadline activity balance.
 
 ## Prediction ablation
 
@@ -94,6 +97,8 @@ five overlapping grouped splits. Adding this raw type-share block does not
 show a reliable incremental predictive gain; timing does improve B3 over B2
 within either fixed cutoff. Higher absolute AP at +28 reflects more observed
 time, not a method improvement at the same decision time.
+Because B3 adds pre-deadline and post-deadline timing features together, its
+AP gain cannot be attributed entirely to post-deadline behavior.
 
 ## Interpretation and limits
 

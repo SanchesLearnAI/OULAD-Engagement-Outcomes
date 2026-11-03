@@ -10,9 +10,13 @@ outputs remain outside Git.
 
 The target comparison is among students in the same module presentation with
 similar VLE click volume at 21 or 28 days after the first positive-weight TMA
-deadline: which submission, timing, and resource-use patterns differ between
-eventual Pass/Distinction and Fail? These are separate observation cutoffs, with
-VLE features measured from deadline day -13 through the cutoff.
+deadline: which **post-deadline** submission, activity-timing, and resource-use
+patterns differ between eventual Pass/Distinction and Fail? These are separate
+observation cutoffs, with VLE features measured from deadline day -13 through
+the cutoff. The pre-deadline period supplies context; the substantive focus is
+behavior after the TMA deadline. The implemented primary match uses total
+clicks across both periods. Its post-click restriction is a selected-pair
+sensitivity, not a new post-click-matched primary analysis.
 `assessment_node` tests incremental prediction at those cutoffs on unmatched
 student holdouts. `tma_matched` performs the within-presentation click
 matching, resource-type comparisons, and resource model ablation.
