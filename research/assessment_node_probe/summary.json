@@ -1,0 +1,32 @@
+{
+  "course_duration_range": [
+    234,
+    269
+  ],
+  "first_deadline_presentations_by_day27": 16,
+  "presentations": 22,
+  "coverage": [
+    {
+      "caliper_percent": 0,
+      "original_pairs": 3874,
+      "eligible_pairs": 2942,
+      "presentations": 16
+    },
+    {
+      "caliper_percent": 5,
+      "original_pairs": 5724,
+      "eligible_pairs": 4483,
+      "presentations": 16
+    },
+    {
+      "caliper_percent": 10,
+      "original_pairs": 5830,
+      "eligible_pairs": 4563,
+      "presentations": 16
+    }
+  ],
+  "score_used": false,
+  "banked_rule": "exclude pair if either record has transferred first-assessment credit",
+  "as_of_day": 27,
+  "caution": "Exploratory paired status differences; no causal or independent predictive-gain claim; pointwise CI conditional on fixed matching."
+}

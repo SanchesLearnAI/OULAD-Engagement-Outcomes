@@ -1,0 +1,21 @@
+{
+  "stage": "all",
+  "seed": 42,
+  "deduplicate_events": false,
+  "python": "3.14.4",
+  "inputs": {
+    "studentInfo": "815fbc3e2de29f79900bc63f0345a35db62c9146afaa1d86e7107b8b3beffc60",
+    "studentVle": "52668253d876c5becbcb72185977152700cecab2942aca807fecc3dd54b937f0",
+    "vle": "d7a146497edd0e47ef536144b58796c07b554002d3753e848b8e4cd8a56f4c38",
+    "studentRegistration": "bbc87a0de1fe2a9ec6decce1ca6c1a02cf17b54ad3bdcc673fc6413b41c61d47"
+  },
+  "dependencies": {
+    "numpy": "2.5.0",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.0",
+    "duckdb": "2.0.0",
+    "pyarrow": "26.0.0"
+  },
+  "git_commit": "92416b9c2d8bbe1d9964d8cacf4b9dca0a746f14",
+  "working_tree_dirty": true
+}

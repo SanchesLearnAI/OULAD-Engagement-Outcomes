@@ -1,0 +1,10 @@
+split,model,comparator,delta_ap,ci_low,ci_high,resample_unit,bootstrap
+student_holdout,paper_hgb,project_lr,0.004426352904476127,-0.0027198015991396736,0.011264986518107567,student,500
+student_holdout,paper_hgb_sigmoid,project_lr,0.0026254443414560624,-0.005625394458090329,0.00997672911665886,student,500
+student_holdout,paper_hgb_sigmoid,paper_hgb,-0.001800908563020065,-0.006319182141654595,0.002977622021559301,student,500
+presentation_holdout,paper_hgb,project_lr,0.006420064099733169,-0.00704858293348943,0.011246209892508463,presentation,500
+presentation_holdout,paper_hgb_sigmoid,project_lr,0.012481799717309894,-0.0063138564899423155,0.014762708732669827,presentation,500
+presentation_holdout,paper_hgb_sigmoid,paper_hgb,0.0060617356175767245,-0.004570537757445869,0.01514305270039984,presentation,500
+presentation_no_repeated_students,paper_hgb,project_lr,0.007515608466895696,-0.006470153798786637,0.012561395994518887,presentation,500
+presentation_no_repeated_students,paper_hgb_sigmoid,project_lr,0.013723947002621695,-0.005166613971284165,0.01602152367320475,presentation,500
+presentation_no_repeated_students,paper_hgb_sigmoid,paper_hgb,0.006208338535725999,-0.005027578006955524,0.01502059358826946,presentation,500

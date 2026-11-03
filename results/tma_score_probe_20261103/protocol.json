@@ -1,0 +1,18 @@
+{
+  "question": "Does TMA-relative behavior differ at comparable clicks and first-TMA score?",
+  "post_days": [
+    21,
+    28
+  ],
+  "score_definition": "Final recorded score for first positive-weight TMA, only if submitted by cutoff; actual grade release date unknown",
+  "rank_definition": "Average-tie percentile within assessment among all cutoff-eligible records with recorded score, including eventual Withdrawn",
+  "joint_matching": "same module presentation; score difference <=5 points; exact clicks first, then <=5% ratio; no reuse",
+  "post_volume_sensitivity": "Exploratory subset of joint pairs with positive post clicks within 20% ratio",
+  "seed": 42,
+  "component_bootstrap": 1000,
+  "source_sha256": {
+    "studentAssessment": "b1839e17618a5de36b6d189a242d3123f7939a56c8c9ccef0c17b9199c614a6b",
+    "assessments": "9ce92381e4a0ac457f8e251b2eb2c179ed51e023ab30d1d671a0268bd62316ba"
+  },
+  "limitations": "Retrospective score control; grade release timing unavailable; first weighted TMA contributes to final outcome; exploratory fixed-pair intervals, no causal interpretation"
+}

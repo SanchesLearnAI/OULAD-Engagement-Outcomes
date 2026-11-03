@@ -1,0 +1,62 @@
+{
+  "question": "Fail vs Pass/Distinction at comparable VLE volume after first weighted TMA",
+  "post_days": [
+    21,
+    28
+  ],
+  "pre_days_inclusive": [
+    -13,
+    0
+  ],
+  "match_on": "same module presentation and total VLE clicks from due-13 through cutoff",
+  "tolerances": [
+    0,
+    0.05,
+    0.1
+  ],
+  "seed": 42,
+  "component_bootstrap": 1000,
+  "post_volume_sensitivity": "Exploratory 5% total-click pairs with both positive post clicks and 5%/20% post-click ratio limits",
+  "model_student_bootstrap": 500,
+  "binary_rows": {
+    "21": 19806,
+    "28": 19806
+  },
+  "resource_quality": {
+    "resource_types_observed": [
+      "dataplus",
+      "dualpane",
+      "externalquiz",
+      "forumng",
+      "glossary",
+      "homepage",
+      "htmlactivity",
+      "oucollaborate",
+      "oucontent",
+      "ouelluminate",
+      "ouwiki",
+      "page",
+      "questionnaire",
+      "quiz",
+      "resource",
+      "sharedsubpage",
+      "subpage",
+      "url"
+    ],
+    "unmatched_event_rows": 0,
+    "resource_count_rows": 137504
+  },
+  "source_sha256": {
+    "studentVle": "52668253d876c5becbcb72185977152700cecab2942aca807fecc3dd54b937f0",
+    "vle": "d7a146497edd0e47ef536144b58796c07b554002d3753e848b8e4cd8a56f4c38"
+  },
+  "node_protocol_sha256": {
+    "21": "8c9ff916372d7b3f0745ee1d059b4ffae9ed6c7fa32d6f7254b0d47876b0a650",
+    "28": "282ec04f73c68c2b5621e2ef48e8061cc9d7e71d07c4338b9792358c860c936b"
+  },
+  "node_features_sha256": {
+    "21": "518d0bc6abfd8546db229dd485e520a56dd25322e408f77d2ab9c339297ec530",
+    "28": "a3a15fbd385088ead414efc49c7d6b6e1a26aa3565e94f1595900e9c4b2bbc98"
+  },
+  "limitations": "Retrospective survivors with eventual non-Withdrawn labels; exploratory pointwise intervals conditional on fixed greedy pairs; no causal inference or multiple-testing correction"
+}

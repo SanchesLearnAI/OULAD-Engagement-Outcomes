@@ -1,0 +1,431 @@
+[
+  {
+    "model": "click_only_lr",
+    "threshold_from_training": 0.253879221480562,
+    "train_rows": 17933,
+    "test_rows": 4504,
+    "test_students": 4224,
+    "fail_prevalence": 0.31349911190053287,
+    "features": [
+      "log_clicks"
+    ],
+    "precision": 0.40014792899408286,
+    "recall": 0.7662889518413598,
+    "f1": 0.5257531584062196,
+    "average_precision": 0.5002247961415409,
+    "comparator": "baseline_lr",
+    "delta_vs_controlled_baseline_ci": {
+      "f1": [
+        -0.039437911669114534,
+        -0.009254821732187455
+      ],
+      "average_precision": [
+        -0.07996281729596273,
+        -0.05394734541548352
+      ]
+    },
+    "delta_average_precision": -0.06623016081524802
+  },
+  {
+    "model": "baseline_lr",
+    "threshold_from_training": 0.2932398791167337,
+    "train_rows": 17933,
+    "test_rows": 4504,
+    "test_students": 4224,
+    "fail_prevalence": 0.31349911190053287,
+    "features": [
+      "log_clicks",
+      "code_module",
+      "code_presentation",
+      "module_presentation"
+    ],
+    "precision": 0.4644249512670565,
+    "recall": 0.6749291784702549,
+    "f1": 0.5502309468822171,
+    "average_precision": 0.5664549569567889,
+    "comparator": "baseline_lr",
+    "delta_vs_controlled_baseline_ci": {
+      "f1": [
+        0.0,
+        0.0
+      ],
+      "average_precision": [
+        0.0,
+        0.0
+      ]
+    },
+    "delta_average_precision": 0.0
+  },
+  {
+    "model": "nonlinear_baseline_lr",
+    "threshold_from_training": 0.2948195622413791,
+    "train_rows": 17933,
+    "test_rows": 4504,
+    "test_students": 4224,
+    "fail_prevalence": 0.31349911190053287,
+    "features": [
+      "log_clicks",
+      "log_clicks_squared",
+      "module_presentation"
+    ],
+    "precision": 0.4598235020901068,
+    "recall": 0.7011331444759207,
+    "f1": 0.5553997194950911,
+    "average_precision": 0.5728847352785097,
+    "comparator": "nonlinear_baseline_lr",
+    "delta_vs_controlled_baseline_ci": {
+      "f1": [
+        0.0,
+        0.0
+      ],
+      "average_precision": [
+        0.0,
+        0.0
+      ]
+    },
+    "delta_average_precision": 0.0
+  },
+  {
+    "model": "full_nonlinear_lr",
+    "threshold_from_training": 0.26773232875292474,
+    "train_rows": 17933,
+    "test_rows": 4504,
+    "test_students": 4224,
+    "fail_prevalence": 0.31349911190053287,
+    "features": [
+      "log_clicks",
+      "log_clicks_squared",
+      "active_days",
+      "longest_inactive_run",
+      "daily_concentration",
+      "daily_entropy",
+      "week_0_share",
+      "week_1_share",
+      "week_2_share",
+      "resource_type_count",
+      "resource_entropy",
+      "resource_share__dataplus",
+      "resource_share__dualpane",
+      "resource_share__externalquiz",
+      "resource_share__forumng",
+      "resource_share__glossary",
+      "resource_share__homepage",
+      "resource_share__htmlactivity",
+      "resource_share__oucollaborate",
+      "resource_share__oucontent",
+      "resource_share__ouelluminate",
+      "resource_share__ouwiki",
+      "resource_share__page",
+      "resource_share__questionnaire",
+      "resource_share__quiz",
+      "resource_share__resource",
+      "resource_share__sharedsubpage",
+      "resource_share__subpage",
+      "module_presentation"
+    ],
+    "precision": 0.4572522330923012,
+    "recall": 0.7613314447592068,
+    "f1": 0.5713526441668881,
+    "average_precision": 0.5972044433496597,
+    "comparator": "nonlinear_baseline_lr",
+    "delta_vs_controlled_baseline_ci": {
+      "f1": [
+        0.00324073907142308,
+        0.028250314155281935
+      ],
+      "average_precision": [
+        0.013777213865842413,
+        0.03542961088239777
+      ]
+    },
+    "delta_average_precision": 0.024319708071150026
+  },
+  {
+    "model": "concentration_full_lr",
+    "threshold_from_training": 0.2758395240778087,
+    "train_rows": 17933,
+    "test_rows": 4504,
+    "test_students": 4224,
+    "fail_prevalence": 0.31349911190053287,
+    "features": [
+      "log_clicks",
+      "log_clicks_squared",
+      "active_days",
+      "longest_inactive_run",
+      "daily_concentration",
+      "daily_entropy",
+      "week_0_share",
+      "week_1_share",
+      "week_2_share",
+      "resource_type_count",
+      "resource_entropy",
+      "resource_share__dataplus",
+      "resource_share__dualpane",
+      "resource_share__externalquiz",
+      "resource_share__forumng",
+      "resource_share__glossary",
+      "resource_share__homepage",
+      "resource_share__htmlactivity",
+      "resource_share__oucollaborate",
+      "resource_share__oucontent",
+      "resource_share__ouelluminate",
+      "resource_share__ouwiki",
+      "resource_share__page",
+      "resource_share__questionnaire",
+      "resource_share__quiz",
+      "resource_share__resource",
+      "resource_share__sharedsubpage",
+      "resource_share__subpage",
+      "weekly_evenness",
+      "active_weeks",
+      "max_week_share",
+      "peak_7day_share",
+      "active_day_evenness",
+      "module_presentation"
+    ],
+    "precision": 0.46235606731620904,
+    "recall": 0.7393767705382436,
+    "f1": 0.5689373297002724,
+    "average_precision": 0.5971788589545093,
+    "comparator": "full_nonlinear_lr",
+    "delta_vs_controlled_baseline_ci": {
+      "f1": [
+        -0.009239243876397277,
+        0.003316126743177906
+      ],
+      "average_precision": [
+        -0.0024346442230478325,
+        0.00228831135664021
+      ]
+    },
+    "delta_average_precision": -2.5584395150435313e-05
+  },
+  {
+    "model": "time_lr",
+    "threshold_from_training": 0.2640833420970421,
+    "train_rows": 17933,
+    "test_rows": 4504,
+    "test_students": 4224,
+    "fail_prevalence": 0.31349911190053287,
+    "features": [
+      "log_clicks",
+      "active_days",
+      "longest_inactive_run",
+      "daily_concentration",
+      "daily_entropy",
+      "week_0_share",
+      "week_1_share",
+      "week_2_share",
+      "code_module",
+      "code_presentation",
+      "module_presentation"
+    ],
+    "precision": 0.44146341463414634,
+    "recall": 0.7691218130311614,
+    "f1": 0.5609504132231405,
+    "average_precision": 0.5883006140838545,
+    "comparator": "baseline_lr",
+    "delta_vs_controlled_baseline_ci": {
+      "f1": [
+        -0.0031383523403497177,
+        0.0223895665680557
+      ],
+      "average_precision": [
+        0.013449195221871898,
+        0.02997721627296579
+      ]
+    },
+    "delta_average_precision": 0.021845657127065543
+  },
+  {
+    "model": "resource_lr",
+    "threshold_from_training": 0.2800906610453301,
+    "train_rows": 17933,
+    "test_rows": 4504,
+    "test_students": 4224,
+    "fail_prevalence": 0.31349911190053287,
+    "features": [
+      "log_clicks",
+      "resource_type_count",
+      "resource_entropy",
+      "resource_share__dataplus",
+      "resource_share__dualpane",
+      "resource_share__externalquiz",
+      "resource_share__forumng",
+      "resource_share__glossary",
+      "resource_share__homepage",
+      "resource_share__htmlactivity",
+      "resource_share__oucollaborate",
+      "resource_share__oucontent",
+      "resource_share__ouelluminate",
+      "resource_share__ouwiki",
+      "resource_share__page",
+      "resource_share__questionnaire",
+      "resource_share__quiz",
+      "resource_share__resource",
+      "resource_share__sharedsubpage",
+      "resource_share__subpage",
+      "code_module",
+      "code_presentation",
+      "module_presentation"
+    ],
+    "precision": 0.45896377808344796,
+    "recall": 0.7089235127478754,
+    "f1": 0.557194544948511,
+    "average_precision": 0.5816213024427593,
+    "comparator": "baseline_lr",
+    "delta_vs_controlled_baseline_ci": {
+      "f1": [
+        -0.0023931157172628384,
+        0.016504919767024995
+      ],
+      "average_precision": [
+        0.006954817823561385,
+        0.02445396580031495
+      ]
+    },
+    "delta_average_precision": 0.0151663454859704
+  },
+  {
+    "model": "full_lr",
+    "threshold_from_training": 0.2673181185240482,
+    "train_rows": 17933,
+    "test_rows": 4504,
+    "test_students": 4224,
+    "fail_prevalence": 0.31349911190053287,
+    "features": [
+      "log_clicks",
+      "active_days",
+      "longest_inactive_run",
+      "daily_concentration",
+      "daily_entropy",
+      "week_0_share",
+      "week_1_share",
+      "week_2_share",
+      "resource_type_count",
+      "resource_entropy",
+      "resource_share__dataplus",
+      "resource_share__dualpane",
+      "resource_share__externalquiz",
+      "resource_share__forumng",
+      "resource_share__glossary",
+      "resource_share__homepage",
+      "resource_share__htmlactivity",
+      "resource_share__oucollaborate",
+      "resource_share__oucontent",
+      "resource_share__ouelluminate",
+      "resource_share__ouwiki",
+      "resource_share__page",
+      "resource_share__questionnaire",
+      "resource_share__quiz",
+      "resource_share__resource",
+      "resource_share__sharedsubpage",
+      "resource_share__subpage",
+      "code_module",
+      "code_presentation",
+      "module_presentation"
+    ],
+    "precision": 0.45492839090143217,
+    "recall": 0.7648725212464589,
+    "f1": 0.5705229793977813,
+    "average_precision": 0.5965077898179437,
+    "comparator": "baseline_lr",
+    "delta_vs_controlled_baseline_ci": {
+      "f1": [
+        0.00726406591010986,
+        0.03298642411667466
+      ],
+      "average_precision": [
+        0.018481766607906312,
+        0.04228668201563862
+      ]
+    },
+    "delta_average_precision": 0.030052832861154788
+  },
+  {
+    "model": "baseline_rf",
+    "threshold_from_training": 0.2243736331093966,
+    "train_rows": 17933,
+    "test_rows": 4504,
+    "test_students": 4224,
+    "fail_prevalence": 0.31349911190053287,
+    "features": [
+      "log_clicks",
+      "code_module",
+      "code_presentation",
+      "module_presentation"
+    ],
+    "precision": 0.39332583427071616,
+    "recall": 0.7429178470254958,
+    "f1": 0.5143417504290267,
+    "average_precision": 0.5207958813060231,
+    "comparator": "baseline_rf",
+    "delta_vs_controlled_baseline_ci": {
+      "f1": [
+        0.0,
+        0.0
+      ],
+      "average_precision": [
+        0.0,
+        0.0
+      ]
+    },
+    "delta_average_precision": 0.0
+  },
+  {
+    "model": "full_rf",
+    "threshold_from_training": 0.27454349268452344,
+    "train_rows": 17933,
+    "test_rows": 4504,
+    "test_students": 4224,
+    "fail_prevalence": 0.31349911190053287,
+    "features": [
+      "log_clicks",
+      "active_days",
+      "longest_inactive_run",
+      "daily_concentration",
+      "daily_entropy",
+      "week_0_share",
+      "week_1_share",
+      "week_2_share",
+      "resource_type_count",
+      "resource_entropy",
+      "resource_share__dataplus",
+      "resource_share__dualpane",
+      "resource_share__externalquiz",
+      "resource_share__forumng",
+      "resource_share__glossary",
+      "resource_share__homepage",
+      "resource_share__htmlactivity",
+      "resource_share__oucollaborate",
+      "resource_share__oucontent",
+      "resource_share__ouelluminate",
+      "resource_share__ouwiki",
+      "resource_share__page",
+      "resource_share__questionnaire",
+      "resource_share__quiz",
+      "resource_share__resource",
+      "resource_share__sharedsubpage",
+      "resource_share__subpage",
+      "code_module",
+      "code_presentation",
+      "module_presentation"
+    ],
+    "precision": 0.45713090757005437,
+    "recall": 0.7740793201133145,
+    "f1": 0.5748093610307652,
+    "average_precision": 0.5964681299414616,
+    "comparator": "baseline_rf",
+    "delta_vs_controlled_baseline_ci": {
+      "f1": [
+        0.04347795759155948,
+        0.07461579787146778
+      ],
+      "average_precision": [
+        0.05674569134345901,
+        0.0951370464958871
+      ]
+    },
+    "delta_average_precision": 0.07567224863543853
+  }
+]

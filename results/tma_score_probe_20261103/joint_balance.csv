@@ -1,0 +1,3 @@
+post_days,scored_binary_rows,scored_fail_rows,click_matched_both_scored_pairs,joint_pairs,joint_post20_pairs,joint_fail_coverage,mean_abs_score_gap,max_abs_score_gap,mean_relative_click_gap,max_relative_click_gap
+21,17916,4639,4004,3200,634,0.6898038370338435,2.4671875,5.0,0.010360323790054386,0.050000000000000044
+28,17940,4653,3917,3178,949,0.6830002149151085,2.483008181246067,5.0,0.010424925493802861,0.050000000000000044

@@ -6,3 +6,5 @@ data/*
 !data/README.md
 outputs/
 *.pyc
+research/audit_20261102/source_dictionary.txt
+research/reframe_20261103/run_output.txt

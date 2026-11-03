@@ -11,6 +11,23 @@ import pandas as pd
 
 KEY = ["code_module", "code_presentation", "id_student"]
 WINDOW = 28
+CONCENTRATION_FEATURES = ["weekly_evenness", "active_weeks", "max_week_share", "peak_7day_share", "active_day_evenness"]
+
+
+def _timing_profile(dates: np.ndarray, clicks: np.ndarray) -> dict[str, float]:
+    """Separate temporal coverage, evenness on active days, and contiguous bursts."""
+    days = np.zeros(WINDOW, dtype=float)
+    np.add.at(days, np.asarray(dates, dtype=int), clicks)
+    total = days.sum()
+    if total == 0:
+        return dict.fromkeys(CONCENTRATION_FEATURES, 0.0)
+    weeks = days.reshape(4, 7).sum(axis=1)
+    active = int((days > 0).sum())
+    return {"weekly_evenness": _entropy(weeks) / np.log(4),
+            "active_weeks": float((weeks > 0).sum()),
+            "max_week_share": float(weeks.max() / total),
+            "peak_7day_share": float(np.convolve(days, np.ones(7), mode="valid").max() / total),
+            "active_day_evenness": _entropy(days) / np.log(active) if active > 1 else 0.0}
 
 
 def _entropy(values: np.ndarray) -> float:
@@ -28,9 +45,9 @@ def _longest_gap(active_dates: np.ndarray) -> int:
     return int(np.diff(boundaries).max() - 1)
 
 
-def build_features(data_dir: Path, output_dir: Path) -> pd.DataFrame:
+def build_features(data_dir: Path, output_dir: Path, deduplicate_events: bool = False) -> pd.DataFrame:
     output_dir.mkdir(parents=True, exist_ok=True)
-    paths = {name: data_dir / f"{name}.csv" for name in ("studentInfo", "studentVle", "vle")}
+    paths = {name: data_dir / f"{name}.csv" for name in ("studentInfo", "studentVle", "vle", "studentRegistration")}
     missing = [str(path) for path in paths.values() if not path.is_file()]
     if missing:
         raise FileNotFoundError(f"Missing OULAD CSV files: {missing}")
@@ -50,6 +67,10 @@ def build_features(data_dir: Path, output_dir: Path) -> pd.DataFrame:
     stats["student_info_duplicate_keys"] = con.execute(
         "SELECT count(*) FROM (SELECT 1 FROM studentInfo GROUP BY code_module, code_presentation, id_student HAVING count(*) > 1)"
     ).fetchone()[0]
+    stats["unknown_result_rows"] = con.execute("SELECT count(*) FROM studentInfo WHERE final_result NOT IN ('Pass','Distinction','Fail','Withdrawn')").fetchone()[0]
+    stats["registration_duplicate_keys"] = con.execute("SELECT count(*) FROM (SELECT 1 FROM studentRegistration GROUP BY code_module, code_presentation, id_student HAVING count(*) > 1)").fetchone()[0]
+    stats["registration_missing_keys"] = con.execute("SELECT count(*) FROM studentRegistration WHERE code_module IS NULL OR code_presentation IS NULL OR id_student IS NULL").fetchone()[0]
+    stats["registration_unmatched_student_rows"] = con.execute("SELECT count(*) FROM studentInfo s ANTI JOIN studentRegistration r USING (code_module,code_presentation,id_student)").fetchone()[0]
     stats["vle_duplicate_keys"] = con.execute(
         "SELECT count(*) FROM (SELECT 1 FROM vle GROUP BY code_module, code_presentation, id_site HAVING count(*) > 1)"
     ).fetchone()[0]
@@ -58,10 +79,14 @@ def build_features(data_dir: Path, output_dir: Path) -> pd.DataFrame:
         WHERE code_module IS NULL OR code_presentation IS NULL
            OR id_site IS NULL OR activity_type IS NULL
     """).fetchone()[0]
-    if (stats["student_info_duplicate_keys"] or stats["vle_duplicate_keys"]
+    if (stats["student_info_duplicate_keys"] or stats["vle_duplicate_keys"] or stats["unknown_result_rows"]
+            or stats["registration_duplicate_keys"] or stats["registration_missing_keys"] or stats["registration_unmatched_student_rows"]
             or stats["student_info_missing_core_rows"] or stats["vle_missing_core_rows"]):
         raise ValueError(f"Invalid core fields or non-unique join keys: {stats}")
 
+    stats["source_missing_event_date_rows"] = con.execute("SELECT count(*) FROM studentVle WHERE date IS NULL").fetchone()[0]
+    if stats["source_missing_event_date_rows"]:
+        raise ValueError("studentVle has missing dates; filtering would silently discard events")
     con.execute("""
         CREATE TEMP TABLE events AS
         SELECT code_module, code_presentation, id_student, id_site, date, sum_click
@@ -77,6 +102,9 @@ def build_features(data_dir: Path, output_dir: Path) -> pd.DataFrame:
     stats["window_distinct_rows"] = con.execute("""
         SELECT count(DISTINCT (code_module, code_presentation, id_student, id_site, date, sum_click)) FROM events
     """).fetchone()[0]
+    stats["deduplicate_events"] = deduplicate_events
+    if deduplicate_events:
+        con.execute("CREATE OR REPLACE TEMP TABLE events AS SELECT DISTINCT * FROM events")
     stats["window_distinct_student_site_days"] = con.execute("""
         SELECT count(DISTINCT (code_module, code_presentation, id_student, id_site, date)) FROM events
     """).fetchone()[0]
@@ -100,7 +128,10 @@ def build_features(data_dir: Path, output_dir: Path) -> pd.DataFrame:
         USING (code_module, code_presentation, id_site)
         GROUP BY 1, 2, 3, 4, 5
     """)
-    base = con.execute("SELECT code_module, code_presentation, id_student, final_result FROM studentInfo").df()
+    base = con.execute("""SELECT s.code_module, s.code_presentation, s.id_student, s.final_result,
+        TRY_CAST(r.date_registration AS INTEGER) AS date_registration,
+        TRY_CAST(r.date_unregistration AS INTEGER) AS date_unregistration
+        FROM studentInfo s LEFT JOIN studentRegistration r USING (code_module, code_presentation, id_student)""").df()
     daily = con.execute("""
         SELECT code_module, code_presentation, id_student, date, sum(clicks) AS clicks
         FROM activity GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 3, 4
@@ -126,6 +157,8 @@ def build_features(data_dir: Path, output_dir: Path) -> pd.DataFrame:
         weeks.columns = [f"week_{i}_share" for i in range(4)]
         weeks = weeks.div(total, axis=0)
         aggregate = pd.concat([total, active, gap, hhi, day_entropy, weeks], axis=1).reset_index()
+        timing = grouped.apply(lambda x: pd.Series(_timing_profile(x.date.to_numpy(), x.clicks.to_numpy())), include_groups=False).reset_index()
+        aggregate = aggregate.merge(timing, on=KEY, validate="one_to_one")
     else:
         aggregate = pd.DataFrame(columns=KEY)
 
@@ -142,22 +175,27 @@ def build_features(data_dir: Path, output_dir: Path) -> pd.DataFrame:
         resource_names = []
 
     frame = base.merge(aggregate, on=KEY, how="left", validate="one_to_one")
-    numeric = frame.columns.difference(KEY + ["final_result"])
+    numeric = frame.columns.difference(KEY + ["final_result", "date_registration", "date_unregistration"])
     frame[numeric] = frame[numeric].fillna(0)
     frame["total_clicks"] = frame.get("total_clicks", 0)
     frame["log_clicks"] = np.log1p(frame.total_clicks)
     frame["zero_click"] = (frame.total_clicks == 0).astype(int)
+    frame["eligible_at_day_28"] = ((frame.date_registration.notna() & (frame.date_registration <= 27)) &
+                                   (frame.date_unregistration.isna() | (frame.date_unregistration > 27))).astype(int)
     frame.loc[frame.zero_click == 1, "longest_inactive_run"] = WINDOW
     for week in range(4):
         column = f"week_{week}_share"
         if column not in frame:
             frame[column] = 0.0
-    for column in ("active_days", "daily_concentration", "daily_entropy", "resource_type_count", "resource_entropy"):
+    for column in ("active_days", "daily_concentration", "daily_entropy", "resource_type_count", "resource_entropy", *CONCENTRATION_FEATURES):
         if column not in frame:
             frame[column] = 0.0
     stats["feature_rows"] = len(frame)
     stats["unique_students"] = int(frame.id_student.nunique())
     stats["zero_click_students"] = int(frame.zero_click.sum())
+    stats["eligible_at_day_28"] = int(frame.eligible_at_day_28.sum())
+    stats["zero_click_withdrawn_by_day_27"] = int(((frame.zero_click == 1) & (frame.date_unregistration <= 27)).sum())
+    stats["registered_after_day_27"] = int((frame.date_registration > 27).sum())
     stats["label_counts"] = {str(k): int(v) for k, v in frame.final_result.value_counts(dropna=False).items()}
     stats["resource_types"] = resource_names
     frame.to_parquet(output_dir / "features.parquet", index=False)

@@ -1,0 +1,14 @@
+{
+  "seed": 42,
+  "bootstrap_repeats": 1000,
+  "population": "Pass/Distinction vs Fail; days 0-27; Withdrawn excluded",
+  "matching": "same module and presentation; exact first; then greedy nearest available; no reuse",
+  "positive_click_ratio_limits": [
+    1,
+    1.05,
+    1.1
+  ],
+  "zero_click_rule": "zero matches zero only",
+  "interval": "connected-student-component bootstrap conditional on fixed pairs; pointwise exploratory 95% intervals",
+  "limitations": "No causal inference; matched outcome balance is artificial; matching order not optimized; no multiple-testing correction"
+}

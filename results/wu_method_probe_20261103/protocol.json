@@ -1,0 +1,23 @@
+{
+  "source_features": "outputs\\assessment_node_3weeks_20261103\\node_features.parquet",
+  "source_paper": "doi:10.1371/journal.pone.0352867",
+  "author_code": "doi:10.5281/zenodo.20388848",
+  "task": "Fail vs Pass/Distinction at first weighted TMA + 3 weeks; not a withdrawal replication",
+  "seed": 42,
+  "features": [
+    "log_clicks",
+    "log_clicks_squared",
+    "pre_clicks",
+    "post_clicks",
+    "submitted_by_cutoff",
+    "submitted_after_due",
+    "pre_active_days",
+    "post_active_days",
+    "last3_share",
+    "post_both_weeks",
+    "post_active_week_fraction",
+    "post_minus_pre_log",
+    "module_presentation"
+  ],
+  "caution": "Paper-style presentation split can repeat student IDs between partitions; overlap is reported."
+}

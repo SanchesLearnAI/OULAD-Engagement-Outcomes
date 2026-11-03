@@ -1,0 +1,13 @@
+{
+  "task": "Retrospective Fail vs Pass/Distinction at first weighted TMA +21/+28",
+  "not_operational": "OULAD lacks score release dates; submitted-before-cutoff final recorded scores may not have been known at cutoff",
+  "rank": "Within module presentation, mapped to training-score empirical midrank percentile; missing rank is imputed from training with an explicit score-availability indicator",
+  "split": "student-ID GroupShuffleSplit 80/20, seeds 42,143-146; identical test rows within each horizon",
+  "seed": 42,
+  "student_bootstrap": 1000,
+  "features_sha256": {
+    "21": "05dddb15edbfec1318a28adafa6f31f84549d5fa37fbe71ebfa202be718e7e6a",
+    "28": "0db067433560d2982923b51f48d33bc534e8a5f64dcda014455776688ee67551"
+  },
+  "caution": "First weighted TMA contributes to final result. Absolute AP across horizons uses different observation times; overlapping splits are exploratory."
+}

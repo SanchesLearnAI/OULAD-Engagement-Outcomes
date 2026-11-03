@@ -1,0 +1,15 @@
+{
+  "seeds": [
+    42,
+    143,
+    144,
+    145,
+    146
+  ],
+  "base_rows": 32593,
+  "day27_node_rows": 24614,
+  "node14_rows": 24125,
+  "rule": "Student-group disjoint 80/20; fixed logistic regularization; no hyperparameter tuning; train-only course reference ranks; all model comparisons within same experiment share population and split. E3 uses existing original 28-day features.",
+  "script_sha256": "78b61af153f5f618a2d301c464fd978a1f6bb625496d1dbba75fcdb7cf48f603",
+  "features_sha256": "eaf758d9734a5e2077d3a97fae4443c772eb3fe856a2edd48da61e8bf96e3f8b"
+}

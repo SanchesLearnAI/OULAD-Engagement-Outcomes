@@ -1,0 +1,20 @@
+[
+  {
+    "cluster": 0,
+    "n": 1688,
+    "all_four_weeks_pct": 83.88625592417061,
+    "weekly_evenness_median": 0.852886758526735,
+    "active_day_evenness_median": 0.8544610533362926,
+    "peak_7day_share_median": 0.5225806451612903,
+    "peak_7day_at_least_half_pct": 57.04976303317536
+  },
+  {
+    "cluster": 1,
+    "n": 812,
+    "all_four_weeks_pct": 11.083743842364532,
+    "weekly_evenness_median": 0.3873026425609989,
+    "active_day_evenness_median": 0.7313445309722155,
+    "peak_7day_share_median": 0.8571428571428571,
+    "peak_7day_at_least_half_pct": 95.07389162561576
+  }
+]

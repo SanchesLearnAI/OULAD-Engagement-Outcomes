@@ -1,0 +1,5 @@
+submitted14,active_both_weeks,Passed,Failed,Withdrew,n,Passed_pct,Failed_pct,Withdrew_pct
+False,False,139,1333,788,2260,6.2,59.0,34.9
+False,True,339,174,193,706,48.0,24.6,27.3
+True,False,177,275,179,631,28.1,43.6,28.4
+True,True,629,456,444,1529,41.1,29.8,29.0

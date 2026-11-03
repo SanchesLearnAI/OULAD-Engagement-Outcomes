@@ -1,0 +1,127 @@
+{
+  "rows": 32593,
+  "unique_students": 28785,
+  "outcomes": {
+    "Pass": 12361,
+    "Withdrawn": 10156,
+    "Fail": 7052,
+    "Distinction": 3024
+  },
+  "registration_missing": 45,
+  "vle_week_from_missing": 5243,
+  "vle_week_to_missing": 5243,
+  "vle_rows": 6364,
+  "nonexam_missing_date": 0,
+  "assessment_scores_missing": 173,
+  "banked_submission_rows": 1909,
+  "repeated_students": 3538,
+  "withdrawal_dates": {
+    "before_start": 2678,
+    "through_day27": 5040
+  },
+  "cohorts": {
+    "first_nonexam": {
+      "eligible_at_deadline": 27334,
+      "missed_deadline": 8976,
+      "withdrawn_by14": 569,
+      "missed_still_registered14": 8407,
+      "submitted_by14": 5796,
+      "final_pass": 3017,
+      "final_fail": 3078,
+      "final_withdrawn": 2312
+    },
+    "first_positive_TMA": {
+      "eligible_at_deadline": 24707,
+      "missed_deadline": 5614,
+      "withdrawn_by14": 488,
+      "missed_still_registered14": 5126,
+      "submitted_by14": 2160,
+      "final_pass": 1284,
+      "final_fail": 2238,
+      "final_withdrawn": 1604
+    },
+    "first_positive_weight": {
+      "eligible_at_deadline": 24884,
+      "missed_deadline": 8531,
+      "withdrawn_by14": 551,
+      "missed_still_registered14": 7980,
+      "submitted_by14": 5674,
+      "final_pass": 2901,
+      "final_fail": 2810,
+      "final_withdrawn": 2269
+    }
+  },
+  "nonexam_weights_by_module": {
+    "AAA": [
+      10.0,
+      20.0,
+      30.0
+    ],
+    "BBB": [
+      0.0,
+      1.0,
+      5.0,
+      10.0,
+      18.0,
+      20.0,
+      35.0
+    ],
+    "CCC": [
+      2.0,
+      7.0,
+      8.0,
+      9.0,
+      22.0
+    ],
+    "DDD": [
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0,
+      7.5,
+      10.0,
+      12.5,
+      15.0,
+      17.5,
+      20.0,
+      25.0
+    ],
+    "EEE": [
+      16.0,
+      28.0
+    ],
+    "FFF": [
+      0.0,
+      12.5,
+      25.0
+    ],
+    "GGG": [
+      0.0
+    ]
+  },
+  "same_module_repeat_student_module_groups": 1271,
+  "same_module_repeat_students": 1259,
+  "positive_tma_sensitivity": [
+    {
+      "grace_days": 0,
+      "no_submission_at_start": 5614,
+      "still_registered14_later": 5126
+    },
+    {
+      "grace_days": 1,
+      "no_submission_at_start": 5201,
+      "still_registered14_later": 4751
+    },
+    {
+      "grace_days": 3,
+      "no_submission_at_start": 4702,
+      "still_registered14_later": 4312
+    },
+    {
+      "grace_days": 7,
+      "no_submission_at_start": 3722,
+      "still_registered14_later": 3391
+    }
+  ]
+}

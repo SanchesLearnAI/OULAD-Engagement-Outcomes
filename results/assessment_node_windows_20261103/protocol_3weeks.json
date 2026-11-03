@@ -1,0 +1,23 @@
+{
+  "source_rows": 32593,
+  "weighted_tma_presentations": 19,
+  "with_first_weighted_tma": 30059,
+  "eligible_at_cutoff": 23923,
+  "excluded_banked": 507,
+  "eligible_binary": 19806,
+  "eligible_withdrawn": 4117,
+  "event_daily_rows": 322386,
+  "post_weeks": 3,
+  "post_days": 21,
+  "seed": 42,
+  "bootstrap": 1000,
+  "observation": "first weighted TMA due_day-13 through due_day+21 inclusive",
+  "label": "Fail vs Pass/Distinction among records still registered at due_day+21; Withdrawn counted separately",
+  "sources_sha256": {
+    "studentInfo": "815fbc3e2de29f79900bc63f0345a35db62c9146afaa1d86e7107b8b3beffc60",
+    "studentRegistration": "bbc87a0de1fe2a9ec6decce1ca6c1a02cf17b54ad3bdcc673fc6413b41c61d47",
+    "assessments": "9ce92381e4a0ac457f8e251b2eb2c179ed51e023ab30d1d671a0268bd62316ba",
+    "studentAssessment": "b1839e17618a5de36b6d189a242d3123f7939a56c8c9ccef0c17b9199c614a6b",
+    "studentVle": "52668253d876c5becbcb72185977152700cecab2942aca807fecc3dd54b937f0"
+  }
+}

@@ -56,6 +56,21 @@ def cluster_behaviors(frame: pd.DataFrame, output_dir: Path, seed: int = 42, max
     profile.to_csv(output_dir / "cluster_profile.csv")
     outcomes = pd.crosstab(sample.cluster, sample.final_result, normalize="index")
     outcomes.to_csv(output_dir / "cluster_outcomes.csv")
+    sample["early_unregistration"] = (sample.date_unregistration <= 27).fillna(False).astype(int)
+    sample.groupby("cluster").agg(n=("id_student", "size"), mean_clicks=("total_clicks", "mean"),
+                                  median_clicks=("total_clicks", "median"),
+                                  early_unregistration=("early_unregistration", "sum")).to_csv(output_dir / "cluster_click_diagnostics.csv")
+    pd.crosstab(sample.cluster, sample.code_module, normalize="index").to_csv(output_dir / "cluster_module_composition.csv")
+    time_features = weekly + ["active_days", "longest_inactive_run", "daily_concentration"]
+    time_only = StandardScaler().fit_transform(sample[time_features].fillna(0))
+    time_labels = KMeans(n_clusters=best["k"], n_init=10, random_state=seed).fit_predict(time_only)
+    (output_dir / "cluster_time_only.json").write_text(json.dumps({"same_k": best["k"],
+        "ari_against_full_features": float(adjusted_rand_score(sample.cluster, time_labels)),
+        "time_only_silhouette": float(silhouette_score(time_only, time_labels, sample_size=min(1000,len(sample)), random_state=seed))}, indent=2), encoding="utf-8")
+    sample["click_bin"] = sample.groupby(["code_module", "code_presentation"]).total_clicks.transform(
+        lambda s: pd.qcut(s.rank(method="first"), q=min(5,len(s)), labels=False))
+    pd.crosstab([sample.code_module, sample.code_presentation, sample.click_bin, sample.cluster],
+                sample.final_result).to_csv(output_dir / "cluster_stratified_outcomes.csv")
     (output_dir / "cluster_choice.json").write_text(json.dumps({"selection": best, "sample_rows": len(sample), "population_rows": len(population),
                                                                   "selection_uses_outcome": False}, indent=2), encoding="utf-8")
     ax = profile[weekly].T.plot(marker="o", figsize=(7, 4))

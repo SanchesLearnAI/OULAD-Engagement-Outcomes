@@ -1,0 +1,57 @@
+{
+  "enrollment_records": 32593,
+  "unique_students": 28785,
+  "distinct_modules_per_student": {
+    "1": 26306,
+    "2": 2459,
+    "3": 20
+  },
+  "catalog_resource_types": [
+    "dataplus",
+    "dualpane",
+    "externalquiz",
+    "folder",
+    "forumng",
+    "glossary",
+    "homepage",
+    "htmlactivity",
+    "oucollaborate",
+    "oucontent",
+    "ouelluminate",
+    "ouwiki",
+    "page",
+    "questionnaire",
+    "quiz",
+    "repeatactivity",
+    "resource",
+    "sharedsubpage",
+    "subpage",
+    "url"
+  ],
+  "observed_day0_27_resource_types": [
+    "dataplus",
+    "dualpane",
+    "externalquiz",
+    "forumng",
+    "glossary",
+    "homepage",
+    "htmlactivity",
+    "oucollaborate",
+    "oucontent",
+    "ouelluminate",
+    "ouwiki",
+    "page",
+    "questionnaire",
+    "quiz",
+    "resource",
+    "sharedsubpage",
+    "subpage",
+    "url"
+  ],
+  "course_duration_days": [
+    234,
+    269
+  ],
+  "feature_input": "D:\\我的文件\\DataMiningProject\\OULAD-Engagement-Outcomes\\outputs\\timing_concentration_20261102\\features.parquet",
+  "scope": "Catalog is full-course metadata, not a verified historical release calendar. Click summaries include all final outcomes and zero-click enrollments."
+}

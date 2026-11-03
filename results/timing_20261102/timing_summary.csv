@@ -1,0 +1,4 @@
+cohort,rows,zero_click_rows,nonzero_rows,all_four_weeks_active,one_calendar_week_at_least_half,one_rolling_week_at_least_half,weekly_evenness_at_least_0_9
+all,32593,4707,27886,16856,15561,19373,7007
+eligible_day28,27528,1224,26304,16581,14186,17890,6945
+binary,22437,947,21490,13870,11238,14314,5997

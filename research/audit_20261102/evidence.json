@@ -1,0 +1,366 @@
+{
+  "local_published_models_equal": true,
+  "archive_sha256": "f2ed1902616c1fe8d2824d872c0b7d2d72be435bf0124d077044fe4be2c6d3e4",
+  "archive_members": [
+    "assessments.csv",
+    "courses.csv",
+    "studentAssessment.csv",
+    "studentInfo.csv",
+    "studentRegistration.csv",
+    "studentVle.csv",
+    "vle.csv",
+    "OULAD.names"
+  ],
+  "labels_zero": [
+    {
+      "final_result": "Distinction",
+      "n": 3024,
+      "zero": 30
+    },
+    {
+      "final_result": "Fail",
+      "n": 7052,
+      "zero": 715
+    },
+    {
+      "final_result": "Pass",
+      "n": 12361,
+      "zero": 202
+    },
+    {
+      "final_result": "Withdrawn",
+      "n": 10156,
+      "zero": 3760
+    }
+  ],
+  "registration": {
+    "missing_registration": 45,
+    "registered_after_day_0": 234,
+    "registered_after_day_27": 18,
+    "withdrawn_before_day_0": 2678,
+    "withdrawn_by_day_27": 5040,
+    "zero_click_withdrawn_by_day_27": 3458
+  },
+  "population": {
+    "rows": 32593,
+    "students": 28785,
+    "modules": 7,
+    "module_presentations": 22,
+    "binary_rows": 22437
+  },
+  "raw_window": {
+    "n": 2112323,
+    "clicks": 7781403.0,
+    "distinct_rows": 1971731
+  },
+  "exact_dedup": {
+    "n": 1971731,
+    "clicks": 7526875.0
+  },
+  "raw_feature_totals_equal": true,
+  "dedup_effect": {
+    "affected_rows": 22770,
+    "relative_reduction_quantiles_nonzero": {
+      "0.0": 0.0,
+      "0.25": 0.01,
+      "0.5": 0.026839634534343446,
+      "0.75": 0.049689440993788817,
+      "0.9": 0.08104686965446459,
+      "1.0": 0.6666666666666666
+    }
+  },
+  "dedup_by_module": [
+    {
+      "code_module": "AAA",
+      "raw_clicks": 262596.0,
+      "dedup_clicks": 256668.0
+    },
+    {
+      "code_module": "BBB",
+      "raw_clicks": 1000687.0,
+      "dedup_clicks": 955420.0
+    },
+    {
+      "code_module": "CCC",
+      "raw_clicks": 1056809.0,
+      "dedup_clicks": 1015504.0
+    },
+    {
+      "code_module": "DDD",
+      "raw_clicks": 1197604.0,
+      "dedup_clicks": 1154666.0
+    },
+    {
+      "code_module": "EEE",
+      "raw_clicks": 830077.0,
+      "dedup_clicks": 808728.0
+    },
+    {
+      "code_module": "FFF",
+      "raw_clicks": 3287822.0,
+      "dedup_clicks": 3194321.0
+    },
+    {
+      "code_module": "GGG",
+      "raw_clicks": 145808.0,
+      "dedup_clicks": 141568.0
+    }
+  ],
+  "click_balance": [
+    {
+      "bins": 5,
+      "retained_rows": 22437,
+      "weighted_absolute_smd": 0.28615478187656457,
+      "max_absolute_smd": 1.3426484888661099,
+      "strata_above_01": 85,
+      "strata": 110,
+      "weighted_log_gap": -0.19078068363682577
+    },
+    {
+      "bins": 10,
+      "retained_rows": 22345,
+      "weighted_absolute_smd": 0.2635220781806512,
+      "max_absolute_smd": 1.3192869684014628,
+      "strata_above_01": 166,
+      "strata": 214,
+      "weighted_log_gap": -0.08631725694075
+    },
+    {
+      "bins": 20,
+      "retained_rows": 22231,
+      "weighted_absolute_smd": 0.30042698721362887,
+      "max_absolute_smd": 3.4739701100460585,
+      "strata_above_01": 330,
+      "strata": 419,
+      "weighted_log_gap": -0.026844170177951054
+    }
+  ],
+  "presentation_generalization": {
+    "positive": 15,
+    "total": 22,
+    "min": -0.03585322004888902,
+    "max": 0.1707058132131447,
+    "mean_unweighted": 0.02603202831527305,
+    "bottom": [
+      {
+        "module": "EEE",
+        "presentation": "2013J",
+        "baseline_lr": 0.6310374394843249,
+        "full_lr": 0.5951842194354359,
+        "delta_full_lr": -0.03585322004888902
+      },
+      {
+        "module": "BBB",
+        "presentation": "2014B",
+        "baseline_lr": 0.5790896344686918,
+        "full_lr": 0.5656084460463052,
+        "delta_full_lr": -0.013481188422386547
+      },
+      {
+        "module": "GGG",
+        "presentation": "2013J",
+        "baseline_lr": 0.5140514571801413,
+        "full_lr": 0.5032538195102538,
+        "delta_full_lr": -0.010797637669887505
+      }
+    ]
+  },
+  "metrics_recomputed": [
+    {
+      "model": "click_only_lr",
+      "ap": 0.5002247961415409,
+      "f1": 0.5257531584062196,
+      "matches_published": true
+    },
+    {
+      "model": "baseline_lr",
+      "ap": 0.5664813902939441,
+      "f1": 0.5511255763493355,
+      "matches_published": true
+    },
+    {
+      "model": "time_lr",
+      "ap": 0.5894429980611787,
+      "f1": 0.5621224060940373,
+      "matches_published": true
+    },
+    {
+      "model": "resource_lr",
+      "ap": 0.5805823420724077,
+      "f1": 0.5628708674766884,
+      "matches_published": true
+    },
+    {
+      "model": "full_lr",
+      "ap": 0.5952164423134816,
+      "f1": 0.5701509223029626,
+      "matches_published": true
+    },
+    {
+      "model": "baseline_rf",
+      "ap": 0.522722405880513,
+      "f1": 0.5139691714836223,
+      "matches_published": true
+    },
+    {
+      "model": "full_rf",
+      "ap": 0.5928054405191681,
+      "f1": 0.5642237982663515,
+      "matches_published": true
+    }
+  ],
+  "cluster_module_composition": [
+    {
+      "cluster": 0,
+      "AAA": 0.02665876777251185,
+      "BBB": 0.19786729857819904,
+      "CCC": 0.13210900473933648,
+      "DDD": 0.21800947867298578,
+      "EEE": 0.09537914691943128,
+      "FFF": 0.29976303317535546,
+      "GGG": 0.030213270142180094
+    },
+    {
+      "cluster": 1,
+      "AAA": 0.006157635467980296,
+      "BBB": 0.30295566502463056,
+      "CCC": 0.18472906403940886,
+      "DDD": 0.1440886699507389,
+      "EEE": 0.0665024630541872,
+      "FFF": 0.10837438423645321,
+      "GGG": 0.18719211822660098
+    }
+  ],
+  "cluster_click_medians": {
+    "0": 276.0,
+    "1": 44.0
+  },
+  "cluster_early_withdrawal": [
+    {
+      "cluster": 0,
+      "n": 1688,
+      "early": 47
+    },
+    {
+      "cluster": 1,
+      "n": 812,
+      "early": 98
+    }
+  ],
+  "resource_availability": {
+    "AAA": 9,
+    "BBB": 12,
+    "CCC": 9,
+    "DDD": 12,
+    "EEE": 11,
+    "FFF": 18,
+    "GGG": 7
+  },
+  "similar_click_selected": [
+    {
+      "bins": 5,
+      "feature": "active_days",
+      "fail_minus_pass": -1.3171191181368191,
+      "matched_rows": 22437,
+      "population_rows": 22437
+    },
+    {
+      "bins": 5,
+      "feature": "longest_inactive_run",
+      "fail_minus_pass": 1.4951359610751822,
+      "matched_rows": 22437,
+      "population_rows": 22437
+    },
+    {
+      "bins": 5,
+      "feature": "week_0_share",
+      "fail_minus_pass": 0.0043561425542174,
+      "matched_rows": 22437,
+      "population_rows": 22437
+    },
+    {
+      "bins": 5,
+      "feature": "week_3_share",
+      "fail_minus_pass": -0.0183862672830038,
+      "matched_rows": 22437,
+      "population_rows": 22437
+    },
+    {
+      "bins": 5,
+      "feature": "resource_share__forumng",
+      "fail_minus_pass": -0.0208249816124441,
+      "matched_rows": 22437,
+      "population_rows": 22437
+    },
+    {
+      "bins": 10,
+      "feature": "active_days",
+      "fail_minus_pass": -1.0628565192414323,
+      "matched_rows": 22345,
+      "population_rows": 22437
+    },
+    {
+      "bins": 10,
+      "feature": "longest_inactive_run",
+      "fail_minus_pass": 1.1182072204519768,
+      "matched_rows": 22345,
+      "population_rows": 22437
+    },
+    {
+      "bins": 10,
+      "feature": "week_0_share",
+      "fail_minus_pass": 0.0054465085139949,
+      "matched_rows": 22345,
+      "population_rows": 22437
+    },
+    {
+      "bins": 10,
+      "feature": "week_3_share",
+      "fail_minus_pass": -0.0166905056226868,
+      "matched_rows": 22345,
+      "population_rows": 22437
+    },
+    {
+      "bins": 10,
+      "feature": "resource_share__forumng",
+      "fail_minus_pass": -0.0172612291575854,
+      "matched_rows": 22345,
+      "population_rows": 22437
+    },
+    {
+      "bins": 20,
+      "feature": "active_days",
+      "fail_minus_pass": -0.948047318713129,
+      "matched_rows": 22231,
+      "population_rows": 22437
+    },
+    {
+      "bins": 20,
+      "feature": "longest_inactive_run",
+      "fail_minus_pass": 0.9065549964965685,
+      "matched_rows": 22231,
+      "population_rows": 22437
+    },
+    {
+      "bins": 20,
+      "feature": "week_0_share",
+      "fail_minus_pass": 0.0056098882209948,
+      "matched_rows": 22231,
+      "population_rows": 22437
+    },
+    {
+      "bins": 20,
+      "feature": "week_3_share",
+      "fail_minus_pass": -0.0149765698744526,
+      "matched_rows": 22231,
+      "population_rows": 22437
+    },
+    {
+      "bins": 20,
+      "feature": "resource_share__forumng",
+      "fail_minus_pass": -0.0156659438532696,
+      "matched_rows": 22231,
+      "population_rows": 22437
+    }
+  ]
+}

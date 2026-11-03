@@ -1,0 +1,123 @@
+{
+  "models": [
+    {
+      "model": "nonlinear_baseline_lr",
+      "average_precision": 0.5728847352785097,
+      "precision": 0.4598235020901068,
+      "recall": 0.7011331444759207,
+      "f1": 0.5553997194950911,
+      "delta_vs_controlled_baseline_ci": {
+        "f1": [
+          0.0,
+          0.0
+        ],
+        "average_precision": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "model": "full_nonlinear_lr",
+      "average_precision": 0.5972044433496597,
+      "precision": 0.4572522330923012,
+      "recall": 0.7613314447592068,
+      "f1": 0.5713526441668881,
+      "delta_vs_controlled_baseline_ci": {
+        "f1": [
+          0.00324073907142308,
+          0.028250314155281935
+        ],
+        "average_precision": [
+          0.013777213865842413,
+          0.03542961088239777
+        ]
+      }
+    },
+    {
+      "model": "time_lr",
+      "average_precision": 0.5883006140838545,
+      "precision": 0.44146341463414634,
+      "recall": 0.7691218130311614,
+      "f1": 0.5609504132231405,
+      "delta_vs_controlled_baseline_ci": {
+        "f1": [
+          -0.0031383523403497177,
+          0.0223895665680557
+        ],
+        "average_precision": [
+          0.013449195221871898,
+          0.02997721627296579
+        ]
+      }
+    },
+    {
+      "model": "resource_lr",
+      "average_precision": 0.5816213024427593,
+      "precision": 0.45896377808344796,
+      "recall": 0.7089235127478754,
+      "f1": 0.557194544948511,
+      "delta_vs_controlled_baseline_ci": {
+        "f1": [
+          -0.0023931157172628384,
+          0.016504919767024995
+        ],
+        "average_precision": [
+          0.006954817823561385,
+          0.02445396580031495
+        ]
+      }
+    },
+    {
+      "model": "full_lr",
+      "average_precision": 0.5965077898179437,
+      "precision": 0.45492839090143217,
+      "recall": 0.7648725212464589,
+      "f1": 0.5705229793977813,
+      "delta_vs_controlled_baseline_ci": {
+        "f1": [
+          0.00726406591010986,
+          0.03298642411667466
+        ],
+        "average_precision": [
+          0.018481766607906312,
+          0.04228668201563862
+        ]
+      }
+    }
+  ],
+  "strict_by_module": {
+    "AAA": 33,
+    "BBB": 1696,
+    "CCC": 298,
+    "DDD": 937,
+    "EEE": 513,
+    "FFF": 1084,
+    "GGG": 357
+  },
+  "binary_by_module": {
+    "AAA": 622,
+    "BBB": 5521,
+    "CCC": 2459,
+    "DDD": 4022,
+    "EEE": 2212,
+    "FFF": 5359,
+    "GGG": 2242
+  },
+  "excluded_by_outcome": {
+    "Distinction": 1,
+    "Fail": 20,
+    "Pass": 6,
+    "Withdrawn": 5038
+  },
+  "temporal_context_zero_rows": 11963,
+  "temporal_test_rows": 11963,
+  "temporal_prevalence": 0.29992476803477386,
+  "2014_unseen_modules": [
+    "CCC"
+  ],
+  "hpc_log_precreation_probe": {
+    "exit_code": 2,
+    "stderr_tail": "python.exe -m oulad_analysis: error: Output directory contains results that this stage would overwrite: C:\\Users\\32451\\AppData\\Local\\Temp\\tmp8svahr8s\\output"
+  }
+}

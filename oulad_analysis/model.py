@@ -18,8 +18,9 @@ from sklearn.metrics import average_precision_score, f1_score, precision_recall_
 from sklearn.model_selection import GroupShuffleSplit, StratifiedGroupKFold, cross_val_predict
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from .features import CONCENTRATION_FEATURES
 
-CONTEXT = ["code_module", "code_presentation"]
+CONTEXT = ["code_module", "code_presentation", "module_presentation"]
 
 
 def _pipeline(columns: list[str], algorithm: str, seed: int) -> Pipeline:
@@ -72,6 +73,8 @@ def _paired_ci(y: np.ndarray, groups: np.ndarray, scores: np.ndarray, threshold:
 
 def evaluate_models(frame: pd.DataFrame, output_dir: Path, seed: int = 42) -> None:
     population = frame[frame.final_result.isin(["Pass", "Distinction", "Fail"])].copy().reset_index(drop=True)
+    population["module_presentation"] = population.code_module + "_" + population.code_presentation
+    population["log_clicks_squared"] = population.log_clicks ** 2
     y = (population.final_result == "Fail").astype(int).to_numpy()
     groups = population.id_student.to_numpy()
     if len(np.unique(groups)) < 12 or min(np.bincount(y)) < 6:
@@ -90,6 +93,9 @@ def evaluate_models(frame: pd.DataFrame, output_dir: Path, seed: int = 42) -> No
     resource = ["resource_type_count", "resource_entropy"] + resources[:-1]
     sets = {"click_only_lr": ["log_clicks"],
             "baseline_lr": ["log_clicks"] + CONTEXT,
+            "nonlinear_baseline_lr": ["log_clicks", "log_clicks_squared", "module_presentation"],
+            "full_nonlinear_lr": ["log_clicks", "log_clicks_squared"] + time + resource + ["module_presentation"],
+            "concentration_full_lr": ["log_clicks", "log_clicks_squared"] + time + resource + CONCENTRATION_FEATURES + ["module_presentation"],
             "time_lr": ["log_clicks"] + time + CONTEXT,
             "resource_lr": ["log_clicks"] + resource + CONTEXT,
             "full_lr": ["log_clicks"] + time + resource + CONTEXT,
@@ -120,14 +126,16 @@ def evaluate_models(frame: pd.DataFrame, output_dir: Path, seed: int = 42) -> No
 
     for result in results:
         name = result["model"]
-        comparator = "baseline_rf" if name.endswith("rf") else "baseline_lr"
+        comparator = ("full_nonlinear_lr" if name == "concentration_full_lr" else
+                      "baseline_rf" if name.endswith("rf") else ("nonlinear_baseline_lr" if name in ("nonlinear_baseline_lr", "full_nonlinear_lr") else "baseline_lr"))
+        result["comparator"] = comparator
         result["delta_vs_controlled_baseline_ci"] = _paired_ci(
             y[test], groups[test], scores[name], thresholds[name], scores[comparator], thresholds[comparator], seed)
         result["delta_average_precision"] = result["average_precision"] - next(r["average_precision"] for r in results if r["model"] == comparator)
     (output_dir / "model_results.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
     heldout.to_parquet(output_dir / "heldout_predictions.parquet", index=False)
     presentation_rows = []
-    for (module, presentation), indices in heldout.groupby(CONTEXT).indices.items():
+    for (module, presentation), indices in heldout.groupby(["code_module", "code_presentation"]).indices.items():
         local_y = y[test][indices]
         if len(np.unique(local_y)) != 2:
             continue
@@ -137,8 +145,34 @@ def evaluate_models(frame: pd.DataFrame, output_dir: Path, seed: int = 42) -> No
                                       **_metrics(local_y, scores[name][indices], thresholds[name])})
     pd.DataFrame(presentation_rows).to_csv(output_dir / "presentation_metrics.csv", index=False)
 
+    # Separate robustness checks use training/holdout pairs, never the published holdout.
+    robustness = []
+    for repeat in range(5):
+        a, b = next(GroupShuffleSplit(n_splits=1, test_size=.2, random_state=seed + 101 + repeat).split(population, y, groups))
+        if len(np.unique(y[a])) < 2 or len(np.unique(y[b])) < 2:
+            continue
+        row = {"split": f"group_{repeat}", "train_rows": len(a), "test_rows": len(b)}
+        for name in ("nonlinear_baseline_lr", "full_nonlinear_lr", "concentration_full_lr"):
+            m = _pipeline(sets[name], "lr", seed)
+            m.fit(population.iloc[a][sets[name]], y[a])
+            row[name] = float(average_precision_score(y[b], m.predict_proba(population.iloc[b][sets[name]])[:,1]))
+        row["delta_ap"] = row["full_nonlinear_lr"] - row["nonlinear_baseline_lr"]
+        row["delta_concentration_ap"] = row["concentration_full_lr"] - row["full_nonlinear_lr"]
+        robustness.append(row)
+    train_year = np.flatnonzero(population.code_presentation.str.startswith("2013").to_numpy())
+    test_year = np.flatnonzero(population.code_presentation.str.startswith("2014").to_numpy() & ~np.isin(groups, groups[train_year]))
+    if len(train_year) and len(test_year) and len(np.unique(y[train_year])) == 2 and len(np.unique(y[test_year])) == 2:
+        row = {"split": "2013_to_2014", "train_rows": len(train_year), "test_rows": len(test_year)}
+        for name in ("nonlinear_baseline_lr", "full_nonlinear_lr"):
+            m = _pipeline(sets[name], "lr", seed)
+            m.fit(population.iloc[train_year][sets[name]], y[train_year])
+            row[name] = float(average_precision_score(y[test_year], m.predict_proba(population.iloc[test_year][sets[name]])[:,1]))
+        row["delta_ap"] = row["full_nonlinear_lr"] - row["nonlinear_baseline_lr"]
+        robustness.append(row)
+    pd.DataFrame(robustness).to_csv(output_dir / "robustness.csv", index=False)
+
     fig, ax = plt.subplots(figsize=(7, 5))
-    for name in ("baseline_lr", "time_lr", "resource_lr", "full_lr", "baseline_rf", "full_rf"):
+    for name in ("baseline_lr", "nonlinear_baseline_lr", "full_nonlinear_lr", "concentration_full_lr", "time_lr", "resource_lr", "full_lr", "baseline_rf", "full_rf"):
         precision, recall, _ = precision_recall_curve(y[test], scores[name])
         ax.plot(recall, precision, label=name)
     ax.axhline(y[test].mean(), color="gray", linestyle="--", label="Fail prevalence")
