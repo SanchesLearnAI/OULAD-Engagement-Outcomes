@@ -27,6 +27,7 @@
 | `assessment_node.py` | 学生信息、注册、考核、学生提交、VLE 点击五张 CSV → `node_features.parquet`、四个 B 模型与协议；`--post-weeks 2/3/4` | 首次计分 TMA 节点；当前主问题的上游 |
 | `assessment_node_compare.py` | 三个节点输出 → 共同人群的窗口比较 | 区分观察时间延长与队列变化 |
 | `tma_matched.py` | +21/+28 天节点特征＋原始 VLE/资源表 → 配对、资源敏感性、B4 模型 | **当前主问题的直接实现** |
+| `tma_two_week.py` | +14 天节点特征＋原始 VLE/资源表 → 后段点击配对、前段平衡、后段时间/资源、结果盲聚类与 M0–M2 模型 | **TMA 前后各两周改写候选**；[协议](TMA_TWO_WEEK_PROTOCOL_20261103.md) |
 | `tma_score_probe.py` | 节点特征＋首个 TMA 的提交/分数＋配对结果 → 分数覆盖、联合配对 | 当前主问题的成绩敏感性 |
 | `tma_score_model.py` | 上一行的学生级分数特征 → S0–S3 回顾性模型 | 检查分数、排名和时间特征 |
 | `wu_method_probe.py` | 节点特征 → 逻辑回归/HGB/校准方法比较 | 方法探针；改编另一论文设置，不是退课研究复现 |
@@ -50,6 +51,8 @@ outputs/<分数探针目录>/scored_features_21d.parquet、scored_features_28d.p
 各运行目录的汇总 CSV/JSON → results/ 对应日期目录
 ```
 
+两周改写候选另走：`assessment_node.py --post-weeks 2` → `outputs/<2 周节点目录>/node_features.parquet` → `tma_two_week.py`（再读 `studentVle.csv`、`vle.csv`）→ `outputs/<两周运行目录>/` 学生级特征、配对、簇标签与汇总 → [公开汇总](../results/tma_two_week_20261103/README.md)。它按**截止后**点击匹配，不能和 +21/+28 天按前后合计点击匹配的差值混为同一估计量。
+
 运行时在仓库根目录执行 [README 的命令](../README.md)，每次使用新的 `outputs/` 路径。`results/` 是已完成实验的汇总留档，不可直接替代所需的学生级上游 `parquet`。`tma_matched.py` 的 `--three`、`--four` 指向节点运行目录，`tma_score_probe.py` 还需要 `--matched-dir`。详细参数和哈希见各自协议文件。
 
 ## 4. 实验轮次与证据位置
@@ -62,6 +65,7 @@ outputs/<分数探针目录>/scored_features_21d.parquet、scored_features_28d.p
 | 原四周 5% 点击配对 | 同批次、Fail 对 Pass/Distinction | [matched_20261102](../results/matched_20261102/README.md) | 原 proposal 的核心回顾性比较 |
 | 首次计分 TMA 节点模型 | `d−13…d+14/21/28` | [assessment_node_windows_20261103](../results/assessment_node_windows_20261103/README.md)；[早期 +14 版](../results/assessment_node_20261103/README.md) | 三截点模型，+14 早版和统一特征版稍有差异 |
 | **TMA +21/+28 天配对** | 同批次、各截点分别匹配总点击 | [tma_matched_21_28_20261103](../results/tma_matched_21_28_20261103/README.md) | **当前研究问题的核心结果** |
+| **TMA 前后各两周改写候选** | 同批次、后段 14 天点击匹配；前段用于起点核查 | [tma_two_week_20261103](../results/tma_two_week_20261103/README.md) | 已完成配对、聚类和同截点模型；前段仍不平衡，模型增益很小 |
 | TMA 成绩联合匹配 | 同截点、点击＋首份 TMA 分数 | [tma_score_probe_20261103](../results/tma_score_probe_20261103/README.md) | 仅已记录分数者；回顾性敏感性 |
 | 成绩/排名模型 | 同二分类人群 | [tma_score_model_20261103](../results/tma_score_model_20261103/README.md) | 回顾性模型，不代表实时可用分数 |
 | HGB/校准探针 | +21/+28 天各自的节点特征 | [wu_method_probe_20261103](../results/wu_method_probe_20261103/README.md)、[+28 天](../results/wu_method_probe_28d_20261103/README.md) | 方法对照，没有确立可靠 AP 增益 |

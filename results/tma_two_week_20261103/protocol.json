@@ -1,0 +1,52 @@
+{
+  "question": "post-TMA behavior at comparable post-deadline clicks",
+  "window": {
+    "pre": [
+      -13,
+      0
+    ],
+    "post": [
+      1,
+      14
+    ]
+  },
+  "seed": 42,
+  "pair_bootstrap": 1000,
+  "model_bootstrap": 500,
+  "cluster_sample_max_pairs": 800,
+  "quality": {
+    "binary_records": 19806,
+    "fail_records": 6092,
+    "zero_post_click_records": 2171,
+    "unmatched_resource_event_rows": 0,
+    "resource_types_observed": [
+      "dataplus",
+      "dualpane",
+      "externalquiz",
+      "forumng",
+      "glossary",
+      "homepage",
+      "htmlactivity",
+      "oucollaborate",
+      "oucontent",
+      "ouelluminate",
+      "ouwiki",
+      "page",
+      "questionnaire",
+      "quiz",
+      "resource",
+      "sharedsubpage",
+      "subpage",
+      "url"
+    ],
+    "event_resource_day_rows": 743254
+  },
+  "node_protocol_sha256": "154d8b6ca77254bdeff169361b2ca58d15359ef311d2bcb40230c673c65d5e0c",
+  "node_features_sha256": "f48f27e4f55a0e26f9f1aad4dcb9834acc0c9575b0a2d677254191060a79ca36",
+  "source_sha256": {
+    "studentVle": "52668253d876c5becbcb72185977152700cecab2942aca807fecc3dd54b937f0",
+    "vle": "d7a146497edd0e47ef536144b58796c07b554002d3753e848b8e4cd8a56f4c38"
+  },
+  "code_sha256": "2c4bd3e83d7b7602e3ad9562989afdc8d3250fce04e049c87cfbd97ff6056dc2",
+  "limitations": "retrospective survivors; matched outcomes are artificial; cluster is exploratory; repeated test use; no causal effect"
+}
