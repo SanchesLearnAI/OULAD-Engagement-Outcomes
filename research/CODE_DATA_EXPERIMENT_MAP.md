@@ -30,6 +30,7 @@
 | `tma_two_week.py` | +14 天节点特征＋原始 VLE/资源表 → 后段点击配对、前段平衡、后段时间/资源、结果盲聚类与 M0–M2 模型 | **TMA 前后各两周改写候选**；[协议](TMA_TWO_WEEK_PROTOCOL_20261103.md) |
 | `tma_click_clusters.py` | 两周学生级特征和 5% 后段点击配对 → 结果盲点击量簇、簇内 P/F 行为比较、前段平衡敏感性 | [两周分簇补充](../results/tma_click_clusters_20261103/README.md) |
 | `tma_relative_gap_model.py` | 两周学生级特征 → 前后点击对称相对差距；复现原 M0/M1 并比较加入该特征后的同切分 AP/Brier | [相对差距消融](../results/tma_relative_gap_20261103/README.md) |
+| `tma_score_gap.py` | 两周节点＋学生级特征＋首次 TMA 提交/成绩 → 成绩与点击差距交互模型、成绩分层、成绩及后段点击联合配对 | [+14 天成绩交互补充](../results/tma_score_gap_20261103/README.md)；成绩公布时间未知 |
 | `tma_score_probe.py` | 节点特征＋首个 TMA 的提交/分数＋配对结果 → 分数覆盖、联合配对 | 当前主问题的成绩敏感性 |
 | `tma_score_model.py` | 上一行的学生级分数特征 → S0–S3 回顾性模型 | 检查分数、排名和时间特征 |
 | `wu_method_probe.py` | 节点特征 → 逻辑回归/HGB/校准方法比较 | 方法探针；改编另一论文设置，不是退课研究复现 |
@@ -59,6 +60,8 @@ outputs/<分数探针目录>/scored_features_21d.parquet、scored_features_28d.p
 
 `tma_relative_gap_model.py` 同样读取两周 `features.parquet`，以 `(后段−前段)/(后段+前段)` 比较原 M0/M1 与加相对差距后的模型，并核对原模型指标。[汇总结果](../results/tma_relative_gap_20261103/README.md)只含 AP/Brier、bootstrap 区间和图，不保存学生级预测。
 
+`tma_score_gap.py` 在上述特征上接入首次 TMA 分数，只使用 `d+14` 前已提交且有最终记录分数者。它在同切分比较分数、相对差距及两者交互，并按同份 TMA 的成绩百分位做描述、按成绩与后段点击联合配对；[汇总结果](../results/tma_score_gap_20261103/README.md)为回顾性证据，行级配对留在 `outputs/`。
+
 运行时在仓库根目录执行 [README 的命令](../README.md)，每次使用新的 `outputs/` 路径。`results/` 是已完成实验的汇总留档，不可直接替代所需的学生级上游 `parquet`。`tma_matched.py` 的 `--three`、`--four` 指向节点运行目录，`tma_score_probe.py` 还需要 `--matched-dir`。详细参数和哈希见各自协议文件。
 
 ## 4. 实验轮次与证据位置
@@ -74,6 +77,7 @@ outputs/<分数探针目录>/scored_features_21d.parquet、scored_features_28d.p
 | **TMA 前后各两周改写候选** | 同批次、后段 14 天点击匹配；前段用于起点核查 | [tma_two_week_20261103](../results/tma_two_week_20261103/README.md) | 已完成配对、聚类和同截点模型；前段仍不平衡，模型增益很小 |
 | 两周点击量簇内比较 | 先按后段点击量分簇，再在同批次 5% 配对内比较 P/F | [tma_click_clusters_20261103](../results/tma_click_clusters_20261103/README.md) | 已完成；两正点击簇的持续性方向相似，前段相近子集有差异 |
 | 两周点击相对差距模型 | 原 M0/M1 加入前后点击对称相对差距 | [tma_relative_gap_20261103](../results/tma_relative_gap_20261103/README.md) | 已完成；同切分 AP 增量接近零 |
+| 两周首次 TMA 成绩交互 | 评分记录的分层与成绩×前后点击差距；同分数和后段点击配对 | [tma_score_gap_20261103](../results/tma_score_gap_20261103/README.md) | 已完成；成绩有回顾性预测增益，交互项无可靠 AP 增益 |
 | TMA 成绩联合匹配 | 同截点、点击＋首份 TMA 分数 | [tma_score_probe_20261103](../results/tma_score_probe_20261103/README.md) | 仅已记录分数者；回顾性敏感性 |
 | 成绩/排名模型 | 同二分类人群 | [tma_score_model_20261103](../results/tma_score_model_20261103/README.md) | 回顾性模型，不代表实时可用分数 |
 | HGB/校准探针 | +21/+28 天各自的节点特征 | [wu_method_probe_20261103](../results/wu_method_probe_20261103/README.md)、[+28 天](../results/wu_method_probe_28d_20261103/README.md) | 方法对照，没有确立可靠 AP 增益 |

@@ -21,6 +21,10 @@ Pre-deadline engagement remains an important limitation.
 A [relative pre/post click-gap ablation](results/tma_relative_gap_20261103/README.md)
 adds the bounded signed difference to the M0/M1 prediction models; its observed
 incremental AP gain is negligible.
+A [first-TMA mark and click-shift follow-up](results/tma_score_gap_20261103/README.md)
+tests the mark, click gap, and their interaction at +14 days. The mark improves
+retrospective prediction, while the interaction adds no reliable AP; grade
+release dates are unavailable.
 
 ## Research question
 
