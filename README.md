@@ -25,6 +25,11 @@ A [first-TMA mark and click-shift follow-up](results/tma_score_gap_20261103/READ
 tests the mark, click gap, and their interaction at +14 days. The mark improves
 retrospective prediction, while the interaction adds no reliable AP; grade
 release dates are unavailable.
+A [TMA submission-timing follow-up](results/tma_submission_timing_20261103/README.md)
+adds days early and days late relative to the scheduled deadline. It finds a
+small predictive increment and a later average submission among Fail records
+matched on first TMA mark and post-deadline clicks. Individual extensions are
+not recorded.
 
 ## Research question
 
