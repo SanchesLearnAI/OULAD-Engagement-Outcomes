@@ -21,6 +21,7 @@
 | 前后点击相对差距模型消融 | [tma_relative_gap_20261103](tma_relative_gap_20261103/README.md) | 在原 M0/M1 上加入对称相对差距；同测试集 AP 增量接近零 |
 | 首次 TMA 成绩 × 点击变化 | [tma_score_gap_20261103](tma_score_gap_20261103/README.md) | +14 天回顾性成绩模型、成绩高低层与点击变化、成绩及后段点击联合配对；成绩公布日未知 |
 | 首次 TMA 提交距截止日 | [tma_submission_timing_20261103](tma_submission_timing_20261103/README.md) | TMA 类型核对、提前/逾期天数的预测增量、同成绩与后段点击配对；个人延期未知 |
+| TMA 截止前 1／3 天点击爆发 | [tma_predeadline_burst_20261103](tma_predeadline_burst_20261103/README.md) | 严格截止前短窗口、逾期交互、同成绩及点击配对与簇内比较；描述性集中明显，模型增量很小 |
 
 ## 原 proposal：开课第 0–27 天历史基线
 

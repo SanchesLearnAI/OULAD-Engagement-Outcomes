@@ -32,6 +32,7 @@
 | `tma_relative_gap_model.py` | 两周学生级特征 → 前后点击对称相对差距；复现原 M0/M1 并比较加入该特征后的同切分 AP/Brier | [相对差距消融](../results/tma_relative_gap_20261103/README.md) |
 | `tma_score_gap.py` | 两周节点＋学生级特征＋首次 TMA 提交/成绩 → 成绩与点击差距交互模型、成绩分层、成绩及后段点击联合配对 | [+14 天成绩交互补充](../results/tma_score_gap_20261103/README.md)；成绩公布时间未知 |
 | `tma_submission_timing.py` | 两周节点＋学生级特征＋首次 TMA 提交日 → 提前/逾期天数消融、提交时间分层、同成绩与后段点击联合配对及点击量簇内检查 | [+14 天提交距截止日补充](../results/tma_submission_timing_20261103/README.md)；个人延期日期未知 |
+| `tma_predeadline_burst.py` | 两周节点＋原始逐日 VLE 点击 → 截止前 1／3 天速率变化、逾期交互、事前与 +14 天模型消融、配对及点击量簇内检查 | [截止前短时点击爆发](../results/tma_predeadline_burst_20261103/README.md)；VLE 点击无法归属特定 TMA |
 | `tma_score_probe.py` | 节点特征＋首个 TMA 的提交/分数＋配对结果 → 分数覆盖、联合配对 | 当前主问题的成绩敏感性 |
 | `tma_score_model.py` | 上一行的学生级分数特征 → S0–S3 回顾性模型 | 检查分数、排名和时间特征 |
 | `wu_method_probe.py` | 节点特征 → 逻辑回归/HGB/校准方法比较 | 方法探针；改编另一论文设置，不是退课研究复现 |
@@ -65,6 +66,8 @@ outputs/<分数探针目录>/scored_features_21d.parquet、scored_features_28d.p
 
 `tma_submission_timing.py` 接续同一两周特征，读取首次 TMA 的提交日并与计划截止日相减；只使用 `d+14` 前的提交。它复核 M1/S0 基线，再比较提前与逾期天数的增量，并在成绩和后段点击接近的配对中检查提交日差异。[汇总结果](../results/tma_submission_timing_20261103/README.md)含模型、分层和配对表；行级配对留在 `outputs/`。
 
+`tma_predeadline_burst.py` 从原始 `studentVle.csv` 重建截止前逐日点击，严格以 `d−1` 为爆发窗口终点；比较最后 1／3 天与更早日均点击，复核既有提交时间模型，并分别测试纯截止前点击模型、+14 天模型及逾期交互。[汇总结果](../results/tma_predeadline_burst_20261103/README.md)含逐日曲线、模型、配对和簇内差值；学生级新特征留在 `outputs/`。
+
 运行时在仓库根目录执行 [README 的命令](../README.md)，每次使用新的 `outputs/` 路径。`results/` 是已完成实验的汇总留档，不可直接替代所需的学生级上游 `parquet`。`tma_matched.py` 的 `--three`、`--four` 指向节点运行目录，`tma_score_probe.py` 还需要 `--matched-dir`。详细参数和哈希见各自协议文件。
 
 ## 4. 实验轮次与证据位置
@@ -82,6 +85,7 @@ outputs/<分数探针目录>/scored_features_21d.parquet、scored_features_28d.p
 | 两周点击相对差距模型 | 原 M0/M1 加入前后点击对称相对差距 | [tma_relative_gap_20261103](../results/tma_relative_gap_20261103/README.md) | 已完成；同切分 AP 增量接近零 |
 | 两周首次 TMA 成绩交互 | 评分记录的分层与成绩×前后点击差距；同分数和后段点击配对 | [tma_score_gap_20261103](../results/tma_score_gap_20261103/README.md) | 已完成；成绩有回顾性预测增益，交互项无可靠 AP 增益 |
 | 两周首次 TMA 提交时间 | 计划截止日与实际提交日间隔；同成绩和后段点击配对 | [tma_submission_timing_20261103](../results/tma_submission_timing_20261103/README.md) | 已完成；小幅模型增益，失败者在配对中平均较晚提交；延期信息缺失 |
+| TMA 截止前短时爆发及逾期 | 截止前 1／3 天点击速率变化；只用截止前信息及 +14 天两种模型；逾期交互和匹配 | [tma_predeadline_burst_20261103](../results/tma_predeadline_burst_20261103/README.md) | 已完成；截止前相对点击集中，预测增量很小；+14 天模型无明显增益 |
 | TMA 成绩联合匹配 | 同截点、点击＋首份 TMA 分数 | [tma_score_probe_20261103](../results/tma_score_probe_20261103/README.md) | 仅已记录分数者；回顾性敏感性 |
 | 成绩/排名模型 | 同二分类人群 | [tma_score_model_20261103](../results/tma_score_model_20261103/README.md) | 回顾性模型，不代表实时可用分数 |
 | HGB/校准探针 | +21/+28 天各自的节点特征 | [wu_method_probe_20261103](../results/wu_method_probe_20261103/README.md)、[+28 天](../results/wu_method_probe_28d_20261103/README.md) | 方法对照，没有确立可靠 AP 增益 |

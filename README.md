@@ -30,6 +30,11 @@ adds days early and days late relative to the scheduled deadline. It finds a
 small predictive increment and a later average submission among Fail records
 matched on first TMA mark and post-deadline clicks. Individual extensions are
 not recorded.
+A [short pre-deadline click-burst follow-up](results/tma_predeadline_burst_20261103/README.md)
+compares click-rate changes over the final one and three days before the TMA
+deadline. Clicks rise near the deadline, especially as a share of Fail records'
+prior activity; the new features bring only a tiny pre-deadline model gain and
+no clear gain after submission status and post-deadline behavior are included.
 
 ## Research question
 
