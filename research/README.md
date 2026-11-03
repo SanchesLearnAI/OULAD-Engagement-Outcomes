@@ -8,7 +8,7 @@
 |---|---|---|
 | **原 proposal：历史四周基线** | 开课第 0–27 天；同课程、同开课批次、总点击相近时，比较最终通过与失败者的四周行为 | [原实施计划](PROJECT_PLAN.md)；[四周配对结果](../results/matched_20261102/README.md)；[模型与聚类诊断](../results/revised_20261102/README.md) |
 | **当前主问题：首次计分 TMA 截止后行为** | 以每批次首次计分 TMA 截止日为锚点，分别观察至 +21、+28 天；关注截止后的提交、活跃时间及资源使用 | [主问题完整记录](ACTIVE_TMA_21_28_RESEARCH.md)；[+21/+28 天配对结果](../results/tma_matched_21_28_20261103/README.md)；[节点模型](../results/assessment_node_windows_20261103/README.md) |
-| **两周改写候选：首次计分 TMA 前后各 14 天** | 前段用于起点核查，主配对按截止后 14 天点击量；比较后段时间行为与结果 | [事前协议](TMA_TWO_WEEK_PROTOCOL_20261103.md)；[完整结果](../results/tma_two_week_20261103/README.md)；[点击量分簇补充](../results/tma_click_clusters_20261103/README.md) |
+| **两周改写候选：首次计分 TMA 前后各 14 天** | 前段用于起点核查，主配对按截止后 14 天点击量；比较后段时间行为与结果 | [事前协议](TMA_TWO_WEEK_PROTOCOL_20261103.md)；[完整结果](../results/tma_two_week_20261103/README.md)；[点击量分簇](../results/tma_click_clusters_20261103/README.md)；[相对差距模型](../results/tma_relative_gap_20261103/README.md) |
 
 各设计的人群范围、时间锚点和特征窗口可能不同，模型指标与配对差值不能直接混排。此前 +21/+28 天主配对平衡的是截止前后**合计**点击；两周改写按截止后点击匹配。其[点击量分簇补充](../results/tma_click_clusters_20261103/README.md)已在零/低/高点击组内比较行为，但前段参与仍不平衡。原四周的聚类是另一项补充探索。各轮汇总文件见[结果索引](../results/README.md)。
 

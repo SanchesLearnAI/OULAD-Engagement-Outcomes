@@ -18,6 +18,9 @@ A [post-click volume cluster follow-up](results/tma_click_clusters_20261103/READ
 checks Fail–Pass behavior differences separately among zero, low, and high
 post-deadline click groups, using the same within-presentation matched pairs.
 Pre-deadline engagement remains an important limitation.
+A [relative pre/post click-gap ablation](results/tma_relative_gap_20261103/README.md)
+adds the bounded signed difference to the M0/M1 prediction models; its observed
+incremental AP gain is negligible.
 
 ## Research question
 
