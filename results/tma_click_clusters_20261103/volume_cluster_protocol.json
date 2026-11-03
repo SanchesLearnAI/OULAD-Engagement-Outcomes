@@ -1,0 +1,17 @@
+{
+  "question": "post-TMA behavior within outcome-blind post-click volume clusters",
+  "population": "binary two-week cohort; zero post clicks separate; K-means on log1p positive post clicks",
+  "cluster_selection": "k=2..5, highest sampled silhouette; stability check; no outcome labels",
+  "pair_comparison": "within same module/presentation, 5% post-click matched pairs, same volume cluster",
+  "best_positive_k": 2,
+  "cross_cluster_pairs_excluded": 3,
+  "seed": 42,
+  "pair_bootstrap": 1000,
+  "input_sha256": {
+    "features.parquet": "11b112d249c22acb1cb94602b89285274a9e67f5ea794921527e761883c92389",
+    "post_pairs_05.parquet": "e1734ecb738fa7d2c16234c8a0d19e58b82217b20357f6e4a2717c9f7069aa5f",
+    "two_week_protocol.json": "6e83ed6aa892624217caae3a1934bceeeb1fb3f1bf4dce6ca2ef82ea9f23226b"
+  },
+  "code_sha256": "230cf9714a68ed668fb8cfc41bdde809b6c298289f5b6110def94bc71c777d3f",
+  "limitations": "exploratory volume bands; outcome-defined pairs; pre-TMA imbalance; no causal inference"
+}

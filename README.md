@@ -14,6 +14,11 @@ and [aggregate results](results/tma_two_week_20261103/README.md). This is a
 candidate for revising the proposal question; the +21/+28-day work below remains
 the earlier completed main analysis.
 
+A [post-click volume cluster follow-up](results/tma_click_clusters_20261103/README.md)
+checks Fail–Pass behavior differences separately among zero, low, and high
+post-deadline click groups, using the same within-presentation matched pairs.
+Pre-deadline engagement remains an important limitation.
+
 ## Research question
 
 Within the same module presentation, among students with comparable VLE click
