@@ -34,6 +34,7 @@
 | `tma_submission_timing.py` | 两周节点＋学生级特征＋首次 TMA 提交日 → 提前/逾期天数消融、提交时间分层、同成绩与后段点击联合配对及点击量簇内检查 | [+14 天提交距截止日补充](../results/tma_submission_timing_20261103/README.md)；个人延期日期未知 |
 | `tma_predeadline_burst.py` | 两周节点＋原始逐日 VLE 点击 → 截止前 1／3 天速率变化、逾期交互、事前与 +14 天模型消融、配对及点击量簇内检查 | [截止前短时点击爆发](../results/tma_predeadline_burst_20261103/README.md)；VLE 点击无法归属特定 TMA |
 | `tma_response_attributes.py` | 两周特征＋成绩／提交日期 → 非线性主效应、高分下降／低分增长、活跃日及第二周交互；同切分与跨年检查 | [成绩×参与组合](../results/tma_response_attributes_20261104/README.md)；[综合结论](TMA_SYNTHESIS_20261104.md) |
+| `tma_submission_persistence.py` | 两周特征＋提交日期＋既有点击量簇 → 六个提交×持续性组合、逐层控制配对、单项及整块模型、簇内 AP 与跨年检查 | [提交×持续性组合](../results/tma_submission_persistence_20261104/README.md) |
 | `tma_score_probe.py` | 节点特征＋首个 TMA 的提交/分数＋配对结果 → 分数覆盖、联合配对 | 当前主问题的成绩敏感性 |
 | `tma_score_model.py` | 上一行的学生级分数特征 → S0–S3 回顾性模型 | 检查分数、排名和时间特征 |
 | `wu_method_probe.py` | 节点特征 → 逻辑回归/HGB/校准方法比较 | 方法探针；改编另一论文设置，不是退课研究复现 |

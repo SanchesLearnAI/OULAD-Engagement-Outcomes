@@ -8,6 +8,12 @@ The latest [nonlinear mark-by-engagement attributes](results/tma_response_attrib
 test high-mark decline, low-mark growth, and persistence. Their small average
 AP improvement does not carry over to the historical year-transfer check.
 
+A subsequent [submission-by-persistence study](results/tma_submission_persistence_20261104/README.md)
+finds that a non-submission-by-inactivity interaction raises retrospective mean
+AP to 0.7136, with a smaller positive year-transfer change. Within low-click
+matched pairs, on-time submission plus activity in both weeks distinguishes
+outcomes even after additional matching; high-click findings are less stable.
+
 ## TMA-centered two-week revision candidate
 
 The newest completed study uses 14 days before and 14 days after the first

@@ -25,6 +25,7 @@
 | 首次 TMA 提交距截止日 | [tma_submission_timing_20261103](tma_submission_timing_20261103/README.md) | TMA 类型核对、提前/逾期天数的预测增量、同成绩与后段点击配对；个人延期未知 |
 | TMA 截止前 1／3 天点击爆发 | [tma_predeadline_burst_20261103](tma_predeadline_burst_20261103/README.md) | 严格截止前短窗口、逾期交互、同成绩及点击配对与簇内比较；描述性集中明显，模型增量很小 |
 | 成绩×参与变化非线性属性 | [tma_response_attributes_20261104](tma_response_attributes_20261104/README.md) | 高分下降、低分增长、活跃日和第二周组合；平均 AP 小幅提高，跨年检查变差 |
+| 提交时间×后续持续性组合 | [tma_submission_persistence_20261104](tma_submission_persistence_20261104/README.md) | 簇内后段点击、前段、成绩及提交状态逐层匹配；未提交×长空档有模型增量，低簇按时且持续活跃关联较清楚 |
 
 ## 原 proposal：开课第 0–27 天历史基线
 
