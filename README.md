@@ -2,6 +2,12 @@
 
 Group 9 data mining project using the [Open University Learning Analytics Dataset (OULAD)](https://doi.org/10.24432/C5KK69).
 
+The [2026-11-04 integrated synthesis](research/TMA_SYNTHESIS_20261104.md)
+reconciles the model results and matched behavioral evidence across all studies.
+The latest [nonlinear mark-by-engagement attributes](results/tma_response_attributes_20261104/README.md)
+test high-mark decline, low-mark growth, and persistence. Their small average
+AP improvement does not carry over to the historical year-transfer check.
+
 ## TMA-centered two-week revision candidate
 
 The newest completed study uses 14 days before and 14 days after the first

@@ -1,5 +1,7 @@
 # 汇总实验结果索引
 
+最新综合入口：[模型与相近点击量行为的整合结论（2026-11-04）](../research/TMA_SYNTHESIS_20261104.md)。
+
 这里保存可审阅的汇总表、协议和图。当前 +21/+28 天主问题的定义见[仓库 README](../README.md)和[方法文档](../METHODS.md)。学生级 `parquet` 与配对/预测明细放在 `../outputs/`，由 Git 忽略。每轮结果应先读其 README，再比较同一人群、同一观察终点下的模型差值。全部模型结果基于已反复探索的 OULAD 数据。
 
 ## 当前主问题：首次计分 TMA 截止后 +21/+28 天
@@ -22,6 +24,7 @@
 | 首次 TMA 成绩 × 点击变化 | [tma_score_gap_20261103](tma_score_gap_20261103/README.md) | +14 天回顾性成绩模型、成绩高低层与点击变化、成绩及后段点击联合配对；成绩公布日未知 |
 | 首次 TMA 提交距截止日 | [tma_submission_timing_20261103](tma_submission_timing_20261103/README.md) | TMA 类型核对、提前/逾期天数的预测增量、同成绩与后段点击配对；个人延期未知 |
 | TMA 截止前 1／3 天点击爆发 | [tma_predeadline_burst_20261103](tma_predeadline_burst_20261103/README.md) | 严格截止前短窗口、逾期交互、同成绩及点击配对与簇内比较；描述性集中明显，模型增量很小 |
+| 成绩×参与变化非线性属性 | [tma_response_attributes_20261104](tma_response_attributes_20261104/README.md) | 高分下降、低分增长、活跃日和第二周组合；平均 AP 小幅提高，跨年检查变差 |
 
 ## 原 proposal：开课第 0–27 天历史基线
 
