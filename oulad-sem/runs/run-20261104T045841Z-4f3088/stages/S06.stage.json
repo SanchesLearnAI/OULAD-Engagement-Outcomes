@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0",
+  "stage": "S06",
+  "run_id": "run-20261104T045841Z-4f3088",
+  "mode": "full",
+  "simulated": false,
+  "status": "pass",
+  "started_at": "2026-11-04T04:59:52.905Z",
+  "finished_at": "2026-11-04T05:00:04.261Z",
+  "duration_ms": 11356,
+  "config_hash": "sha256:1719aea81a6c72eeb4b88626151fc6113f76dea40cf3629b25735231a1003a90",
+  "checks": [
+    {
+      "name": "matching_vars_are_w1",
+      "status": "ok",
+      "message": "matching variables=['w1_clicks_log1p', 'w1_active_days', 'w1_entropy_activity']",
+      "metrics": {}
+    },
+    {
+      "name": "no_post_cutoff_matching_vars",
+      "status": "ok",
+      "message": "no W2, delta or score field is used to define strata",
+      "metrics": {}
+    },
+    {
+      "name": "cem_binned_balance",
+      "status": "ok",
+      "message": "max |SMD| over coarsened CEM bins=0.0000",
+      "metrics": {
+        "binned_max_abs_smd": 0.0
+      }
+    },
+    {
+      "name": "cem_raw_balance_diagnostic",
+      "status": "ok",
+      "message": "raw continuous max |SMD|=0.0331; primary balance is on the coarsened CEM bins, raw values are reported as a diagnostic",
+      "metrics": {}
+    },
+    {
+      "name": "cem_sample_loss_reported",
+      "status": "ok",
+      "message": "matched=20660 unmatched=1777 treated support=0.900",
+      "metrics": {}
+    },
+    {
+      "name": "discordant_strata_nonempty",
+      "status": "ok",
+      "message": "units in strata containing both outcomes=20660",
+      "metrics": {}
+    },
+    {
+      "name": "trajectory_weekly_ci",
+      "status": "ok",
+      "message": "every week has bootstrap CI",
+      "metrics": {}
+    },
+    {
+      "name": "divergence_defined",
+      "status": "ok",
+      "message": "divergence_week=3 (None = no stable divergence)",
+      "metrics": {}
+    }
+  ],
+  "metrics": {
+    "n_t1": 22437,
+    "n_pass": 15385,
+    "n_fail": 7052,
+    "level": 0,
+    "n_matched": 20660,
+    "n_treated": 13844,
+    "n_control": 6816,
+    "n_strata": 1338,
+    "binned_max_abs_smd": 0.0,
+    "raw_max_abs_smd": 0.033078790468191566,
+    "accepted": true,
+    "n_unmatched": 1777,
+    "n_treated_matched": 13844,
+    "n_control_matched": 6816,
+    "common_support_treated": 0.8998375040623985,
+    "d_clicks": {
+      "diff": 37.5583,
+      "ci": [
+        30.3433,
+        44.2736
+      ]
+    },
+    "d_clicks_ratio": {
+      "diff": 0.5271,
+      "ci": [
+        0.3826,
+        0.7067
+      ]
+    },
+    "d_active_days": {
+      "diff": 1.7212,
+      "ci": [
+        1.5114,
+        1.9034
+      ]
+    },
+    "d_entropy_activity": {
+      "diff": 0.0323,
+      "ci": [
+        0.0233,
+        0.0411
+      ]
+    },
+    "d_clicks_per_week": {
+      "diff": 9.3896,
+      "ci": [
+        7.5371,
+        11.1022
+      ]
+    },
+    "d_submissions": {
+      "diff": 0.1302,
+      "ci": [
+        0.0978,
+        0.1612
+      ]
+    },
+    "w2_active_days": {
+      "diff": 1.9558,
+      "ci": [
+        1.7638,
+        2.1474
+      ]
+    },
+    "w2_entropy_activity": {
+      "diff": 0.034,
+      "ci": [
+        0.0255,
+        0.0426
+      ]
+    },
+    "risk_ratio_high_w2_change": 0.8727511300504751,
+    "p_pass_high": 0.6245522315809856,
+    "p_pass_low": 0.7156132029813184,
+    "e_value": 1.554532041238306,
+    "divergence_week": 3,
+    "weekly_n_pass_min": 13844,
+    "weekly_n_fail_min": 6816
+  },
+  "artifacts": [
+    {
+      "path": "outputs/tables/t06_balance.csv",
+      "sha256": "sha256:88b23a62e22173bd235ac5922853a02c351f1621cd2da2469fd4293b1b10546d",
+      "rows": 22,
+      "cols": 6
+    },
+    {
+      "path": "outputs/figures/f06_love_plot.png",
+      "sha256": "sha256:4c88509cd0a75aadefa58aaf203736d59bbbf0063785031526c8b878fb3ba49a"
+    },
+    {
+      "path": "runs/run-20261104T045841Z-4f3088/artifacts/matched_strata.parquet",
+      "sha256": "sha256:67b39ddd53b801beb37271bc378c261402639dfab501348c31bee97731857ff2",
+      "rows": 20660,
+      "cols": 10
+    },
+    {
+      "path": "outputs/tables/t06_discordant_strata.csv",
+      "sha256": "sha256:f29acff65bbad62f2cc31c3b6b80f9b1bf1ba2ff812e2149c0b26da4041372f6",
+      "rows": 1338,
+      "cols": 6
+    },
+    {
+      "path": "outputs/tables/t06_w2_differences.csv",
+      "sha256": "sha256:e81375bd21a92abdd3ef2e3bb2901a768ab252c346f6f528826da8044d673232",
+      "rows": 8,
+      "cols": 7
+    },
+    {
+      "path": "outputs/tables/t12_trajectory_weekly.csv",
+      "sha256": "sha256:0323c647826eb004e4e785e2d72d8fd6dc72afdb97f92368047425110b2c84bc",
+      "rows": 9,
+      "cols": 13
+    },
+    {
+      "path": "outputs/tables/t12_divergence.csv",
+      "sha256": "sha256:ec1fa14b397f93abbbf3f21a6b40be149b1a9d28e5c78826d2423fa0b1768525",
+      "rows": 1,
+      "cols": 2
+    },
+    {
+      "path": "outputs/figures/f12_trajectory_divergence.png",
+      "sha256": "sha256:ebf905f476db549d8ae36b8a5043ec2564aa4d449c8cea1d3810392be7389cc0"
+    }
+  ],
+  "warnings": [],
+  "notes": "",
+  "error": null
+}

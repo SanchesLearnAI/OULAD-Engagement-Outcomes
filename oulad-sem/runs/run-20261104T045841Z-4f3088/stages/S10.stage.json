@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.0",
+  "stage": "S10",
+  "run_id": "run-20261104T045841Z-4f3088",
+  "mode": "full",
+  "simulated": false,
+  "status": "pass",
+  "started_at": "2026-11-04T05:11:01.714Z",
+  "finished_at": "2026-11-04T05:11:11.121Z",
+  "duration_ms": 9404,
+  "config_hash": "sha256:1719aea81a6c72eeb4b88626151fc6113f76dea40cf3629b25735231a1003a90",
+  "checks": [
+    {
+      "name": "all_three_outcomes",
+      "status": "ok",
+      "message": "classes=['Fail', 'Pass', 'Withdrawn']",
+      "metrics": {}
+    },
+    {
+      "name": "multi_class_all_cutoffs",
+      "status": "ok",
+      "message": "cutoffs=8",
+      "metrics": {}
+    },
+    {
+      "name": "withdrawn_kept_separate",
+      "status": "ok",
+      "message": "Withdrawn is a separate class, never folded into Fail",
+      "metrics": {}
+    },
+    {
+      "name": "cox_no_future_features",
+      "status": "ok",
+      "message": "landmark 28 features=['w1_clicks_log1p', 'w1_active_days', 'w1_entropy_activity', 'w1_n_sites', 'w1_daily_cv']",
+      "metrics": {}
+    },
+    {
+      "name": "cox_landmark_cohort",
+      "status": "ok",
+      "message": "no event at or before the day-28 landmark enters its cohort",
+      "metrics": {}
+    },
+    {
+      "name": "survival_available",
+      "status": "ok",
+      "message": "landmark Cox fitted for at least one landmark/cause",
+      "metrics": {}
+    }
+  ],
+  "metrics": {
+    "Pass": 15385,
+    "Withdrawn": 10156,
+    "Fail": 7052,
+    "origin": "course start (day 0); weeks = floor(day/7)",
+    "event_week_min": 0,
+    "event_week_max": 38,
+    "withdrawn_missing_unreg": 93,
+    "censoring": "none before course end; Pass/Fail events occur at course end",
+    "28": {
+      "n_train": 16544,
+      "n_test": 5541,
+      "fitted_causes": 3
+    },
+    "56": {
+      "n_train": 15927,
+      "n_test": 5336,
+      "fitted_causes": 3
+    }
+  },
+  "artifacts": [
+    {
+      "path": "outputs/tables/t10_class_metrics.csv",
+      "sha256": "sha256:087c1185133dc14f8932172ffbbe75ed113e076caa5eeef4ddb9aa134b399c1c",
+      "rows": 24,
+      "cols": 10
+    },
+    {
+      "path": "runs/run-20261104T045841Z-4f3088/artifacts/t10_predictions_c28.parquet",
+      "sha256": "sha256:ecb8c3272cd07ce65b55a3200dc8d122d3ece9116e39bf0afb473d4543a7dec4",
+      "rows": 6508,
+      "cols": 8
+    },
+    {
+      "path": "runs/run-20261104T045841Z-4f3088/artifacts/t10_long_table.parquet",
+      "sha256": "sha256:8ff30baaa052ec61ba61fc2d76afadd0e117e8d2b1ab694686c3c73b72bfbb5a",
+      "rows": 931410,
+      "cols": 10
+    },
+    {
+      "path": "outputs/tables/t10_cumulative_incidence.csv",
+      "sha256": "sha256:851ad691141e3f8bf26e196149fa8fa5cf665b3ddfdc7fc6561bad3ce9abd0e5",
+      "rows": 39,
+      "cols": 12
+    },
+    {
+      "path": "outputs/figures/f10_cumulative_incidence.png",
+      "sha256": "sha256:35748b53ec87c6d3a5209131574a54fddbf2474f494596263c0b9ed76f16f4c5"
+    },
+    {
+      "path": "outputs/tables/t10_landmark_cox.csv",
+      "sha256": "sha256:b6a9dc667aee78cdf75e2e43cfef43f392d80dc1b95ebae5da0104f8b8798c80",
+      "rows": 42,
+      "cols": 13
+    }
+  ],
+  "warnings": [],
+  "notes": "",
+  "error": null
+}

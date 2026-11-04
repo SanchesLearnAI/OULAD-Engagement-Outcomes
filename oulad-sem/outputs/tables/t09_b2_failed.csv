@@ -1,0 +1,2 @@
+cutoff,cohort,method,status,pr_auc,delta_pr_auc_vs_28,ci_low,ci_high,recall,precision,brier,calibration_slope,n_test
+56,fixed,B2_offset,failed_calibration,0.7591214139525695,-0.0691637774420026,-0.083099170815198,-0.0539467826950831,0.7579743505425847,0.7853492333901193,0.3040961709706144,0.0508981966607826,4492

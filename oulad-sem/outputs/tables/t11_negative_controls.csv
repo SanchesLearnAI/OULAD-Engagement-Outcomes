@@ -1,0 +1,5 @@
+control,metric,role,value,n_repeats,note
+random_labels,roc_auc,leak_check,0.5298431216820396,3,labels permuted within presentation; expected ~0.5
+pre_start_only,pr_auc,positive_control,0.7822071221502513,1,"pre-start clicks only; above no-skill, not a null"
+placebo_window_56_83,pr_auc,placebo_failure,0.8612911431290746,1,"future window; post-outcome persistence, not a leak test"
+num_of_prev_attempts_gt0,roc_auc,negative_control_outcome,0.6573617320777801,1,negative-control outcome; behaviour may encode background
