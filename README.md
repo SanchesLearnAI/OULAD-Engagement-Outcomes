@@ -2,6 +2,40 @@
 
 Group 9 data mining project using the [Open University Learning Analytics Dataset (OULAD)](https://doi.org/10.24432/C5KK69).
 
+## TMA-centered two-week revision candidate
+
+The newest completed study uses 14 days before and 14 days after the first
+positive-weight TMA deadline. Its primary pairs have comparable **post-deadline**
+clicks within the same module presentation. Failures show fewer active days,
+longer inactive runs, and less activity in the second week. Pre-deadline
+engagement remains imbalanced, and adding timing features brings only a small,
+uncertain predictive gain. Read the [frozen protocol](research/TMA_TWO_WEEK_PROTOCOL_20261103.md)
+and [aggregate results](results/tma_two_week_20261103/README.md). This is a
+candidate for revising the proposal question; the +21/+28-day work below remains
+the earlier completed main analysis.
+
+A [post-click volume cluster follow-up](results/tma_click_clusters_20261103/README.md)
+checks Fail–Pass behavior differences separately among zero, low, and high
+post-deadline click groups, using the same within-presentation matched pairs.
+Pre-deadline engagement remains an important limitation.
+A [relative pre/post click-gap ablation](results/tma_relative_gap_20261103/README.md)
+adds the bounded signed difference to the M0/M1 prediction models; its observed
+incremental AP gain is negligible.
+A [first-TMA mark and click-shift follow-up](results/tma_score_gap_20261103/README.md)
+tests the mark, click gap, and their interaction at +14 days. The mark improves
+retrospective prediction, while the interaction adds no reliable AP; grade
+release dates are unavailable.
+A [TMA submission-timing follow-up](results/tma_submission_timing_20261103/README.md)
+adds days early and days late relative to the scheduled deadline. It finds a
+small predictive increment and a later average submission among Fail records
+matched on first TMA mark and post-deadline clicks. Individual extensions are
+not recorded.
+A [short pre-deadline click-burst follow-up](results/tma_predeadline_burst_20261103/README.md)
+compares click-rate changes over the final one and three days before the TMA
+deadline. Clicks rise near the deadline, especially as a share of Fail records'
+prior activity; the new features bring only a tiny pre-deadline model gain and
+no clear gain after submission status and post-deadline behavior are included.
+
 ## Research question
 
 Within the same module presentation, among students with comparable VLE click
@@ -32,6 +66,7 @@ than reproducing that paper's withdrawal results.
 ## Project map and research status
 
 - [Current TMA +21/+28-day research record](research/ACTIVE_TMA_21_28_RESEARCH.md): cohort, click matching, behavior differences, resource and score sensitivity, models, transfer checks, and limitations.
+- [TMA-centered two-week candidate](results/tma_two_week_20261103/README.md): post-click matching, pre-window balance, timing profiles, outcome-blind clusters, and model ablations.
 - [Research status](research/RESEARCH_STATUS_20261103.md): distinguishes the original day-0–27 question, the current TMA question, and the separate post-deadline non-submission candidate.
 - [Code, data, and experiment map](research/CODE_DATA_EXPERIMENT_MAP.md): source tables, modules, local student-level outputs, and aggregate results.
 - [Research notes and scripts](research/README.md) and [aggregate result index](results/README.md).

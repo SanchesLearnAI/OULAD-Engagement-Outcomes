@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.0",
+  "stage": "S01",
+  "run_id": "run-20261104T045841Z-4f3088",
+  "mode": "full",
+  "simulated": false,
+  "status": "pass",
+  "started_at": "2026-11-04T04:58:45.888Z",
+  "finished_at": "2026-11-04T04:58:50.343Z",
+  "duration_ms": 4454,
+  "config_hash": "sha256:1719aea81a6c72eeb4b88626151fc6113f76dea40cf3629b25735231a1003a90",
+  "checks": [
+    {
+      "name": "studentinfo_key_unique",
+      "status": "ok",
+      "message": "duplicates=0",
+      "metrics": {
+        "duplicates": 0
+      }
+    },
+    {
+      "name": "assessment_id_unique",
+      "status": "ok",
+      "message": "id_assessment must be unique for studentAssessment joins",
+      "metrics": {}
+    },
+    {
+      "name": "final_result_exact_4",
+      "status": "ok",
+      "message": "classes=['Distinction', 'Fail', 'Pass', 'Withdrawn']",
+      "metrics": {}
+    },
+    {
+      "name": "negative_dates_present",
+      "status": "ok",
+      "message": "date_min=-25; negative rows=688988 (6.4662%)",
+      "metrics": {}
+    }
+  ],
+  "metrics": {
+    "rows": 10655280,
+    "cols": 6,
+    "imd_band_missing": 1111,
+    "date_registration_missing": 45,
+    "date_unregistration_missing": 22521,
+    "score_missing": 173,
+    "n_unique_students": 28785,
+    "n_enrolments": 32593,
+    "repeat_students": 3538,
+    "n_sites": 6364,
+    "n_activity_types": 20,
+    "dup_site_keys": 0,
+    "Pass": 12361,
+    "Withdrawn": 10156,
+    "Fail": 7052,
+    "Distinction": 3024,
+    "date_min": -25,
+    "date_max": 269,
+    "negative_rows": 688988,
+    "negative_share": 0.064662,
+    "negative_students": 21411,
+    "min": -25,
+    "max": 269,
+    "0": 172003,
+    "1": 1909,
+    "median_total": 739.5,
+    "p99_total": 8032.599999999991,
+    "zero_click_enrolments": 0
+  },
+  "artifacts": [
+    {
+      "path": "data/interim/cache/courses.parquet",
+      "sha256": "sha256:9d4b32425543f4c6aa1110f46e6354542ea85901d2b1636564aff83406538da3",
+      "rows": 22,
+      "cols": 3
+    },
+    {
+      "path": "data/interim/cache/assessments.parquet",
+      "sha256": "sha256:e7bc3648c08540f21b1c68abb125d6f7ac2df3335ce6d63fb4d831b3a9f4ec3e",
+      "rows": 206,
+      "cols": 6
+    },
+    {
+      "path": "data/interim/cache/vle.parquet",
+      "sha256": "sha256:8cfaa10ecb944410895026db0b5acfec506723e67d6d5d3bca2159ed2c515b12",
+      "rows": 6364,
+      "cols": 6
+    },
+    {
+      "path": "data/interim/cache/studentInfo.parquet",
+      "sha256": "sha256:d1fce3042ea1c0cfcebe00353478f2fc5d5cfcc6789d5af98f8172e2cdbb92ff",
+      "rows": 32593,
+      "cols": 12
+    },
+    {
+      "path": "data/interim/cache/studentRegistration.parquet",
+      "sha256": "sha256:bb6cdf676ec1466b343e2b8fec387d46141efca6a908b8c93da77501260cd7b7",
+      "rows": 32593,
+      "cols": 5
+    },
+    {
+      "path": "data/interim/cache/studentAssessment.parquet",
+      "sha256": "sha256:392a4bb42b71761c6d1a4f7e9e83784796cb91c8b25935b8c15fcd7087594a88",
+      "rows": 173912,
+      "cols": 5
+    },
+    {
+      "path": "data/interim/cache/studentVle.parquet",
+      "sha256": "sha256:825823c2c919b9e6168198d2a2df781762694c79e540f1f14bd8fadab1745974",
+      "rows": 10655280,
+      "cols": 6
+    },
+    {
+      "path": "outputs/tables/t01_raw_audit.csv",
+      "sha256": "sha256:7edb95924727ae332d4977a03887b2d9095772ee408127838a173d33eca48c68",
+      "rows": 43,
+      "cols": 8
+    },
+    {
+      "path": "outputs/tables/t01_final_result_counts.csv",
+      "sha256": "sha256:f037e0dba007609f8a96720200797bafc207670ef5bd1034fcf283fc94527f2b",
+      "rows": 4,
+      "cols": 2
+    },
+    {
+      "path": "outputs/tables/t01_activity_types.csv",
+      "sha256": "sha256:d096693b55c2dcd3c44e5b37f16faed0be1b60751e22238d4e644cd06e51674c",
+      "rows": 20,
+      "cols": 2
+    },
+    {
+      "path": "outputs/figures/f01_click_distribution.png",
+      "sha256": "sha256:634e1cf3e11bc3c27124eee51092b6ad9d8de6cc1beca6debca38cfbc2b9b133"
+    }
+  ],
+  "warnings": [],
+  "notes": "",
+  "error": null
+}

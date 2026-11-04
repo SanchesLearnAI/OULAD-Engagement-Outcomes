@@ -1,0 +1,464 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{array}
+\captionsetup{font=small}
+\setlength{\parskip}{3pt}
+\setlength{\parindent}{0pt}
+\title{Same Engagement, Different Outcomes\\\large Explaining differences in academic results among similarly active online learners}
+\author{Group 9: Jiangyu Liu (50027216), Yanbin Chen (50026846),\\ Yanshun Wang (50026688), Yuming Zhang (50025933)}
+\date{Data Mining Course Project \\ \today}
+\begin{document}
+\maketitle
+\noindent\textbf{Page-count note.} The main text ends on page \pageref{endmain}; references, disclosures, and the appendix are excluded from the 6--10 page main-text requirement.
+\section{Introduction}
+Online learning platforms record when and how students use course resources. Two students can generate the same number of clicks in the first four weeks and still finish with very different results. Total activity is therefore an entry point, not an explanation: the temporal distribution of study, the mix of resource types, and the way activity changes after the first month may carry information that a single click count hides. This project asks: \emph{among students with similar early engagement, which temporal and resource-use patterns are associated with passing rather than failing?} Withdrawn students are treated as a separate outcome, not as a missing value or as a kind of failure.
+The project uses the Open University Learning Analytics Dataset (OULAD). The unit of analysis is one enrolment (module $\times$ presentation $\times$ student), not a unique person; the same student can appear in several presentations. We build an audited pipeline that freezes the analysis configuration, constructs features only from dates before each cutoff, splits by student, and reports calibration and uncertainty rather than a single accuracy figure. The main analyses are (i) coarsened exact matching (CEM) within module and presentation, (ii) clustering of first-month behavioural profiles with bootstrap stability, (iii) a classification ladder M0--M5, and (iv) a cutoff curve with two ways of updating a first-month prediction at week 8. A three-class competing-risk analysis keeps Withdrawn separate, and a specification curve with diagnostics and placebo checks tests whether the conclusions survive reasonable analysis choices.
+The headline result is qualified. In the main held-out split, the M1 behavioural model reaches PR-AUC 0.827 and ROC-AUC 0.724; grouped cross-validation ROC-AUC is 0.719, forward-temporal ROC-AUC is 0.707, and leave-one-module-out ROC-AUC is 0.699. The spread among the strict models is comparable to the change under temporal/module extrapolation, so neither should be read as a deployment guarantee. The random-label negative control has ROC-AUC 0.530, close to chance. These are associations, not causal effects.
+\section{Problem Formulation}
+Let $i$ index an enrolment. The label is $y_i \in \{\text{Pass/Distinction}, \text{Fail}\}$ for the primary target T1; Withdrawn enrolments are excluded from T1 and analysed separately. T2 folds Withdrawn into the negative class and T3 is the three-class outcome (Pass/Distinction, Fail, Withdrawn). For a cutoff $c$ (days from course start), the feature vector $X_i(c)$ may use only VLE clicks with date $<c$ and assessment submissions with date $<c$. No score, banked-credit flag, final result, or post-cutoff click is allowed in the strict feature set. The predictive task is to estimate $p_i(c)=\Pr(y_i=1\mid X_i(c))$ and to rank enrolments by risk.
+Two windows are defined. W1 is days 0--27. W2 is days 28 to the earlier of day 55 and the first weighted TMA/CMA minus one; when the first TMA is before week 4, the plan falls back to the fixed 28--55 window and records the fallback. OULAD dates are relative to presentation start and include negative values; the primary analysis excludes pre-start clicks, and clipping or a separate pre-start feature is used only in sensitivity analyses. The primary metric is PR-AUC because the positive class is not rare; ROC-AUC is reported for comparability, and recall is reported at a threshold chosen on validation data at precision 0.80. Calibration is assessed with Brier score, calibration slope/intercept, and reliability curves.
+The cohort is defined in two steps. First, the Withdrawn audit asks whether the click stream stops at \texttt{date\_unregistration}. It does not: in the full data, 1272 withdrawn students have 29440 click rows after that date. The main cohort therefore keeps all T1 enrolments and treats the at-risk filter as a sensitivity analysis; Withdrawn remains a separate outcome in T3 and the competing-risk model. This is a deliberate correction to the tempting, but unsupported, practice of silently dropping everyone with an early unregistration date.
+\section{Methodology}
+\subsection{Data and leakage audit}
+OULAD contains seven tables: courses (22 rows), assessments (206), VLE resources (6,364), studentInfo (32,593 enrolments), studentRegistration (32,593), studentAssessment (173,912), and studentVle (10,655,280). The missing-value marker is \texttt{?}, not an empty field. VLE dates range from $-25$ to 269; 688,988 rows (6.47\%) are before course start. The first TMA/CMA is often before day 28, so the W2 end is computed per presentation with the documented fallback.
+The strict pipeline drops quiz/external-quiz sites, excludes banked assessments from submission features, and never reads \texttt{score} outside the M4 upper-bound model. Every feature table records the maximum date actually used and is asserted to be below its cutoff. Features are grouped into volume, composition, breadth, regularity, timing, assessment-submission, and change families. All aggregates are cutoff-aware; no full-period aggregate is computed and then truncated.
+\subsection{Splits and matching}
+The primary split is 60/20/20 by \texttt{id\_student}; a five-fold GroupKFold, a forward-temporal split (2013B/2013J train, 2014B/2014J test), and a leave-one-module-out split are also reported. Temporal and LOMO training rows are further restricted so that no student appears on both sides of a split. In the full-data design, the row-level control quantifies the leakage that a naive random split would create; in this rehearsal all grouped splits have zero student overlap. CEM uses module $\times$ presentation as exact strata and coarsens W1 clicks, active days, and activity entropy within presentation. Strata without both outcomes are discarded; treated units receive weight 1 and controls receive $n_t/n_c$ within stratum. Balance is assessed on the coarsened variables (the design variables) with SMD, and raw continuous SMD is reported as a diagnostic. A cluster bootstrap over strata gives confidence intervals for W2 differences. Matching is descriptive: it balances measured W1 variables and cannot remove unmeasured confounding or post-baseline selection.
+\subsection{Clustering, models, updating and competing risks}
+Clustering uses W1 volume, breadth, regularity, and composition features, standardised within presentation and reduced by PCA to eight components. k-means is run for $k=2,\ldots,8$ with 50 initialisations. Stability is measured by 300 bootstrap refits: ARI against the full-sample partition and cluster-wise Jaccard after Hungarian label alignment. The project threshold is mean ARI $\ge 0.60$; this is a project convention, not a literature constant.
+The model ladder adds one feature family at a time: M0 uses log clicks and active days; M1 adds breadth, regularity, and composition; M2 adds timing; M3 adds assessment submission timing without scores; M4 adds scores as an upper bound; M5 replaces the logistic model with HistGradientBoosting on M3 features. A context-only baseline (M-1) uses demographic and registration variables; M0c and M1c add the M0 and M1 features to that baseline, separating the clickstream increment from context. All preprocessing is fitted inside the training fold. The classification threshold is selected on validation data at precision 0.80 (falling back to maximum F1 when that precision is unreachable), then applied once to the held-out test set. Bootstrap intervals resample held-out rows.
+For updating, the cutoff curve retrains M0--M3 at each cutoff on the same split. B1 stacking adds a cross-fitted W1 probability to a W2 model; B2 uses $\operatorname{logit}(p_{W1})$ as a fixed offset in a binomial GLM. Cross-fitting is done with an inner GroupKFold on the training rows, so a row's W1 probability never comes from the same fit that predicts it. The competing-risk analysis fits a three-class multinomial model and cause-specific Cox models on weekly event times; the cumulative incidence function is computed with the Aalen--Johansen recursion. The specification curve varies cutoff, pre-start handling, minimum W1 clicks, target, feature level, model family, matching method, and clustering $k$, and adds random-label, pre-start-only, and placebo-window diagnostics.
+\section{Experiments}
+\subsection{Data, cohort and overlap}
+The analysis dataset has 32593 enrolments; T1 contains 22437 with base rate 68.6\%, and 10156 enrolments are Withdrawn. Table~\ref{tab:cohort} shows the cohort at three cutoffs. The W1 click distributions of Pass/Distinction and Fail overlap substantially but not completely: the presentation-weighted histogram-intersection coefficient ranges from 0.683 to 0.737 across cutoffs, and the zero-click share at day 28 is 4.2\%. This supports the premise that similar early engagement exists, but the overlap is not complete. CEM common support for T1 is 0.900, so the matched comparison covers most of the treated group.
+\begin{table}[t]
+\centering
+\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{rcccccc}
+\toprule
+Cutoff & Enrolments & T1 n & T1 base & T3 Pass/Dist & T3 Fail & T3 Withdrawn at c \\
+\midrule
+7 & 32593 & 22437 & 68.6\% & 15385 & 7052 & 6749 \\
+28 & 32593 & 22437 & 68.6\% & 15385 & 7052 & 5109 \\
+56 & 32593 & 22437 & 68.6\% & 15385 & 7052 & 4093 \\
+\bottomrule
+\end{tabular}
+\caption{Cohort flow at three cutoffs. T1 excludes Withdrawn and is not filtered by date\_unregistration in the main analysis, so its counts are constant across cutoffs. T3 reports final full-cohort Pass/Dist and Fail counts separately from Withdrawn observed by cutoff c; the columns are descriptive, not a fixed-size partition. At-risk filtering is a sensitivity analysis, not the main cohort.}
+\label{tab:cohort}
+\end{table}
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+Split & Train n & Test n & Train pos. & Test pos. & Student overlap \\
+\midrule
+Grouped 60/20/20 & 13437 & 4492 & 68.6\% & 67.7\% & 0 \\
+2013→2014 & 9158 & 12625 & 66.2\% & 69.8\% & 0 \\
+LOMO (7 folds) & 18877.9 & 3205.3 & -- & -- & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Held-out designs. Student overlap is zero by construction.}
+\label{tab:splits}
+\end{table}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/f03_click_distribution_by_outcome.png}
+\caption{W1 click distributions by final outcome. Overlap is substantial but incomplete; it determines the common support available to matching.}
+\label{fig:overlap}
+\end{figure}
+\subsection{Matching and behavioural profiles}
+CEM retained 20660 T1 enrolments in strata containing both outcomes. Balance on the coarsened design variables is exact by construction (maximum |SMD| 0.000); the raw continuous diagnostic has maximum |SMD| 0.033. Common support for treated units is 0.900, so the matched comparison describes the overlap region rather than a population-average effect. Within matched strata, the Pass/Distinction minus Fail differences (95\% cluster-bootstrap CI) are 37.558 [30.343, 44.274] for click change, 1.721 [1.511, 1.903] for active-day change, and 0.032 [0.023, 0.041] for activity-entropy change. Figure~\ref{fig:love} summarises balance; Table~\ref{tab:models} reports the model ladder. The E-value for the high-vs-low W2-change contrast is 1.555; an unmeasured confounder with risk ratio about 1.555 could explain that contrast. This is a modest E-value, so the matched contrast is fragile to unmeasured confounding. Matching-method contrasts on the same W2 click change are 37.558 (CEM), 7.774 (PSM), and 33.239 (stratified); the magnitude differs across methods; this is a descriptive sensitivity rather than a directional effect. The exposure-definition sensitivity is summarised in Appendix Table~\ref{tab:sensitivity}.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/f06_love_plot.png}
+\caption{CEM balance. The bins used to define strata are balanced; raw continuous active days retain a residual difference, which is reported rather than hidden.}
+\label{fig:love}
+\end{figure}
+Clustering selected k=2 with mean bootstrap ARI 0.913 and minimum cluster Jaccard 0.810. k=2 is the most stable partition; it was selected by the stability-first rule, although k=3 has a higher silhouette (0.235 vs 0.248). The 2 profiles differ in outcome mix, and no profile is homogeneous. The cluster labels are behavioural descriptions, not learning-style types, and the chosen partition should not be read as a latent class model.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/f07_cluster_outcome.png}
+\caption{Outcome mix by W1 behavioural profile. Clusters are descriptive; the within-cluster outcome variation is the phenomenon of interest.}
+\label{fig:cluster}
+\end{figure}
+\subsection{Classification ladder and external validation}
+Table~\ref{tab:models} reports the main held-out test. The highest main-test PR-AUC is M4 (0.843); the ladder is monotone across M0--M3. M4 is an upper bound because scores are not known at prediction time; it is not an early-warning model. Among strict models, M5 has the highest main-test PR-AUC (0.838), but its temporal and LOMO ROC-AUC (0.702, 0.681) are lower than M1's (0.707, 0.699); the ranking is not stable across extrapolation. The calibration slope of M4 is 0.931; slopes below 1 indicate over-confident probabilities, which is why Brier and reliability curves are reported alongside ranking metrics.
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+Metric & M0 & M1 & M2 & M3 & M4 & M5 \\
+\midrule
+PR-AUC & 0.816 & 0.827 & 0.827 & 0.828 & 0.843 & 0.838 \\
+ROC-AUC & 0.701 & 0.724 & 0.724 & 0.729 & 0.744 & 0.738 \\
+Recall at val threshold & 0.648 & 0.730 & 0.728 & 0.748 & 0.785 & 0.773 \\
+Precision at val threshold & 0.795 & 0.783 & 0.787 & 0.788 & 0.784 & 0.785 \\
+F1 & 0.714 & 0.755 & 0.756 & 0.768 & 0.785 & 0.779 \\
+Brier & 0.220 & 0.213 & 0.213 & 0.211 & 0.207 & 0.204 \\
+Calibration slope & 1.029 & 0.987 & 0.976 & 0.991 & 0.931 & 0.983 \\
+\bottomrule
+\end{tabular}
+\caption{Main held-out test (grouped split). M4 contains scores and is an upper bound only.}
+\label{tab:models}
+\end{table}
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+Model & CV PR & CV ROC & 2013→2014 PR & 2013→2014 ROC & LOMO PR & LOMO ROC \\
+\midrule
+M0 & 0.821 & 0.698 & 0.832 & 0.704 & 0.814 & 0.684 \\
+M1 & 0.833 & 0.719 & 0.831 & 0.707 & 0.817 & 0.699 \\
+M3 & 0.835 & 0.725 & 0.823 & 0.702 & 0.808 & 0.690 \\
+M5 & 0.844 & 0.740 & 0.828 & 0.702 & 0.812 & 0.681 \\
+\bottomrule
+\end{tabular}
+\caption{Grouped CV, forward-temporal and leave-one-module-out performance.}
+\label{tab:external}
+\end{table}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\linewidth]{figures/f08_pr_curves.png}
+\caption{Precision--recall curves on the main held-out test for M0--M5.}
+\label{fig:pr}
+\end{figure}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.86\linewidth]{figures/f08_calibration.png}
+\caption{Reliability curves on the main held-out test. Several richer models are over-confident; M4 is an upper bound with scores.}
+\label{fig:cal}
+\end{figure}
+Table~\ref{tab:context} adds a context-only baseline. Context alone reaches PR-AUC 0.783 and ROC-AUC 0.657. Adding click volume (M0c) gives 0.853, and adding behaviour (M1c) gives 0.854. The paired M1c--M0c difference is 0.001 PR-AUC (95\% CI [-0.004, 0.006]) and 0.005 ROC-AUC (95\% CI [0.001, 0.010]) on the same test rows. The PR-AUC CI includes zero, so the behavioural increment is not detectable on PR-AUC; the ROC-AUC CI excludes zero, but the difference is small. The point estimate is small in absolute terms; the CI is the basis for the detectability statement. The contrast is descriptive: context variables are not randomised, and the context-only model is imperfect, so we do not claim a context-adjusted effect.
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+Model & PR-AUC & ROC-AUC & Recall & Brier & Cal. slope \\
+\midrule
+M-1\_context & 0.783 & 0.657 & 0.368 & 0.230 & 0.906 \\
+M0c\_context+M0 & 0.853 & 0.761 & 0.805 & 0.199 & 1.000 \\
+M1c\_context+M1 & 0.854 & 0.766 & 0.821 & 0.196 & 0.957 \\
+\bottomrule
+\end{tabular}
+\caption{Context-only and context-adjusted models on the same held-out split. Context variables are never part of the strict clickstream set. M1c--M0c paired differences (95\% CI; PR interval includes zero): ΔPR-AUC 0.001 [-0.004, 0.006]; ΔROC-AUC 0.005 [0.001, 0.010] (4492 test rows, 1,000 paired bootstraps).}
+\label{tab:context}
+\end{table}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/f08_context_comparison.png}
+\caption{Context-only, context-plus-volume, and context-plus-behaviour models on the same held-out split.}
+\label{fig:context}
+\end{figure}
+Module-level PR-AUC ranges from 0.778 to 0.964; subgroup calibration slopes range from 0.571 to 1.933, and subgroup recall ranges from 0.653 to 0.929. The lowest module PR-AUC is GGG (0.778); the lowest subgroup recall is highest\_education:Post Graduate Qualification (0.653). Groups with fewer than 200 test rows are flagged low-n; groups with fewer than five rows, a single outcome class, or a missing value are omitted, so counts need not sum to the test n. These are performance differences, not evidence that the model causes them; per-group tables and figures are in Appendix~\ref{app:subgroups}.
+\subsection{Cutoff curve and updating}
+Table~\ref{tab:cutoff} and Figure~\ref{fig:cutoff} show M3 as the observation window grows. The best PR-AUC is at day 56; day 56 changes it by 0.033 relative to day 28. The curve is monotone in this run, so the cutoff choice is not innocuous.
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{rccccc}
+\toprule
+Cutoff & PR-AUC & ROC-AUC & Recall & Precision & Brier \\
+\midrule
+7 & 0.799 & 0.671 & 0.549 & 0.797 & 0.230 \\
+14 & 0.815 & 0.702 & 0.675 & 0.787 & 0.221 \\
+21 & 0.823 & 0.724 & 0.727 & 0.792 & 0.213 \\
+28 & 0.828 & 0.729 & 0.748 & 0.788 & 0.211 \\
+35 & 0.836 & 0.742 & 0.758 & 0.798 & 0.206 \\
+42 & 0.836 & 0.743 & 0.770 & 0.797 & 0.205 \\
+49 & 0.838 & 0.746 & 0.764 & 0.798 & 0.203 \\
+56 & 0.862 & 0.779 & 0.856 & 0.791 & 0.189 \\
+\bottomrule
+\end{tabular}
+\caption{M3 performance as the observation window grows (fixed cohort).}
+\label{tab:cutoff}
+\end{table}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/f09_cutoff_curve.png}
+\caption{M3 PR-AUC versus cutoff for the fixed and at-risk cohorts. The at-risk filter is a sensitivity analysis, not the main cohort.}
+\label{fig:cutoff}
+\end{figure}
+Matched weekly trajectories (Table~\ref{tab:trajectory}, Figure~\ref{fig:traj}) show a first stable divergence at week 3. Because week 3 lies inside W1 (days 0--27), the matched groups were already diverging during the baseline window; the same-engagement premise is approximate, not exact.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/f12_trajectory_divergence.png}
+\caption{Matched weekly trajectories, absolute log-clicks and normalized share. The divergence week is descriptive, not causal.}
+\label{fig:traj}
+\end{figure}
+Table~\ref{tab:updating} compares W1-only, W2-only, all-features, and stacking (B1) at day 56. 3 of 3 valid updating methods have a 95\% interval for the increment above zero; the largest PR-AUC is B1\_stacking (0.863, Δ 0.035). B2 is excluded from the table and reported in Appendix Table~\ref{tab:b2_failed} as a failed specification; it is not evidence about sequential updating. Even where the interval excludes zero, the increment is small relative to the between-specification spread, so we treat it as provisional.
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+Method & PR-AUC & Δ vs W1 & 95\% CI & Brier & Cal. slope & Status \\
+\midrule
+W1\_only\_M3 & 0.828 & 0.000 & [0.000, 0.000] & 0.211 & 0.990 & ok \\
+W2\_only & 0.861 & 0.032 & [0.020, 0.044] & 0.193 & 0.992 & ok \\
+All\_features\_c56 & 0.862 & 0.034 & [0.025, 0.042] & 0.189 & 1.013 & ok \\
+B1\_stacking & 0.863 & 0.035 & [0.023, 0.046] & 0.191 & 1.008 & ok \\
+\bottomrule
+\end{tabular}
+\caption{W1→W2 updating at day 56. The main table contains the four valid methods; B2 offset is excluded as a failed specification and is reported in Appendix Table~\ref{tab:b2_failed}. A CI spanning zero means no demonstrated increment.}
+\label{tab:updating}
+\end{table}
+\subsection{Competing risks}
+The three-class model keeps Withdrawn separate (Table~\ref{tab:threeclass}). The lowest F1 among the three classes is Fail (0.371); the precision/recall trade-off differs by class. Landmark cause-specific Cox models at days 28 and 56 use only features available at the landmark and are evaluated by test concordance (Appendix Table~\ref{tab:landmark}); we do not interpret the landmark coefficients causally. The cumulative-incidence curves in Figure~\ref{fig:cif} make the competition explicit: by the end of the course most enrolments have either passed or withdrawn, and a binary 'Fail' label would hide that distinction.
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+Class & Precision & Recall & F1 & Support & Macro F1 \\
+\midrule
+Fail & 0.323 & 0.435 & 0.371 & 1449 & 0.542 \\
+Pass & 0.684 & 0.676 & 0.680 & 3106 & 0.542 \\
+Withdrawn & 0.663 & 0.507 & 0.575 & 1953 & 0.542 \\
+\bottomrule
+\end{tabular}
+\caption{Three-class outcome at day 28 on the held-out test (Pass/Distinction, Fail, Withdrawn).}
+\label{tab:threeclass}
+\end{table}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/f10_cumulative_incidence.png}
+\caption{Cumulative incidence of Pass/Distinction, Fail, and Withdrawn. Withdrawn is a competing event, not a missing label.}
+\label{fig:cif}
+\end{figure}
+\subsection{Diagnostics and placebo checks}
+37 predictive specifications; PR-AUC median 0.823, range 0.651–0.862; share above the baseline 40.5\%. The random-label leak check is close to chance, which argues against a gross leakage bug. The pre-start-only positive control is 0.782 (above the no-skill PR-AUC and therefore not a null); the future-window control is 0.861 (post-outcome persistence; a placebo failure, not a leak test). The repeater negative-control outcome reaches ROC-AUC 0.657. These diagnostics bound interpretation; they do not identify a clean null or prove the absence of leakage. Table~\ref{tab:negctl} lists each diagnostic with its role and interpretation. The non-assessment-exposure diagnostic reaches ROC-AUC 0.593 (PR-AUC 0.752); if predictive, it indicates generic engagement or background rather than a learning-strategy signal.
+Measurement sensitivity: quiz inclusion changes M1/M3 PR-AUC by -0.001/-0.000. The exposure-definition CEM gives W2 click differences from -27.621 to 37.558; the seven CEM bin grids range from 34.451 to 39.814. These measurement and matching comparisons are diagnostics, not causal evidence.
+\begin{table}[t]
+\centering
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llclp{0.30\linewidth}}
+\toprule
+Diagnostic & Metric & Value & Role & Interpretation \\
+\midrule
+random\_labels & roc\_auc & 0.530 & leak\_check & leakage sanity check; expected \textasciitilde{}0.5 \\
+pre\_start\_only & pr\_auc & 0.782 & positive\_control & positive control for early signal; not a null \\
+placebo\_window\_56\_83 & pr\_auc & 0.861 & placebo\_failure & post-outcome persistence; placebo failure, not a leak test \\
+num\_of\_prev\_attempts\_gt0 & roc\_auc & 0.657 & negative\_control\_outcome & negative-control outcome; behaviour may encode background \\
+non\_assessment\_w2\_change & pr\_auc & 0.752 & negative\_control\_exposure & non-assessment W2 change; if predictive, generic engagement/confounding \\
+non\_assessment\_w2\_change & roc\_auc & 0.593 & negative\_control\_exposure & non-assessment W2 change; if predictive, generic engagement/confounding \\
+\bottomrule
+\end{tabular}
+\caption{Diagnostics and placebo checks. Roles distinguish leak checks, positive controls, placebo failures, negative-control outcomes, and negative-control exposures; non-null values are not clean nulls.}
+\label{tab:negctl}
+\end{table}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/f11_specification_curve.png}
+\caption{Specification curve: predictive specifications (left) and matching-method effects on W2 click change (right).}
+\label{fig:spec}
+\end{figure}
+\section{Conclusion and Limitations}
+The pipeline answers the research question with a qualified yes: early behavioural structure adds information beyond total clicks in the main split, but the context-adjusted M1c-minus-M0c difference is 0.001 PR-AUC (95\% CI [-0.004, 0.006]) with no detectable behavioural increment beyond context on PR-AUC; the ROC-AUC difference is small, and the overall increment is small, unstable across extrapolation settings, and sensitive to the operationalisation of engagement. The most defensible conclusions are negative and methodological. First, row-level splitting is not acceptable; grouping by student changes the evaluation and removes a design-level leak; this rehearsal has zero student overlap, so it does not estimate the size of that leak. Second, Withdrawn cannot be treated as a missing label: the click stream does not stop at unregistration, and the three outcomes have different mechanisms. Third, a richer model is not automatically better; calibration and external validation matter more than a small PR-AUC gain on a random split.
+Limitations are substantial. The data are observational; matching balances only measured W1 variables, and W1 engagement is already post-baseline, so the matched differences are associations, not causal effects. Clicks are a weak proxy for study time; OULAD has no session timestamps and no reliable time-on-task measure. The full cohort is larger, but the held-out test set and the temporal fold still limit precision. CEM diagnostics are acceptable on the coarsened design (raw max |SMD| 0.033, treated support 0.900), but matching is still descriptive. The optional TMA appendix analyses were not attempted: the +21/+28 window overlaps W1/W2 and conditions on continued enrolment, the +14 anchor varies by presentation, and first-TMA scores are not available at the early cutoff. They are alternative, post-hoc estimands, not early-warning evidence. Finally, the project does not attempt a formal Bayesian prior-to-posterior model; the updating analysis is a predictive engineering comparison, not a posterior inference.
+Table~\ref{tab:limitations} lists the main threats and residual risks. 93 Withdrawn enrolments have no date\_unregistration and are treated as course-end events; the T3 held-out test has n=6508, not the T1 test n. The day-28 zero-click share is 4.2\% in T1 but 14.4\% in the full queue. Main-text page count excludes references, disclosures, and the appendix.
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{p{0.26\linewidth}p{0.34\linewidth}p{0.32\linewidth}}
+\toprule
+Threat & Mitigation & Residual risk \\
+\midrule
+Leakage (future clicks/scores) & Cutoff assertions, grouped splits, M4 upper bound & Feature availability after marking remains unobserved for M4 \\
+Confounding & CEM on W1 variables, E-value, diagnostic checks & W1 engagement is post-baseline; unmeasured confounding remains \\
+Measurement & Multiple engagement operationalisations and quiz sensitivity & Clicks are a weak proxy for study time \\
+External validity & 2013→2014 and LOMO splits & Performance drops outside random CV \\
+Fairness & Module/subgroup metrics and calibration & Small subgroups; no causal claim \\
+Withdrawal & Three-class model and cumulative incidence & 93 Withdrawn enrolments lack date\_unregistration \\
+T3 test size & T3 split reported separately & T3 test n=6508, not the T1 test n \\
+\bottomrule
+\end{tabular}
+\caption{Limitations and residual risks.}
+\label{tab:limitations}
+\end{table}
+\label{endmain}
+\section*{Disclosures}
+External collaborators: none. Data: OULAD is a public dataset; no restricted or personal data were used beyond the public release. AIGC: Claude Code (Anthropic) was used to scaffold the analysis code, execute the staged pipeline, generate tables and figures, and draft this report. The pipeline's outputs are generated by the committed code and logged with configuration hashes; the group is responsible for reviewing the final submission. No references were fabricated; every cited source is listed below.
+\begin{thebibliography}{99}
+\bibitem{ref1} Kuzilek, J., Hlosta, M., \& Zdrahal, Z. (2017). Open University Learning Analytics dataset. Scientific Data, 4, 170171.
+\bibitem{ref2} Wu, Jia \& Pham (2026). Early prediction of at-risk students with the Open University Learning Analytics Dataset. Frontiers in Education, 11, 1917092. The reported 0.7747 ROC-AUC is for day-28 prediction of Fail-or-Withdrawn with 22 features including early scores, not a pure clickstream Pass/Distinction-vs-Fail baseline.
+\bibitem{ref3} Le, Abel \& Laforge (2026). LEAP: leakage-aware early prediction. arXiv:2605.25794 (preprint).
+\bibitem{ref4} Gasevic, D., et al. (2016). Learning analytics should not promote one size fits all. Internet and Higher Education, 28, 68-84.
+\bibitem{ref5} Iacus, S. M., King, G., \& Porro, G. (2012). Causal inference without balance checking: Coarsened exact matching. Political Analysis, 20(1), 1-24.
+\bibitem{ref6} VanderWeele, T. J., \& Ding, P. (2017). Sensitivity analysis in observational research: Introducing the E-value. Annals of Internal Medicine, 167(4), 268-274.
+\bibitem{ref7} Saito, T., \& Rehmsmeier, M. (2015). The precision-recall plot is more informative than the ROC plot. PLOS ONE, 10(3), e0118432.
+\bibitem{ref8} Van Calster, B., et al. (2019). Calibration: The Achilles heel of predictive analytics. BMC Medicine, 17, 230.
+\bibitem{ref9} Hennig, C. (2007). Cluster-wise assessment of cluster stability. Computational Statistics \& Data Analysis, 52(1), 258-271.
+\bibitem{ref10} Monti, S., et al. (2003). Consensus clustering: A resampling-based method. Machine Learning, 52, 91-118.
+\bibitem{ref11} Rousseeuw, P. J. (1987). Silhouettes: A graphical aid to the interpretation and validation of cluster analysis. Journal of Computational and Applied Mathematics, 20, 53-65.
+\bibitem{ref12} Kovanovic, V., et al. (2015). Does time-on-task estimation matter? LAK '15, 184-193.
+\end{thebibliography}
+\appendix
+\section{Landmark Cox}
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{rcccccc}
+\toprule
+Landmark & Cause & Train n & Test n & Events train & Events test & Test C \\
+\midrule
+28 & Fail & 16544 & 5541 & 4228 & 1449 & 0.662 \\
+28 & Pass & 16544 & 5541 & 9202 & 3106 & 0.560 \\
+28 & Withdrawn & 16544 & 5541 & 3114 & 986 & 0.572 \\
+56 & Fail & 15927 & 5336 & 4228 & 1449 & 0.660 \\
+56 & Pass & 15927 & 5336 & 9202 & 3106 & 0.582 \\
+56 & Withdrawn & 15927 & 5336 & 2497 & 781 & 0.557 \\
+\bottomrule
+\end{tabular}
+\caption{Landmark cause-specific Cox. Features are available at the landmark; concordance is computed on the held-out test split.}
+\label{tab:landmark}
+\end{table}
+The landmark-28 model uses only W1 features; the landmark-56 model uses W1 and W2 features available at day 56. Both exclude events at or before the landmark and report held-out test concordance, addressing the static-W2 leakage in the baseline appendix. The table reports concordance; coefficient-level HR and 95\% CI are in \texttt{t10\_landmark\_cox.csv}.
+\section{Module and subgroup metrics}\label{app:subgroups}
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccccccc}
+\toprule
+Module & n & PR-AUC & ROC-AUC & Recall & Brier & Cal. slope & low n \\
+\midrule
+AAA & 114 & 0.964 & 0.825 & 0.906 & 0.158 & 1.850 & yes \\
+BBB & 1166 & 0.808 & 0.732 & 0.749 & 0.210 & 1.082 & no \\
+CCC & 512 & 0.820 & 0.698 & 0.687 & 0.229 & 1.175 & no \\
+DDD & 785 & 0.823 & 0.722 & 0.831 & 0.200 & 1.131 & no \\
+EEE & 457 & 0.900 & 0.790 & 0.853 & 0.186 & 1.693 & no \\
+FFF & 1037 & 0.835 & 0.772 & 0.805 & 0.189 & 0.998 & no \\
+GGG & 421 & 0.778 & 0.644 & 0.361 & 0.307 & 0.709 & no \\
+\bottomrule
+\end{tabular}
+\caption{Per-module held-out metrics for M3. Groups with fewer than five test rows or a single outcome class are omitted, so counts need not sum to the test n; low n = fewer than 200 test rows.}
+\label{tab:module}
+\end{table}
+\begin{table}[t]
+\centering
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llcccccc}
+\toprule
+Group type & Group & n & PR-AUC & ROC-AUC & Recall & Cal. slope & low n \\
+\midrule
+gender & F & 2058 & 0.817 & 0.719 & 0.719 & 0.947 & no \\
+gender & M & 2434 & 0.838 & 0.740 & 0.773 & 1.041 & no \\
+age\_band & 0-35 & 3085 & 0.815 & 0.728 & 0.736 & 1.013 & no \\
+age\_band & 35-55 & 1373 & 0.849 & 0.717 & 0.769 & 0.902 & no \\
+age\_band & 55<= & 34 & 0.910 & 0.827 & 0.929 & 1.933 & yes \\
+imd\_band & 0-10\% & 419 & 0.687 & 0.724 & 0.706 & 0.889 & no \\
+imd\_band & 10-20 & 471 & 0.749 & 0.705 & 0.697 & 0.852 & no \\
+imd\_band & 20-30\% & 439 & 0.842 & 0.772 & 0.789 & 1.234 & no \\
+imd\_band & 30-40\% & 472 & 0.834 & 0.712 & 0.708 & 0.844 & no \\
+imd\_band & 40-50\% & 463 & 0.841 & 0.724 & 0.734 & 0.982 & no \\
+imd\_band & 50-60\% & 448 & 0.808 & 0.680 & 0.731 & 0.789 & no \\
+imd\_band & 60-70\% & 429 & 0.873 & 0.740 & 0.775 & 1.002 & no \\
+imd\_band & 70-80\% & 449 & 0.881 & 0.764 & 0.756 & 1.227 & no \\
+imd\_band & 80-90\% & 381 & 0.870 & 0.712 & 0.736 & 0.987 & no \\
+imd\_band & 90-100\% & 350 & 0.857 & 0.714 & 0.803 & 0.988 & no \\
+disability & N & 4097 & 0.838 & 0.735 & 0.752 & 1.032 & no \\
+disability & Y & 395 & 0.733 & 0.680 & 0.708 & 0.676 & no \\
+highest\_education & A Level or Equivalent & 1976 & 0.856 & 0.722 & 0.738 & 0.973 & no \\
+highest\_education & HE Qualification & 728 & 0.883 & 0.759 & 0.813 & 1.219 & no \\
+highest\_education & Lower Than A Level & 1702 & 0.766 & 0.724 & 0.732 & 0.914 & no \\
+highest\_education & No Formal quals & 31 & 0.717 & 0.739 & 0.765 & 1.370 & yes \\
+highest\_education & Post Graduate Qualification & 55 & 0.927 & 0.663 & 0.653 & 0.571 & yes \\
+\bottomrule
+\end{tabular}
+\caption{Subgroup held-out metrics for M3. Groups with fewer than five test rows, a single outcome class, or a missing value are omitted, so counts need not sum to the test n; low n = fewer than 200 test rows.}
+\label{tab:subgroup}
+\end{table}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.86\linewidth]{figures/f08_module_heatmap.png}
+\caption{Per-module held-out metrics (M3). Column-normalized for display; cell labels are raw values.}
+\label{fig:modheat}
+\end{figure}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/f08_subgroup_calibration.png}
+\caption{Subgroup calibration slopes (M3, held-out test).}
+\label{fig:subcal}
+\end{figure}
+\section{Trajectory and clustering diagnostics}
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{rcccccc}
+\toprule
+Week & n Pass & n Fail & Pass mean & Fail mean & Diff & 95\% CI \\
+\midrule
+0 & 13844 & 6816 & 3.435 & 3.388 & 0.047 & [-0.005, 0.094] \\
+1 & 13844 & 6816 & 3.370 & 3.277 & 0.093 & [0.048, 0.140] \\
+2 & 13844 & 6816 & 3.633 & 3.622 & 0.011 & [-0.027, 0.051] \\
+3 & 13844 & 6816 & 3.214 & 3.075 & 0.139 & [0.093, 0.183] \\
+4 & 13844 & 6816 & 3.225 & 2.804 & 0.421 & [0.365, 0.474] \\
+5 & 13844 & 6816 & 3.020 & 2.443 & 0.578 & [0.520, 0.637] \\
+6 & 13844 & 6816 & 3.132 & 2.516 & 0.615 & [0.555, 0.679] \\
+7 & 13844 & 6816 & 3.070 & 2.420 & 0.650 & [0.586, 0.715] \\
+8 & 13844 & 6816 & 6.773 & 4.688 & 2.085 & [1.994, 2.173] \\
+\bottomrule
+\end{tabular}
+\caption{Matched weekly trajectory (log1p clicks), cluster-bootstrap CI.}
+\label{tab:trajectory}
+\end{table}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/f07_pca_scatter.png}
+\caption{PCA diagnostic: PC1 x PC2, coloured by the chosen k-means partition. The 8-component solution explains the variance shown; this is a diagnostic, not evidence that clusters are real.}
+\label{fig:pca}
+\end{figure}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/f07_silhouette.png}
+\caption{Silhouette distribution for the chosen k (sampled).}
+\label{fig:sil}
+\end{figure}
+\section{Sensitivity tables}
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llccl}
+\toprule
+Family & Comparison & Value & 95\% CI & n \\
+\midrule
+quiz & M1 strict vs included & -0.001 & -- & -- \\
+quiz & M3 strict vs included & -0.000 & -- & -- \\
+exposure & total\_clicks\_only & 36.161 & [28.082, 44.467] & 22345 \\
+exposure & active\_days\_only & 25.168 & [14.958, 34.906] & 22341 \\
+exposure & activity\_entropy\_only & -27.621 & [-43.862, -14.527] & 22437 \\
+exposure & all\_three & 37.558 & [30.629, 43.494] & 20660 \\
+matching bins & range over 7 bin grids & 34.451 to 39.814 & -- & -- \\
+repeater diagnostic & repeater prediction ROC & 0.657 & -- & -- \\
+\bottomrule
+\end{tabular}
+\caption{Measurement and matching sensitivity checks. Values are differences or diagnostic metrics, not causal effects.}
+\label{tab:sensitivity}
+\end{table}
+\section{B2 offset (failed specification)}
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+Method & PR-AUC & Δ vs W1 & 95\% CI & Brier & Cal. slope & Status \\
+\midrule
+B2\_offset & 0.759 & -0.069 & [-0.083, -0.054] & 0.304 & 0.051 & failed\_calibration \\
+\bottomrule
+\end{tabular}
+\caption{B2 offset at day 56. B2 is a failed calibration specification (calibration slope 0.051, Brier 0.304); it is not evidence about sequential updating.}
+\label{tab:b2_failed}
+\end{table}
+B2 was attempted with a fixed logit(pW1) offset, both without and with an intercept. The selected fit remains severely over-confident; it is retained here only for transparency and is not a sequential-updating result.
+\end{document}

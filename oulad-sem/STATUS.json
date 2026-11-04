@@ -1,0 +1,244 @@
+{
+  "schema_version": "1.0",
+  "run_id": "run-20261104T045841Z-4f3088",
+  "mode": "full",
+  "updated_at": "2026-11-04T05:13:13.459Z",
+  "current_stage": "S12",
+  "next_stage": null,
+  "stages": {
+    "S00": {
+      "status": "pass",
+      "started_at": "2026-11-04T04:58:41.925Z",
+      "finished_at": "2026-11-04T04:58:44.559Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S00.stage.json",
+      "artifacts": [
+        "runs/run-20261104T045841Z-4f3088/env.json",
+        "data/raw/oulad/courses.csv",
+        "data/raw/oulad/assessments.csv",
+        "data/raw/oulad/vle.csv",
+        "data/raw/oulad/studentInfo.csv",
+        "data/raw/oulad/studentRegistration.csv",
+        "data/raw/oulad/studentAssessment.csv",
+        "data/raw/oulad/studentVle.csv",
+        "runs/run-20261104T045841Z-4f3088/manifest.json"
+      ],
+      "notes": ""
+    },
+    "S01": {
+      "status": "pass",
+      "started_at": "2026-11-04T04:58:45.888Z",
+      "finished_at": "2026-11-04T04:58:50.345Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S01.stage.json",
+      "artifacts": [
+        "data/interim/cache/courses.parquet",
+        "data/interim/cache/assessments.parquet",
+        "data/interim/cache/vle.parquet",
+        "data/interim/cache/studentInfo.parquet",
+        "data/interim/cache/studentRegistration.parquet",
+        "data/interim/cache/studentAssessment.parquet",
+        "data/interim/cache/studentVle.parquet",
+        "outputs/tables/t01_raw_audit.csv",
+        "outputs/tables/t01_final_result_counts.csv",
+        "outputs/tables/t01_activity_types.csv",
+        "outputs/figures/f01_click_distribution.png"
+      ],
+      "notes": ""
+    },
+    "S02": {
+      "status": "pass",
+      "started_at": "2026-11-04T04:58:51.552Z",
+      "finished_at": "2026-11-04T04:58:53.715Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S02.stage.json",
+      "artifacts": [
+        "outputs/tables/t02_withdrawal_audit.csv",
+        "outputs/tables/t02_withdrawal_weekly.csv",
+        "outputs/figures/f02_withdrawal_clicks.png",
+        "data/interim/master.parquet",
+        "outputs/tables/t02_cohort_flow.csv",
+        "data/interim/cache/studentAssessment_enriched.parquet",
+        "data/interim/studentAssessment.parquet"
+      ],
+      "notes": ""
+    },
+    "S03": {
+      "status": "pass",
+      "started_at": "2026-11-04T04:58:54.953Z",
+      "finished_at": "2026-11-04T04:58:57.376Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S03.stage.json",
+      "artifacts": [
+        "outputs/tables/t03_clicks_by_outcome.csv",
+        "outputs/tables/t03_overlap.csv",
+        "outputs/tables/t03_cohort_flow.csv",
+        "outputs/tables/t03_withdrawal_timing.csv",
+        "outputs/figures/f03_withdrawal_timing.png",
+        "outputs/figures/f03_click_distribution_by_outcome.png"
+      ],
+      "notes": ""
+    },
+    "S04": {
+      "status": "pass",
+      "started_at": "2026-11-04T04:58:59.022Z",
+      "finished_at": "2026-11-04T04:59:49.572Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S04.stage.json",
+      "artifacts": [
+        "data/processed/features_c7.parquet",
+        "data/processed/features_c14.parquet",
+        "data/processed/features_c21.parquet",
+        "data/processed/features_c28.parquet",
+        "data/processed/features_c35.parquet",
+        "data/processed/features_c42.parquet",
+        "data/processed/features_c49.parquet",
+        "data/processed/features_c56.parquet",
+        "outputs/tables/t04_feature_audit.csv",
+        "data/processed/features_scores_c28.parquet"
+      ],
+      "notes": ""
+    },
+    "S05": {
+      "status": "pass",
+      "started_at": "2026-11-04T04:59:51.260Z",
+      "finished_at": "2026-11-04T04:59:51.666Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S05.stage.json",
+      "artifacts": [
+        "data/processed/splits.json",
+        "outputs/tables/t05_split_summary.csv"
+      ],
+      "notes": ""
+    },
+    "S06": {
+      "status": "pass",
+      "started_at": "2026-11-04T04:59:52.905Z",
+      "finished_at": "2026-11-04T05:00:04.262Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S06.stage.json",
+      "artifacts": [
+        "outputs/tables/t06_balance.csv",
+        "outputs/figures/f06_love_plot.png",
+        "runs/run-20261104T045841Z-4f3088/artifacts/matched_strata.parquet",
+        "outputs/tables/t06_discordant_strata.csv",
+        "outputs/tables/t06_w2_differences.csv",
+        "outputs/tables/t12_trajectory_weekly.csv",
+        "outputs/tables/t12_divergence.csv",
+        "outputs/figures/f12_trajectory_divergence.png"
+      ],
+      "notes": ""
+    },
+    "S07": {
+      "status": "pass",
+      "started_at": "2026-11-04T05:00:06.278Z",
+      "finished_at": "2026-11-04T05:04:37.258Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S07.stage.json",
+      "artifacts": [
+        "outputs/tables/t07_stability.csv",
+        "outputs/tables/t07_cluster_outcome.csv",
+        "outputs/figures/f07_ari_distribution.png",
+        "outputs/figures/f07_consensus_matrix.png",
+        "outputs/figures/f07_cluster_outcome.png",
+        "outputs/figures/f07_pca_scatter.png",
+        "outputs/figures/f07_silhouette.png"
+      ],
+      "notes": "k=2 selected from k with mean ARI >= 0.6; maximum stability first, silhouette as tie-break"
+    },
+    "S08": {
+      "status": "pass",
+      "started_at": "2026-11-04T05:04:39.341Z",
+      "finished_at": "2026-11-04T05:10:14.913Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S08.stage.json",
+      "artifacts": [
+        "outputs/tables/t08_context_metrics.csv",
+        "outputs/tables/t08_context_delta.csv",
+        "outputs/figures/f08_context_comparison.png",
+        "outputs/tables/t08_model_metrics.csv",
+        "runs/run-20261104T045841Z-4f3088/artifacts/predictions.parquet",
+        "runs/run-20261104T045841Z-4f3088/artifacts/model_cards.json",
+        "outputs/tables/t08_module_metrics.csv",
+        "outputs/tables/t08_subgroup_metrics.csv",
+        "outputs/figures/f08_module_heatmap.png",
+        "outputs/figures/f08_subgroup_calibration.png",
+        "outputs/figures/f08_pr_curves.png",
+        "outputs/figures/f08_calibration.png",
+        "outputs/tables/t08_permutation_importance.csv",
+        "outputs/figures/f08_permutation_importance.png"
+      ],
+      "notes": ""
+    },
+    "S09": {
+      "status": "pass",
+      "started_at": "2026-11-04T05:10:17.242Z",
+      "finished_at": "2026-11-04T05:10:59.637Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S09.stage.json",
+      "artifacts": [
+        "outputs/tables/t09_cutoff_metrics.csv",
+        "outputs/tables/t09_incremental.csv",
+        "outputs/figures/f09_cutoff_curve.png"
+      ],
+      "notes": ""
+    },
+    "S10": {
+      "status": "pass",
+      "started_at": "2026-11-04T05:11:01.714Z",
+      "finished_at": "2026-11-04T05:11:11.121Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S10.stage.json",
+      "artifacts": [
+        "outputs/tables/t10_class_metrics.csv",
+        "runs/run-20261104T045841Z-4f3088/artifacts/t10_predictions_c28.parquet",
+        "runs/run-20261104T045841Z-4f3088/artifacts/t10_long_table.parquet",
+        "outputs/tables/t10_cumulative_incidence.csv",
+        "outputs/figures/f10_cumulative_incidence.png",
+        "outputs/tables/t10_landmark_cox.csv"
+      ],
+      "notes": ""
+    },
+    "S11": {
+      "status": "pass",
+      "started_at": "2026-11-04T05:11:13.248Z",
+      "finished_at": "2026-11-04T05:13:04.722Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S11.stage.json",
+      "artifacts": [
+        "outputs/tables/t11_specs.csv",
+        "outputs/tables/t11_quiz_sensitivity.csv",
+        "outputs/tables/t11_exposure_sensitivity.csv",
+        "outputs/tables/t11_matching_bins.csv",
+        "outputs/tables/t11_placebo_exposure.csv",
+        "outputs/tables/t11_placebo_outcomes.csv",
+        "outputs/tables/t11_negative_controls.csv",
+        "outputs/figures/f11_specification_curve.png"
+      ],
+      "notes": ""
+    },
+    "S12": {
+      "status": "pass",
+      "started_at": "2026-11-04T05:13:06.059Z",
+      "finished_at": "2026-11-04T05:13:13.458Z",
+      "log": "runs/run-20261104T045841Z-4f3088/run.jsonl",
+      "stage_json": "runs/run-20261104T045841Z-4f3088/stages/S12.stage.json",
+      "artifacts": [
+        "outputs/tables/t09_b2_failed.csv",
+        "runs/run-20261104T045841Z-4f3088/manifest_all.json",
+        "outputs/Report.pdf",
+        "REPORT.md",
+        "outputs/Poster.pdf",
+        "README.md",
+        "REQUIREMENTS.lock",
+        "DATA_DOWNLOAD.md",
+        "runs/run-20261104T045841Z-4f3088/STATUS.final.json",
+        "Group_09_Project.zip"
+      ],
+      "notes": ""
+    }
+  },
+  "blocked": null,
+  "notes": "S12 pass; next=None",
+  "run_status": "complete"
+}

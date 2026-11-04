@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.0",
+  "stage": "S05",
+  "run_id": "run-20261104T045841Z-4f3088",
+  "mode": "full",
+  "simulated": false,
+  "status": "pass",
+  "started_at": "2026-11-04T04:59:51.260Z",
+  "finished_at": "2026-11-04T04:59:51.665Z",
+  "duration_ms": 405,
+  "config_hash": "sha256:1719aea81a6c72eeb4b88626151fc6113f76dea40cf3629b25735231a1003a90",
+  "checks": [
+    {
+      "name": "main_partition",
+      "status": "ok",
+      "message": "13437+4508+4492 == 22437",
+      "metrics": {}
+    },
+    {
+      "name": "main_train_val_student_overlap",
+      "status": "ok",
+      "message": "train/val overlap=0",
+      "metrics": {}
+    },
+    {
+      "name": "main_train_test_student_overlap",
+      "status": "ok",
+      "message": "train/test overlap=0",
+      "metrics": {}
+    },
+    {
+      "name": "main_val_test_student_overlap",
+      "status": "ok",
+      "message": "val/test overlap=0",
+      "metrics": {}
+    },
+    {
+      "name": "main_class_distribution_recorded",
+      "status": "ok",
+      "message": "positive rate recorded for train/val/test",
+      "metrics": {}
+    },
+    {
+      "name": "group_fold_disjoint",
+      "status": "ok",
+      "message": "max train/test student overlap=0",
+      "metrics": {}
+    },
+    {
+      "name": "group_fold_covers_all",
+      "status": "ok",
+      "message": "test-fold coverage min=1 max=1",
+      "metrics": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    {
+      "name": "temporal_presentations_disjoint",
+      "status": "ok",
+      "message": "train=['2013B', '2013J'] test=['2014B', '2014J']",
+      "metrics": {}
+    },
+    {
+      "name": "temporal_student_overlap",
+      "status": "ok",
+      "message": "train/test student overlap=0",
+      "metrics": {}
+    },
+    {
+      "name": "temporal_test_presentations_expected",
+      "status": "ok",
+      "message": "test presentations=['2014B', '2014J']",
+      "metrics": {}
+    },
+    {
+      "name": "lomo_student_overlap",
+      "status": "ok",
+      "message": "max overlap=0",
+      "metrics": {}
+    },
+    {
+      "name": "ungrouped_control_positive",
+      "status": "ok",
+      "message": "row-level split does leak students; grouped split must not",
+      "metrics": {}
+    }
+  ],
+  "metrics": {
+    "main_n_train": 13437,
+    "main_n_val": 4508,
+    "main_n_test": 4492,
+    "main_positive_rate": {
+      "train": 0.6857929597380368,
+      "val": 0.6940993788819876,
+      "test": 0.6769813000890472
+    },
+    "kfold_folds": 5,
+    "kfold_max_student_overlap": 0,
+    "temporal_n_train": 9158,
+    "temporal_n_test": 12625,
+    "temporal_dropped_student_overlap": 654,
+    "excluded_other_presentations": 0,
+    "lomo_folds": 7,
+    "lomo_max_student_overlap": 0,
+    "lomo_dropped_student_overlap": 2477,
+    "students_in_train_and_test": 310,
+    "test_rows_overlapping": 311,
+    "test_row_overlap_share": 0.06929590017825311,
+    "note": "row-level control; expected ~852 students / 15.7% in full OULAD",
+    "n": 22437,
+    "cohort_keys_sha256": "757e7b04c35e56d4f67b998ca63ce14c77ae2fd860615e1755e2e500d19096a0",
+    "main": {
+      "train": 13437,
+      "val": 4508,
+      "test": 4492
+    },
+    "n_temporal_train": 9158,
+    "n_temporal_test": 12625,
+    "n_lomo_modules": 7,
+    "temporal_other_excluded": 0
+  },
+  "artifacts": [
+    {
+      "path": "data/processed/splits.json",
+      "sha256": "sha256:72462a1c12d001fe1ca7045f833a34ab8e6f4c19417af993dd4926e2cd3580b5",
+      "rows": 22437
+    },
+    {
+      "path": "outputs/tables/t05_split_summary.csv",
+      "sha256": "sha256:72e8c39479ada1761cdd434033aa2b124fefe652856905d4852188b01bf290d4",
+      "rows": 15,
+      "cols": 6
+    }
+  ],
+  "warnings": [],
+  "notes": "",
+  "error": null
+}

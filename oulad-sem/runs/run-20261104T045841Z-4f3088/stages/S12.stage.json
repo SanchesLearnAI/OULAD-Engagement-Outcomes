@@ -1,0 +1,161 @@
+{
+  "schema_version": "1.0",
+  "stage": "S12",
+  "run_id": "run-20261104T045841Z-4f3088",
+  "mode": "full",
+  "simulated": false,
+  "status": "pass",
+  "started_at": "2026-11-04T05:13:06.059Z",
+  "finished_at": "2026-11-04T05:13:13.458Z",
+  "duration_ms": 7398,
+  "config_hash": "sha256:1719aea81a6c72eeb4b88626151fc6113f76dea40cf3629b25735231a1003a90",
+  "checks": [
+    {
+      "name": "report_pdf_exists",
+      "status": "ok",
+      "message": "Report.pdf",
+      "metrics": {}
+    },
+    {
+      "name": "report_page_count",
+      "status": "ok",
+      "message": "total pages=16; appendix/references excluded from main-text count",
+      "metrics": {}
+    },
+    {
+      "name": "main_text_page_count",
+      "status": "ok",
+      "message": "main text pages=9 (target 6-10)",
+      "metrics": {}
+    },
+    {
+      "name": "disclosures_present",
+      "status": "ok",
+      "message": "AIGC / external collaborator disclosure section present",
+      "metrics": {}
+    },
+    {
+      "name": "citation_scan_errors",
+      "status": "ok",
+      "message": "no rejected numbers",
+      "metrics": {}
+    },
+    {
+      "name": "citation_scan_warnings",
+      "status": "ok",
+      "message": "no qualifier warnings",
+      "metrics": {}
+    },
+    {
+      "name": "poster_pdf_exists",
+      "status": "ok",
+      "message": "Poster.pdf",
+      "metrics": {}
+    },
+    {
+      "name": "pre_validation_errors",
+      "status": "ok",
+      "message": "no structural errors",
+      "metrics": {}
+    },
+    {
+      "name": "zip_no_raw_data",
+      "status": "ok",
+      "message": "raw full data is not inside the ZIP",
+      "metrics": {}
+    },
+    {
+      "name": "zip_has_report",
+      "status": "ok",
+      "message": "Report.pdf in ZIP",
+      "metrics": {}
+    },
+    {
+      "name": "zip_poster_excluded",
+      "status": "ok",
+      "message": "Poster.pdf is submitted separately, not inside the final ZIP",
+      "metrics": {}
+    },
+    {
+      "name": "zip_has_status_final",
+      "status": "ok",
+      "message": "STATUS.final.json in ZIP",
+      "metrics": {}
+    },
+    {
+      "name": "zip_no_stale_hazard",
+      "status": "ok",
+      "message": "stale static-Cox hazard table is not inside the ZIP",
+      "metrics": {}
+    },
+    {
+      "name": "zip_has_wp5_tables",
+      "status": "ok",
+      "message": "WP5 context-delta, B2-appendix and placebo-exposure tables in ZIP",
+      "metrics": {}
+    },
+    {
+      "name": "single_submission_zip",
+      "status": "ok",
+      "message": "submission ZIPs=['Group_09_Project.zip']",
+      "metrics": {}
+    }
+  ],
+  "metrics": {
+    "pages": 16,
+    "main_pages": 9,
+    "mode": "full",
+    "errors": 0,
+    "warnings": 0,
+    "entries": 131,
+    "bytes": 2099903
+  },
+  "artifacts": [
+    {
+      "path": "outputs/tables/t09_b2_failed.csv",
+      "sha256": "sha256:cbcc7ab15d6da1b9e896853725109b67ac768ba57062e0118f2b3a2d786d662c",
+      "rows": 1,
+      "cols": 13
+    },
+    {
+      "path": "runs/run-20261104T045841Z-4f3088/manifest_all.json",
+      "sha256": "sha256:a46d4d184d2f84c013b72e4d08fed8ad4357edf9bdb567a67813303165f44225",
+      "rows": 92
+    },
+    {
+      "path": "outputs/Report.pdf",
+      "sha256": "sha256:75ba8787c2ce3f1457632a09910f0023d041581128a75849aed6c7fbc05bd4da"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256": "sha256:9d971cc2780aa417f1bd8db62fa14cd55f9190362ea82c13e7c7fd936b8eceba"
+    },
+    {
+      "path": "outputs/Poster.pdf",
+      "sha256": "sha256:0ec87ed39ec2d4e04823f5731f09756016bdacee9d236b31098fef6e6cf3e55f"
+    },
+    {
+      "path": "README.md",
+      "sha256": "sha256:fcddf581bece8262c739d5559a2cb241ef2ef03ad21267bc552ff265268e6473"
+    },
+    {
+      "path": "REQUIREMENTS.lock",
+      "sha256": "sha256:d0d0beeef8e2f2f5089f0f89a9afeed9ae39f8be19beb9815cbf6b8e389433b3"
+    },
+    {
+      "path": "DATA_DOWNLOAD.md",
+      "sha256": "sha256:b85174a3ee40e829972e96044f952fb6cffc89e37ebe69cc39066fc9b2128ec3"
+    },
+    {
+      "path": "runs/run-20261104T045841Z-4f3088/STATUS.final.json",
+      "sha256": "sha256:3129dd197e1bd4d52a29c34324b0c898712ab2fc1caf36560c3af53769bfc86f"
+    },
+    {
+      "path": "Group_09_Project.zip",
+      "sha256": "sha256:0dc3a35f8d842170817c9001a7c61ee236f9ae35c32fa5fb71ce221e593e4e32"
+    }
+  ],
+  "warnings": [],
+  "notes": "",
+  "error": null
+}

@@ -1,0 +1,81 @@
+{
+  "question": "incremental predictive value of relative pre/post TMA click gap",
+  "feature": "(post_clicks - pre_clicks) / (post_clicks + pre_clicks); both zero -> 0",
+  "windows": {
+    "pre": [
+      -13,
+      0
+    ],
+    "post": [
+      1,
+      14
+    ]
+  },
+  "models": {
+    "M0_pre_post_volume_submission": [
+      "module_presentation",
+      "log_pre_clicks",
+      "pre_active_days",
+      "last3_share",
+      "log_post_clicks",
+      "log_post_clicks_squared",
+      "submitted_by_cutoff",
+      "submitted_after_due"
+    ],
+    "M0_plus_relative_gap": [
+      "module_presentation",
+      "log_pre_clicks",
+      "pre_active_days",
+      "last3_share",
+      "log_post_clicks",
+      "log_post_clicks_squared",
+      "submitted_by_cutoff",
+      "submitted_after_due",
+      "relative_click_gap"
+    ],
+    "M1_add_post_timing": [
+      "module_presentation",
+      "log_pre_clicks",
+      "pre_active_days",
+      "last3_share",
+      "log_post_clicks",
+      "log_post_clicks_squared",
+      "submitted_by_cutoff",
+      "submitted_after_due",
+      "post_active_days",
+      "post_both_weeks",
+      "post_longest_inactive_run",
+      "post_week2_share",
+      "post_peak7_share",
+      "post_entropy_norm",
+      "post_first_active_day"
+    ],
+    "M1_timing_plus_relative_gap": [
+      "module_presentation",
+      "log_pre_clicks",
+      "pre_active_days",
+      "last3_share",
+      "log_post_clicks",
+      "log_post_clicks_squared",
+      "submitted_by_cutoff",
+      "submitted_after_due",
+      "post_active_days",
+      "post_both_weeks",
+      "post_longest_inactive_run",
+      "post_week2_share",
+      "post_peak7_share",
+      "post_entropy_norm",
+      "post_first_active_day",
+      "relative_click_gap"
+    ]
+  },
+  "seed": 42,
+  "student_bootstrap": 500,
+  "input_sha256": {
+    "features.parquet": "11b112d249c22acb1cb94602b89285274a9e67f5ea794921527e761883c92389",
+    "two_week_protocol.json": "6e83ed6aa892624217caae3a1934bceeeb1fb3f1bf4dce6ca2ef82ea9f23226b"
+  },
+  "reference_models_sha256": "41d17370fd61c9c899b293d006fb3f8461e22b2184211db75e6db69f00269d38",
+  "code_sha256": "09a91633a597ec0eb508617dfcb56414030d27ee02fce84eb30b5be9953730b3",
+  "limitations": "post hoc feature engineering on repeatedly explored OULAD data; no new information beyond counts; no causal interpretation"
+}

@@ -1,0 +1,3 @@
+exposure,metric,value,n,note
+non_assessment_w2_change,pr_auc,0.7519349965300588,4503,"W2 minus W1 over non-assessment resource types; if predictive, generic engagement/confounding"
+non_assessment_w2_change,roc_auc,0.5925686591276252,4503,"W2 minus W1 over non-assessment resource types; if predictive, generic engagement/confounding"
