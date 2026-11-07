@@ -846,7 +846,8 @@ artefact, not the final full-data submission. Numbers will change in the full ru
            (f"k=2 is both the most stable and the highest-silhouette partition. " if str(chosen_k) == "2" and
             np.isfinite(k2_sil) and np.isfinite(max_sil) and k2_sil >= max_sil - 1e-12 else
             (f"k={_tex(chosen_k)} is the most stable partition; it was selected by the stability-first "
-             f"rule, although k={max_sil_k} has a higher silhouette ({f(chosen_sil)} vs {f(max_sil)}). ")))
+             f"rule, although k={max_sil_k} has a higher silhouette ({f(max_sil)} vs "
+             f"{f(chosen_sil)} for k={_tex(chosen_k)}). ")))
         + f"The {_tex(chosen_k)} profiles differ in outcome mix, and no "
         f"profile is homogeneous. The "
         f"cluster labels are behavioural descriptions, not learning-style types, and the chosen "
