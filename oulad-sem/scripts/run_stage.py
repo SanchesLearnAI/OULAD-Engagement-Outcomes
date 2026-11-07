@@ -120,7 +120,9 @@ def main() -> int:
             print(f"refusing {args.stage}: STATUS.next_stage is "
                   f"{status.get('next_stage')}", file=sys.stderr)
             return 3
-        if stages.get(args.stage, {}).get("status") in ("pass", "warn"):
+        # S12 only packages existing outputs, so it may be re-run to refresh
+        # the submission archive without recomputing the analysis.
+        if args.stage != "S12" and stages.get(args.stage, {}).get("status") in ("pass", "warn"):
             print(f"refusing {args.stage}: already "
                   f"{stages[args.stage]['status']} for this run; use a new run_id",
                   file=sys.stderr)

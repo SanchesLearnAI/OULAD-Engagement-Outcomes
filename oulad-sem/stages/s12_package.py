@@ -97,7 +97,7 @@ def _zip(ctx, report_pdf, poster_pdf, readme, report_md, req_lock, data_doc):
             p = root / rel
             if p.exists():
                 z.write(p, rel)
-        for rel in ("Makefile",):
+        for rel in ("Makefile", "STATUS.json"):
             p = root / rel
             if p.exists():
                 z.write(p, rel)
@@ -255,6 +255,9 @@ def run(ctx, st):
                     "run_status": "complete", "updated_at": utc_now()})
         sfp = ctx.run_dir / "STATUS.final.json"
         atomic_write_json(sfp, stf)
+        # The root STATUS.json is the gate that lets a later stage resume a run.
+        # Shipping it lets an unpacked ZIP continue from the recorded run.
+        atomic_write_json(project_root() / "STATUS.json", stf)
         st.artifact(sfp, message="STATUS.final.json")
 
     with st.step("zip"):
@@ -276,6 +279,8 @@ def run(ctx, st):
                  "Report.pdf in ZIP")
         st.check("zip_poster_excluded", not any(n == "Poster.pdf" for n in names),
                  "Poster.pdf is submitted separately, not inside the final ZIP")
+        st.check("zip_has_root_status", "STATUS.json" in names,
+                 "root STATUS.json in ZIP so a run can be resumed")
         st.check("zip_has_status_final",
                  any(n == f"runs/{ctx.run_id}/STATUS.final.json" for n in names),
                  "STATUS.final.json in ZIP")
