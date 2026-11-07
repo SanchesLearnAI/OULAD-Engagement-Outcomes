@@ -637,7 +637,7 @@ def build_latex(ctx) -> str:
 \setlength{\parskip}{3pt}
 \setlength{\parindent}{0pt}
 \title{Same Engagement, Different Outcomes\\\large Explaining differences in academic results among similarly active online learners}
-\author{Group 9: Jiangyu Liu (50027216), Yanbin Chen (50026846),\\ Yanshun Wang (50026688), Yuming Zhang (50025933)}
+\author{Group 9: Jiayang Liu (50027216), Yanbin Chen (50026846),\\ Yanshun Wang (50026688), Yuming Zhang (50025933)}
 \date{Data Mining Course Project \\ \today}
 \begin{document}
 \maketitle""")
@@ -1501,7 +1501,7 @@ def build_poster(ctx) -> str:
 \usepackage{graphicx}
 \usepackage{booktabs}
 \title{Same Engagement, Different Outcomes}
-\author{Group 9: Jiangyu Liu, Yanbin Chen, Yanshun Wang, Yuming Zhang}
+\author{Group 9: Jiayang Liu, Yanbin Chen, Yanshun Wang, Yuming Zhang}
 \institute{Data Mining Course Project}
 \begin{document}
 \maketitle
