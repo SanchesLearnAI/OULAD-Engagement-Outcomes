@@ -85,8 +85,13 @@ def run(ctx, st):
     temporal_metrics = {}
     lomo_metrics = {}
 
-    def add_metrics(model, split, ytrue, pprob, thr, n_train, extra=None):
+    def add_metrics(model, split, ytrue, pprob, thr, n_train, extra=None,
+                    rule="unknown"):
         m = metrics_at(ytrue, pprob, thr)
+        prev = float(np.mean(ytrue)) if len(ytrue) else float("nan")
+        # Reference points: no-skill PR-AUC equals prevalence; predicting every
+        # enrolment positive gives F1 = 2*prev/(1+prev).
+        no_skill_f1 = 2 * prev / (1 + prev) if np.isfinite(prev) else float("nan")
         ci = bootstrap_metrics(ytrue, pprob, thr, n_boot=1000,
                                seed=seed + 7)
         for k, v in m.items():
@@ -97,26 +102,28 @@ def run(ctx, st):
                 "model": model, "split": split, "metric": k, "value": v,
                 "ci_low": lo, "ci_high": hi, "n": m["n"],
                 "positive_rate": m["positive_rate"], "threshold": m["threshold"],
-                "n_train": int(n_train),
+                "n_train": int(n_train), "threshold_rule": rule,
+                "no_skill_pr_auc": prev, "all_positive_f1": no_skill_f1,
             })
         return m
 
     def fit_predict(model_name, kind, columns, tr, va, te, refit):
         if len(tr) == 0 or len(te) == 0 or len(np.unique(y[tr])) < 2:
-            return None, np.nan, None
+            return None, np.nan, None, "no_fit"
         X = df[columns].to_numpy(dtype=float)
         model = make_model(kind, seed)
         model.fit(X[tr], y[tr])
         thr = np.nan
+        rule = "no_validation"
         if va is not None and len(va):
             pv = model.predict_proba(X[va])[:, 1]
-            thr, _, _, _ = select_threshold(y[va], pv, target_prec)
+            thr, _, _, rule = select_threshold(y[va], pv, target_prec)
         if refit and va is not None and len(va):
             model = make_model(kind, seed)
             model.fit(X[np.concatenate([tr, va])],
                       y[np.concatenate([tr, va])])
         p = model.predict_proba(X[te])[:, 1]
-        return model, thr, p
+        return model, thr, p, rule
 
     with st.step("main_split"):
         main = splits["main"]
@@ -125,13 +132,13 @@ def run(ctx, st):
         main_te = np.array(main["test"])
         tr, va, te = main_tr, main_va, main_te
         for name, kind, note in _MODELS:
-            model, thr, p = fit_predict(name, kind, cols[name], tr, va, te, False)
+            model, thr, p, rule = fit_predict(name, kind, cols[name], tr, va, te, False)
             if p is None:
                 st.check(f"{name}_main_fit", False, "could not fit")
                 continue
             if not np.isfinite(thr):
                 thr = 0.5
-            m = add_metrics(name, "main_test", y[te], p, thr, len(tr))
+            m = add_metrics(name, "main_test", y[te], p, thr, len(tr), rule=rule)
             pf = pd.DataFrame({
                 "model": name, "split": "main_test",
                 "id_student": cohort["id_student"].iloc[te].to_numpy(),
@@ -298,9 +305,9 @@ def run(ctx, st):
             if not ok or mask.sum() == 0:
                 st.check(f"{name}_kfold", False, "k-fold failed")
                 continue
-            thr, _, _, _ = select_threshold(y[mask], oof[mask], target_prec)
+            thr, _, _, rule = select_threshold(y[mask], oof[mask], target_prec)
             m = add_metrics(name, "group_kfold", y[mask], oof[mask], thr,
-                            int(n - mask.sum()))
+                            int(n - mask.sum()), rule=rule)
             pf = pd.DataFrame({
                 "model": name, "split": "group_kfold",
                 "id_student": cohort["id_student"].iloc[mask].to_numpy(),
@@ -320,14 +327,14 @@ def run(ctx, st):
         t_tr = np.array(t["train"]); t_te = np.array(t["test"])
         tr80, va20 = _holdout(t_tr, cohort, y, seed + 2)
         for name, kind, _ in _MODELS:
-            model, thr, p = fit_predict(name, kind, cols[name], tr80, va20, t_te, True)
+            model, thr, p, rule = fit_predict(name, kind, cols[name], tr80, va20, t_te, True)
             if p is None:
                 st.check(f"{name}_temporal", False, "could not fit")
                 continue
             if not np.isfinite(thr):
                 thr = 0.5
             m = add_metrics(name, "temporal", y[t_te], p, thr,
-                            len(tr80) + len(va20))
+                            len(tr80) + len(va20), rule=rule)
             pf = pd.DataFrame({
                 "model": name, "split": "temporal",
                 "id_student": cohort["id_student"].iloc[t_te].to_numpy(),
@@ -349,7 +356,7 @@ def run(ctx, st):
             for f in splits["lomo"]:
                 trf = np.array(f["train"]); tef = np.array(f["test"])
                 tr80, va20 = _holdout(trf, cohort, y, seed + 3)
-                model, thr, p = fit_predict(name, kind, cols[name], tr80, va20,
+                model, thr, p, rule = fit_predict(name, kind, cols[name], tr80, va20,
                                             tef, True)
                 if p is None:
                     ok = False; continue
@@ -359,9 +366,9 @@ def run(ctx, st):
             if not ok or mask.sum() == 0:
                 st.check(f"{name}_lomo", False, "LOMO failed")
                 continue
-            thr, _, _, _ = select_threshold(y[mask], oof[mask], target_prec)
+            thr, _, _, rule = select_threshold(y[mask], oof[mask], target_prec)
             m = add_metrics(name, "lomo", y[mask], oof[mask], thr,
-                            int(n - mask.sum()))
+                            int(n - mask.sum()), rule=rule)
             pf = pd.DataFrame({
                 "model": name, "split": "lomo",
                 "id_student": cohort["id_student"].iloc[mask].to_numpy(),

@@ -98,28 +98,28 @@ def cem(df: pd.DataFrame, config: dict, max_levels: int = 5,
         strata_cols = ["code_module", "code_presentation", "_click_bin",
                        "_active_bin", "_entropy_bin"]
         d["stratum"] = d.groupby(strata_cols, observed=True).ngroup()
-        g = d.groupby("stratum", observed=True)["y_t1"].agg(["size", "sum"])
+        g = d.groupby("stratum", observed=True)["is_pass"].agg(["size", "sum"])
         g["n_t"] = g["sum"].astype(int)
         g["n_c"] = g["size"].astype(int) - g["n_t"]
         keep_ids = g.index[(g["n_t"] > 0) & (g["n_c"] > 0)]
         d["kept"] = d["stratum"].isin(keep_ids)
         matched = d[d["kept"]].copy()
-        n_t = int((matched["y_t1"] == 1).sum())
-        n_c = int((matched["y_t1"] == 0).sum())
+        n_t = int((matched["is_pass"] == 1).sum())
+        n_c = int((matched["is_pass"] == 0).sum())
         # ATT weights: treated 1; control n_t/n_c inside stratum.
-        cnt = matched.groupby("stratum", observed=True)["y_t1"].agg(["size", "sum"])
+        cnt = matched.groupby("stratum", observed=True)["is_pass"].agg(["size", "sum"])
         cnt["n_t"] = cnt["sum"].astype(int)
         cnt["n_c"] = cnt["size"].astype(int) - cnt["n_t"]
         ratio = (cnt["n_t"] / cnt["n_c"]).rename("cw")
         matched = matched.merge(ratio, left_on="stratum", right_index=True, how="left")
-        matched["att_w"] = np.where(matched["y_t1"] == 1, 1.0, matched["cw"])
-        t = matched["y_t1"].to_numpy() == 1
+        matched["att_w"] = np.where(matched["is_pass"] == 1, 1.0, matched["cw"])
+        t = matched["is_pass"].to_numpy() == 1
         w = matched["att_w"].to_numpy()
         bin_worst, bin_rows = _binned_smd(
             matched, t, w, ["_click_bin", "_active_bin", "_entropy_bin"])
         raw_after = {v: smd(matched[v].to_numpy(), w, t) for v in match_vars}
         raw_before = {v: smd(df[v].to_numpy(), np.ones(len(df)),
-                             df["y_t1"].to_numpy() == 1) for v in match_vars}
+                             df["is_pass"].to_numpy() == 1) for v in match_vars}
         attempts.append({
             "level": level, "n_matched": len(matched), "n_treated": n_t,
             "n_control": n_c, "n_strata": int(len(keep_ids)),
@@ -140,15 +140,15 @@ def cem(df: pd.DataFrame, config: dict, max_levels: int = 5,
         "level": level, "attempts": attempts,
         "n_matched": int(len(matched)),
         "n_unmatched": int(len(d) - len(matched)),
-        "n_treated_matched": int((matched["y_t1"] == 1).sum()),
-        "n_control_matched": int((matched["y_t1"] == 0).sum()),
+        "n_treated_matched": int((matched["is_pass"] == 1).sum()),
+        "n_control_matched": int((matched["is_pass"] == 0).sum()),
         "n_strata": int(len(keep_ids)),
         "n_discordant_units": int(len(matched)),
         "binned_max_abs_smd": float(abs(bin_worst)),
         "raw_before": raw_before, "raw_after": raw_after,
         "bin_rows": bin_rows, "match_vars": match_vars,
-        "common_support_treated": float((matched["y_t1"] == 1).sum() /
-                                        max((d["y_t1"] == 1).sum(), 1)),
+        "common_support_treated": float((matched["is_pass"] == 1).sum() /
+                                        max((d["is_pass"] == 1).sum(), 1)),
     }
     return result
 
@@ -181,7 +181,7 @@ def w2_differences(res, metrics, n_boot=1000, seed=42):
         if m not in d.columns:
             continue
         x = d[m].to_numpy(dtype=float)
-        t = (d["y_t1"].to_numpy() == 1)
+        t = (d["is_pass"].to_numpy() == 1)
         w = d["att_w"].to_numpy(dtype=float)
         mt, mc = _wmean(x[t], w[t]), _wmean(x[~t], w[~t])
         diffs = []

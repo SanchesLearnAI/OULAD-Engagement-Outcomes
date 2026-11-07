@@ -70,7 +70,9 @@ def build_splits(master: pd.DataFrame, config: dict, seed: int):
     splits = {
         "schema_version": "1.0",
         "cohort": "T1",
-        "target": "Pass/Distinction=1, Fail=0; Withdrawn excluded",
+        "target": ("Fail=1, Pass/Distinction=0; Withdrawn excluded"
+                   if config.get("cohort", {}).get("positive_class", "fail") == "fail"
+                   else "Pass/Distinction=1, Fail=0; Withdrawn excluded"),
         "n": int(n),
         "cohort_keys_sha256": _keys_hash(cohort),
         "seed": int(seed),

@@ -16,15 +16,15 @@ def run(ctx, st):
     master = read_master(ctx)
     f28 = read_features(ctx, 28)
     f56 = read_features(ctx, 56)
-    t1 = master[master["y_t1"].notna()][KEY + ["y_t1", "final_result"]]
+    t1 = master[master["is_pass"].notna()][KEY + ["is_pass", "final_result"]]
     df = f28.merge(t1, on=KEY, how="inner").reset_index(drop=True)
     # W2/delta features come from cutoff 56; matching variables stay W1-only.
     w2cols = [c for c in f56.columns if c.startswith(("w2_", "d_", "accel_"))]
     df = df.merge(f56[KEY + w2cols], on=KEY, how="left", validate="one_to_one")
 
     st.metric("matching_cohort", {"n_t1": int(len(df)),
-                                  "n_pass": int((df["y_t1"] == 1).sum()),
-                                  "n_fail": int((df["y_t1"] == 0).sum())})
+                                  "n_pass": int((df["is_pass"] == 1).sum()),
+                                  "n_fail": int((df["is_pass"] == 0).sum())})
     st.check("matching_vars_are_w1", all(c.startswith("w1_") for c in MATCH_VARS),
              f"matching variables={MATCH_VARS}")
     st.check("no_post_cutoff_matching_vars",
@@ -86,13 +86,13 @@ def run(ctx, st):
 
     with st.step("matched_strata"):
         matched = res["matched"].copy()
-        cols = KEY + ["stratum", "att_w", "y_t1", "final_result"] + MATCH_VARS
+        cols = KEY + ["stratum", "att_w", "is_pass", "final_result"] + MATCH_VARS
         mp = ctx.run_dir / "artifacts" / "matched_strata.parquet"
         matched[cols].to_parquet(mp, index=False)
         st.artifact(mp, rows=len(matched), cols=len(cols),
                     message="matched strata with ATT weights")
         g = matched.groupby("stratum", observed=True).agg(
-            n=("y_t1", "size"), n_pass=("y_t1", "sum"),
+            n=("is_pass", "size"), n_pass=("is_pass", "sum"),
             mean_w1_clicks=("w1_clicks_total", "mean"),
             mean_w1_active_days=("w1_active_days", "mean")).reset_index()
         g["n_fail"] = g["n"] - g["n_pass"]
@@ -123,8 +123,8 @@ def run(ctx, st):
             hi = m["d_clicks"] > cut
             lo = m["d_clicks"] <= cut
             if hi.sum() and lo.sum():
-                p_hi = float(m.loc[hi, "y_t1"].mean())
-                p_lo = float(m.loc[lo, "y_t1"].mean())
+                p_hi = float(m.loc[hi, "is_pass"].mean())
+                p_lo = float(m.loc[lo, "is_pass"].mean())
                 if p_lo > 0:
                     rr = p_hi / p_lo
                     ev = e_value_rr(rr)
@@ -135,7 +135,7 @@ def run(ctx, st):
     with st.step("trajectory_divergence"):
         # Descriptive weekly trajectories inside the matched strata.  W1
         # matching is baseline; weeks 0-8 are shown to locate divergence.
-        matched = res["matched"][KEY + ["stratum", "att_w", "y_t1"]].copy()
+        matched = res["matched"][KEY + ["stratum", "att_w", "is_pass"]].copy()
         vle = read_vle(ctx)
         v = vle[[*KEY, "date", "sum_click"]].copy()
         v = v[v["date"] >= 0]
@@ -159,7 +159,7 @@ def run(ctx, st):
             i = sidx[s]
             for yv, sm, swm, ssm in ((1, st_t, sw_t, ss_t),
                                      (0, st_c, sw_c, ss_c)):
-                gg = g[g["y_t1"] == yv]
+                gg = g[g["is_pass"] == yv]
                 for w in range(W):
                     gw = gg[gg["week"] == w]
                     sm[i, w] = float((gw["att_w"] * gw["log_clicks"]).sum())
@@ -182,8 +182,8 @@ def run(ctx, st):
             boot_s[b] = a - c
         rows = []
         for w in range(W):
-            gt = grid[(grid["week"] == w) & (grid["y_t1"] == 1)]
-            gc = grid[(grid["week"] == w) & (grid["y_t1"] == 0)]
+            gt = grid[(grid["week"] == w) & (grid["is_pass"] == 1)]
+            gc = grid[(grid["week"] == w) & (grid["is_pass"] == 0)]
             mt = float((gt["att_w"] * gt["log_clicks"]).sum() / max(gt["att_w"].sum(), 1e-9))
             mc = float((gc["att_w"] * gc["log_clicks"]).sum() / max(gc["att_w"].sum(), 1e-9))
             diff = mt - mc

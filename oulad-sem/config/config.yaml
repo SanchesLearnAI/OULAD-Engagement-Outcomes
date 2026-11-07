@@ -16,6 +16,7 @@ paths:
 
 cohort:
   target: T1                   # T1 | T2 | T3
+  positive_class: fail         # T1: Fail=1, Pass/Distinction=0 (early-warning direction)
   exclude_withdrawn: true      # T1: Pass/Distinction vs Fail, Withdrawn excluded
   at_risk_at_cutoff: false     # main cohort keeps all T1
   at_risk_sensitivity: true    # at-risk filter is a sensitivity only

@@ -1,8 +1,9 @@
 # OULAD — Same Engagement, Different Outcomes
 
 Group 9 course project. The unit is an enrolment (`code_module`, `code_presentation`,
-`id_student`). The primary target is Pass/Distinction vs Fail, with Withdrawn excluded
-(T1) and analysed separately in T3 / competing risks.
+`id_student`). The primary target T1 is Fail (positive, 1) vs Pass/Distinction (0), with
+Withdrawn excluded and analysed separately in T3 / competing risks. PR-AUC is read against
+the Fail prevalence (no-skill value).
 
 ## Data
 
@@ -23,7 +24,7 @@ The archive must yield seven CSVs: `courses.csv`, `assessments.csv`, `vle.csv`,
 ## Environment
 
 Python 3.10+; the recorded environment is in `REQUIREMENTS.lock` and
-`runs/run-20261104T045841Z-4f3088/env.json`. Core dependencies: pandas, numpy, scikit-learn,
+`runs/run-20261107T173321Z-4deefb/env.json`. Core dependencies: pandas, numpy, scikit-learn,
 scipy, pyyaml, jsonschema, pyarrow, matplotlib, seaborn, statsmodels.
 `lifelines` is optional; cause-specific Cox models use `statsmodels`.
 

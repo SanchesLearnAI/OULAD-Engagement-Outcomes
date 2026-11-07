@@ -120,10 +120,12 @@ def run(ctx, st):
     # Matching-family effects on W2 click change.
     f56 = read_features(ctx, 56)
     w2cols = [c for c in f56.columns if c.startswith(("w2_", "d_", "accel_"))]
-    d = master[master["y_t1"].notna()][KEY + ["y_t1"]].merge(
+    d = master[master["y_t1"].notna()][KEY + ["y_t1", "is_pass"]].merge(
         ftab[(28, "exclude")], on=KEY, how="left", validate="one_to_one")
     d = d.merge(f56[KEY + w2cols], on=KEY, how="left", validate="one_to_one")
-    d["y"] = d["y_t1"].astype(int)
+    # Matching estimands are Pass/Distinction minus Fail, independent of the
+    # predictive label direction, so the treated group is is_pass == 1.
+    d["y"] = d["is_pass"].astype(int)
     match_rows = []
     res = cem(d, cfg.data)
     wd = w2_differences(res, ["d_clicks"], n_boot=200, seed=seed)

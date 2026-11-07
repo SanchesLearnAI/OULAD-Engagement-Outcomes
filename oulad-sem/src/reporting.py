@@ -126,7 +126,7 @@ def build_latex(ctx) -> str:
         n_t1 = n_passdist + int(s01_counts.get("Fail", 0))
         n_fail = int(s01_counts.get("Fail", 0))
         n_withdrawn = int(s01_counts.get("Withdrawn", 0))
-        base_t1 = n_passdist / max(n_t1, 1)
+        base_t1 = n_fail / max(n_t1, 1)  # positive (Fail) share
     else:
         n_total = int(c28["n_total"]) if c28 is not None else 0
         n_t1 = int(c28["n_t1"]) if c28 is not None else 0
@@ -162,9 +162,19 @@ def build_latex(ctx) -> str:
                         ("f1", "F1"), ("brier", "Brier"),
                         ("calibration_slope", "Calibration slope")]:
         rows.append([lab] + [f(_mv(models, m, "main_test", metric)) for m in MODELS])
+    main_rows = (models[models["split"] == "main_test"] if len(models) else models)
+    ref_ns = (float(main_rows["no_skill_pr_auc"].iloc[0])
+              if len(main_rows) and "no_skill_pr_auc" in main_rows else float("nan"))
+    ref_f1 = (float(main_rows["all_positive_f1"].iloc[0])
+              if len(main_rows) and "all_positive_f1" in main_rows else float("nan"))
+    thr_rules = (sorted(main_rows["threshold_rule"].dropna().astype(str).unique())
+                 if len(main_rows) and "threshold_rule" in main_rows else [])
     model_table = _table(
         ["Metric"] + MODELS, rows, "l" + "c" * len(MODELS),
-        "Main held-out test (grouped split). M4 contains scores and is an upper bound only.",
+        "Main held-out test (grouped split), Fail is the positive class. Reference points: "
+        f"no-skill PR-AUC {f(ref_ns)}; F1 of predicting every enrolment as Fail {f(ref_f1)}. "
+        "Threshold rule used: " + (_tex(", ".join(thr_rules)) if thr_rules else "--")
+        + ". M4 contains scores and is an upper bound only.",
         "tab:models")
 
     # External validation table.
@@ -207,7 +217,7 @@ def build_latex(ctx) -> str:
         "observed by cutoff c; the columns are descriptive, not a fixed-size partition. At-risk filtering "
         "is a sensitivity analysis, not the main cohort.")
     flow_table = _table(
-        ["Cutoff", "Enrolments", "T1 n", "T1 base",
+        ["Cutoff", "Enrolments", "T1 n", "T1 Fail rate",
          "T3 Pass/Dist", "T3 Fail", "T3 Withdrawn at c"],
         flow_rows, "rcccccc", flow_caption,
         "tab:cohort", size="\\footnotesize\\setlength{\\tabcolsep}{4pt}")
@@ -690,9 +700,10 @@ artefact, not the final full-data submission. Numbers will change in the full ru
 
     parts.append(r"\section{Problem Formulation}")
     parts.append(
-        "Let $i$ index an enrolment. The label is $y_i \\in \\{\\text{Pass/Distinction}, "
-        "\\text{Fail}\\}$ for the primary target T1; Withdrawn enrolments are excluded from T1 "
-        "and analysed separately. T2 folds Withdrawn into the negative class and T3 is the "
+        "Let $i$ index an enrolment. For the primary target T1, $y_i=1$ if the enrolment ends "
+        "in Fail and $y_i=0$ if it ends in Pass or Distinction; Withdrawn enrolments are "
+        "excluded from T1 and analysed separately. Fail is the positive class because the task "
+        "is early warning. T2 counts Fail or Withdrawn as positive and T3 is the "
         "three-class outcome (Pass/Distinction, Fail, Withdrawn). For a cutoff $c$ (days from "
         "course start), the feature vector $X_i(c)$ may use only VLE clicks with date $<c$ and "
         "assessment submissions with date $<c$. No score, banked-credit flag, final result, or "
@@ -705,9 +716,11 @@ artefact, not the final full-data submission. Numbers will change in the full ru
         "falls back to the fixed 28--55 window and records the fallback. OULAD dates are "
         "relative to presentation start and include negative values; the primary analysis "
         "excludes pre-start clicks, and clipping or a separate pre-start feature is used only "
-        "in sensitivity analyses. The primary metric is PR-AUC because the positive class is "
-        "not rare; ROC-AUC is reported for comparability, and recall is reported at a threshold "
-        "chosen on validation data at precision 0.80. Calibration is assessed with Brier score, "
+        "in sensitivity analyses. The primary metric is PR-AUC for the Fail class, the minority "
+        "of T1, read against its no-skill value (the Fail prevalence); ROC-AUC is reported for "
+        "comparability, and recall is reported at a threshold chosen on validation data at "
+        "precision 0.80, with the rule actually used recorded in the model table. "
+        "Calibration is assessed with Brier score, "
         "calibration slope/intercept, and reliability curves."
     )
     parts.append(
@@ -792,7 +805,7 @@ artefact, not the final full-data submission. Numbers will change in the full ru
     parts.append(r"\section{Experiments}")
     parts.append(r"\subsection{Data, cohort and overlap}")
     parts.append(
-        f"The analysis dataset has {n_total} enrolments; T1 contains {n_t1} with base rate "
+        f"The analysis dataset has {n_total} enrolments; T1 contains {n_t1} with Fail (positive-class) rate "
         f"{pct(base_t1)}, and {n_withdrawn} enrolments are Withdrawn. Table~\\ref{{tab:cohort}} "
         f"shows the cohort at three cutoffs. The W1 click distributions of Pass/Distinction and "
         f"Fail {'overlap substantially but not completely' if (np.isfinite(ov_min) and ov_min >= 0.5) else 'overlap only partially'}: the presentation-weighted histogram-intersection "
@@ -1245,8 +1258,9 @@ def build_readme(ctx) -> str:
     return f"""# OULAD — Same Engagement, Different Outcomes
 
 Group 9 course project. The unit is an enrolment (`code_module`, `code_presentation`,
-`id_student`). The primary target is Pass/Distinction vs Fail, with Withdrawn excluded
-(T1) and analysed separately in T3 / competing risks.
+`id_student`). The primary target T1 is Fail (positive, 1) vs Pass/Distinction (0), with
+Withdrawn excluded and analysed separately in T3 / competing risks. PR-AUC is read against
+the Fail prevalence (no-skill value).
 
 ## Data
 
@@ -1412,7 +1426,7 @@ def build_poster(ctx) -> str:
         n_passdist = counts.get("Pass", 0) + counts.get("Distinction", 0)
         n_t1_p = n_passdist + counts.get("Fail", 0)
         n_withdrawn_p = counts.get("Withdrawn", 0)
-        base_t1_p = n_passdist / max(n_t1_p, 1)
+        base_t1_p = counts.get("Fail", 0) / max(n_t1_p, 1)  # Fail share
     else:
         n_total_p, n_t1_p, n_withdrawn_p, base_t1_p = 0, 0, 0, float("nan")
     incp = t.get("t09_incremental", pd.DataFrame())
@@ -1448,9 +1462,9 @@ def build_poster(ctx) -> str:
                    r"rehearsal run; numbers will change in the full run.}" if draft else "")
     left_extra = (
         r"\block{Cohort definitions}{" "\n"
-        r"\small T1 = Pass/Distinction vs Fail, Withdrawn excluded (n="
-        + f"{n_t1_p:,}" + r"; base rate " + f(100 * base_t1_p, 1) + r"\%). "
-        r"T2 folds Withdrawn into the negative class; T3 keeps three classes. "
+        r"\small T1 = Fail (positive) vs Pass/Distinction, Withdrawn excluded (n="
+        + f"{n_t1_p:,}" + r"; Fail rate " + f(100 * base_t1_p, 1) + r"\%). "
+        r"T2 counts Fail or Withdrawn as positive; T3 keeps three classes. "
         r"The main cohort is not filtered on \texttt{date\_unregistration}; at-risk filtering "
         r"is a sensitivity analysis." "\n"
         r"}" "\n"

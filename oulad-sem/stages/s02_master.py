@@ -31,7 +31,11 @@ def run(ctx, st):
                              "studentAssessment": len(sa), "studentVle": len(vle)})
 
     with st.step("build_master"):
-        master, info = build_master(si, sr, courses, assessments)
+        positive_class = str(cfg["cohort"].get("positive_class", "fail"))
+        master, info = build_master(si, sr, courses, assessments,
+                                    positive_class=positive_class)
+        st.check("positive_class_declared", positive_class in ("fail", "pass"),
+                 f"T1 positive class = {positive_class}")
         master = add_at_risk_flags(master, cutoffs)
         st.metric("master", {
             "rows": int(len(master)),

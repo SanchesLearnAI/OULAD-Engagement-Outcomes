@@ -8,7 +8,14 @@ from .data import KEY
 
 
 def build_master(si: pd.DataFrame, sr: pd.DataFrame, courses: pd.DataFrame,
-                 assessments: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+                 assessments: pd.DataFrame,
+                 positive_class: str = "fail") -> tuple[pd.DataFrame, dict]:
+    """Build the enrolment table.
+
+    ``positive_class`` sets the direction of the predictive labels: ``"fail"``
+    makes Fail the positive class of T1 (and Fail-or-Withdrawn of T2).
+    ``is_pass`` is always Pass/Distinction=1, Fail=0, Withdrawn=NaN.
+    """
     info = {}
     si = si.copy()
     sr = sr.copy()
@@ -38,9 +45,19 @@ def build_master(si: pd.DataFrame, sr: pd.DataFrame, courses: pd.DataFrame,
     m["has_unregistration"] = m["date_unregistration"].notna().astype(int)
 
     fr = m["final_result"]
-    m["y_t1"] = np.where(fr.isin(["Pass", "Distinction"]), 1.0,
-                         np.where(fr == "Fail", 0.0, np.nan))
-    m["y_t2"] = np.where(fr.isin(["Pass", "Distinction"]), 1.0, 0.0)
+    passed = fr.isin(["Pass", "Distinction"])
+    # Group indicator for matching and descriptive contrasts: Pass/Distinction
+    # vs Fail, Withdrawn missing.  Independent of the predictive label direction.
+    m["is_pass"] = np.where(passed, 1.0, np.where(fr == "Fail", 0.0, np.nan))
+    if positive_class not in ("fail", "pass"):
+        raise ValueError(f"positive_class must be 'fail' or 'pass', got {positive_class!r}")
+    if positive_class == "fail":
+        # Early-warning direction: the at-risk outcome is the positive class.
+        m["y_t1"] = 1.0 - m["is_pass"]
+        m["y_t2"] = np.where(passed, 0.0, 1.0)
+    else:
+        m["y_t1"] = m["is_pass"].copy()
+        m["y_t2"] = np.where(passed, 1.0, 0.0)
     m["y_t3"] = np.where(fr.isin(["Pass", "Distinction"]), "Pass",
                          np.where(fr == "Fail", "Fail", "Withdrawn"))
     m["is_repeater"] = (m["num_of_prev_attempts"] > 0).astype(int)

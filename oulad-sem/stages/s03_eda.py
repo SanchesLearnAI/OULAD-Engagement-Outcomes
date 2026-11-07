@@ -16,7 +16,7 @@ def _w1_frame(master, vle, cutoff):
     agg = (v.groupby(KEY, observed=True)
            .agg(w1_clicks=("sum_click", "sum"),
                 w1_active_days=("date", "nunique")).reset_index())
-    out = master[KEY + ["final_result", "y_t1", "y_t2", "is_withdrawn",
+    out = master[KEY + ["final_result", "y_t1", "y_t2", "is_pass", "is_withdrawn",
                         "date_unregistration",
                         f"in_at_risk_c{cutoff}"]].merge(agg, on=KEY, how="left")
     out["w1_clicks"] = out["w1_clicks"].fillna(0)
@@ -84,8 +84,8 @@ def run(ctx, st):
             per = []
             for (mod, pres), g in t1.groupby(["code_module", "code_presentation"],
                                              observed=True):
-                pos = g[g["y_t1"] == 1]["log_clicks"]
-                neg = g[g["y_t1"] == 0]["log_clicks"]
+                pos = g[g["is_pass"] == 1]["log_clicks"]
+                neg = g[g["is_pass"] == 0]["log_clicks"]
                 ov = _overlap(pos, neg)
                 if not np.isnan(ov):
                     per.append((len(pos), len(neg), ov))

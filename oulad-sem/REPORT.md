@@ -13,12 +13,12 @@ Among students with similar first-four-week VLE engagement, which temporal and r
 
 ## Main results
 
-- M0: PR-AUC 0.816, ROC-AUC 0.701, Brier 0.220.
-- M1: PR-AUC 0.827, ROC-AUC 0.724, Brier 0.213.
-- M2: PR-AUC 0.827, ROC-AUC 0.724, Brier 0.213.
-- M3: PR-AUC 0.828, ROC-AUC 0.729, Brier 0.211.
-- M4: PR-AUC 0.843, ROC-AUC 0.744, Brier 0.207.
-- M5: PR-AUC 0.838, ROC-AUC 0.738, Brier 0.204.
+- M0: PR-AUC 0.529, ROC-AUC 0.701, Brier 0.220.
+- M1: PR-AUC 0.564, ROC-AUC 0.724, Brier 0.213.
+- M2: PR-AUC 0.561, ROC-AUC 0.724, Brier 0.213.
+- M3: PR-AUC 0.576, ROC-AUC 0.729, Brier 0.211.
+- M4: PR-AUC 0.581, ROC-AUC 0.744, Brier 0.207.
+- M5: PR-AUC 0.585, ROC-AUC 0.737, Brier 0.203.
 
 M4 includes assessment scores and is an upper bound only.
 
