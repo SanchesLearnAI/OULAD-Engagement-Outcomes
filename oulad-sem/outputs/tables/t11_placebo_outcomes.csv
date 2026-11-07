@@ -1,0 +1,2 @@
+outcome,pr_auc,roc_auc,n_test,positive_rate,note
+num_of_prev_attempts_gt0,0.19919512776811257,0.6573617320777801,4492,0.1191006233303651,diagnostic: behaviour may encode background

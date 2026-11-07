@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.0",
+  "stage": "S07",
+  "run_id": "run-20261104T045841Z-4f3088",
+  "mode": "full",
+  "simulated": false,
+  "status": "pass",
+  "started_at": "2026-11-04T05:00:06.278Z",
+  "finished_at": "2026-11-04T05:04:37.258Z",
+  "duration_ms": 270978,
+  "config_hash": "sha256:1719aea81a6c72eeb4b88626151fc6113f76dea40cf3629b25735231a1003a90",
+  "checks": [
+    {
+      "name": "enough_rows",
+      "status": "ok",
+      "message": "n=27885",
+      "metrics": {}
+    },
+    {
+      "name": "stability_all_k",
+      "status": "ok",
+      "message": "k rows=7 expected=7",
+      "metrics": {}
+    },
+    {
+      "name": "stability_metrics_recorded",
+      "status": "ok",
+      "message": "mean ARI recorded for every k",
+      "metrics": {}
+    },
+    {
+      "name": "k_selection_recorded",
+      "status": "ok",
+      "message": "k=2 selected from k with mean ARI >= 0.6; maximum stability first, silhouette as tie-break",
+      "metrics": {}
+    },
+    {
+      "name": "cluster_outcome_counts",
+      "status": "ok",
+      "message": "crosstab total=27885",
+      "metrics": {}
+    },
+    {
+      "name": "cluster_jaccard",
+      "status": "ok",
+      "message": "min cluster Jaccard=0.810",
+      "metrics": {}
+    }
+  ],
+  "metrics": {
+    "n_all": 32593,
+    "n_clustered": 27885,
+    "excluded_low_activity": 4708,
+    "min_active_days": 1,
+    "n_features": 29,
+    "n_components": 8,
+    "explained_variance_ratio": [
+      0.343,
+      0.1189,
+      0.0672,
+      0.0572,
+      0.0498,
+      0.0413,
+      0.0379,
+      0.0319
+    ],
+    "cumulative": 0.7472,
+    "k_chosen": 2,
+    "mean_ari": 0.9133121630764005,
+    "min_cluster_jaccard": 0.8103121353558926,
+    "silhouette": 0.23490448197632127,
+    "ari_threshold": 0.6,
+    "stable": true,
+    "cluster_sizes": [
+      14173,
+      13712
+    ],
+    "0.0": {
+      "Distinction": 0.0536,
+      "Fail": 0.2965,
+      "Pass": 0.3544,
+      "Withdrawn": 0.2955
+    },
+    "1.0": {
+      "Distinction": 0.1629,
+      "Fail": 0.1557,
+      "Pass": 0.5204,
+      "Withdrawn": 0.161
+    }
+  },
+  "artifacts": [
+    {
+      "path": "outputs/tables/t07_stability.csv",
+      "sha256": "sha256:f1df69956657567bdee5a2b9f4d47b6a2ec2804a5d60db6113a81dcd6e54dc22",
+      "rows": 7,
+      "cols": 11
+    },
+    {
+      "path": "outputs/tables/t07_cluster_outcome.csv",
+      "sha256": "sha256:3c4a7f5338da3e3f397b276935d252f0f972d002f5f95db67624867c64d517d6",
+      "rows": 2,
+      "cols": 10
+    },
+    {
+      "path": "outputs/figures/f07_ari_distribution.png",
+      "sha256": "sha256:95f9d39573ddbb7f351d83b6f4af25c8deca317f7f217b2cf1793a4d46531260"
+    },
+    {
+      "path": "outputs/figures/f07_consensus_matrix.png",
+      "sha256": "sha256:d8ebf5a75336919e13311460e9a3e964d406499aa88bd9fec72806168c704cc0"
+    },
+    {
+      "path": "outputs/figures/f07_cluster_outcome.png",
+      "sha256": "sha256:9797afd325290baabde2bcb251ff04c8a1dbdf4d5c0c2cc477cc1686eaded415"
+    },
+    {
+      "path": "outputs/figures/f07_pca_scatter.png",
+      "sha256": "sha256:225784ed684360a51c5557b92cf6c329bd11c90524066909bbdf2b3bf5601798"
+    },
+    {
+      "path": "outputs/figures/f07_silhouette.png",
+      "sha256": "sha256:0db92f885e462d5f7555b857afe332d01955a332871952e5c1a1bf218eb5b2b5"
+    }
+  ],
+  "warnings": [],
+  "notes": "k=2 selected from k with mean ARI >= 0.6; maximum stability first, silhouette as tie-break",
+  "error": null,
+  "k_reason": "k=2 selected from k with mean ARI >= 0.6; maximum stability first, silhouette as tie-break"
+}

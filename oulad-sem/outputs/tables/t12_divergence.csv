@@ -1,0 +1,2 @@
+metric,divergence_week,definition
+log_clicks,3,first week with diff CI > 0 for two consecutive weeks

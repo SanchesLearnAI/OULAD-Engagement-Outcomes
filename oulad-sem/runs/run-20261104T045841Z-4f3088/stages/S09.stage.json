@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "stage": "S09",
+  "run_id": "run-20261104T045841Z-4f3088",
+  "mode": "full",
+  "simulated": false,
+  "status": "pass",
+  "started_at": "2026-11-04T05:10:17.242Z",
+  "finished_at": "2026-11-04T05:10:59.636Z",
+  "duration_ms": 42392,
+  "config_hash": "sha256:1719aea81a6c72eeb4b88626151fc6113f76dea40cf3629b25735231a1003a90",
+  "checks": [
+    {
+      "name": "cutoff_all_models",
+      "status": "ok",
+      "message": "rows=64 expected=64",
+      "metrics": {}
+    },
+    {
+      "name": "fixed_and_at_risk_separate",
+      "status": "ok",
+      "message": "fixed and at-risk cohorts reported separately",
+      "metrics": {}
+    },
+    {
+      "name": "increment_ci",
+      "status": "ok",
+      "message": "rows=16",
+      "metrics": {}
+    },
+    {
+      "name": "crossfit_complete",
+      "status": "ok",
+      "message": "cross-fitted W1 probabilities present for every row",
+      "metrics": {}
+    },
+    {
+      "name": "crossfit_train_out_of_fold",
+      "status": "ok",
+      "message": "outer-train W1 probabilities come from inner GroupKFold, not the same fit",
+      "metrics": {}
+    },
+    {
+      "name": "b2_failed_or_fixed",
+      "status": "ok",
+      "message": "B2 status=failed_calibration (slope=0.051, Brier=0.304)",
+      "metrics": {}
+    },
+    {
+      "name": "b2_failed_specification",
+      "status": "ok",
+      "message": "B2 offset is a failed specification (calibration slope < 0.5 or Brier > 0.25); not evidence about sequential updating",
+      "metrics": {}
+    },
+    {
+      "name": "incremental_ci_present",
+      "status": "ok",
+      "message": "rows=21",
+      "metrics": {}
+    },
+    {
+      "name": "honest_increment",
+      "status": "ok",
+      "message": "B1/B2 are reported even when they add nothing; CI is the evidence",
+      "metrics": {}
+    }
+  ],
+  "metrics": {
+    "status": "failed_calibration",
+    "used_constant": true,
+    "calibration_slope": 0.05089819666078268,
+    "brier": 0.3040961709706144,
+    "W1_only_M3": {
+      "pr_auc": 0.8282851913945721,
+      "delta_vs_W1": 0.0,
+      "ci": [
+        0.0,
+        0.0
+      ],
+      "brier": 0.21072174760299694,
+      "calibration_slope": 0.9901860567292525,
+      "status": "ok"
+    },
+    "W2_only": {
+      "pr_auc": 0.8607256719763612,
+      "delta_vs_W1": 0.032440480581789055,
+      "ci": [
+        0.01994688888954964,
+        0.04383196981694688
+      ],
+      "brier": 0.19341967020345563,
+      "calibration_slope": 0.9916061708994997,
+      "status": "ok"
+    },
+    "All_features_c56": {
+      "pr_auc": 0.8618199003781604,
+      "delta_vs_W1": 0.033534708983588235,
+      "ci": [
+        0.024588074969465946,
+        0.042386321546256225
+      ],
+      "brier": 0.18940857722324184,
+      "calibration_slope": 1.0127835664008173,
+      "status": "ok"
+    },
+    "B1_stacking": {
+      "pr_auc": 0.863168545334999,
+      "delta_vs_W1": 0.03488335394042685,
+      "ci": [
+        0.023475417949971347,
+        0.045661693635872476
+      ],
+      "brier": 0.19054237311064684,
+      "calibration_slope": 1.0077750485603119,
+      "status": "ok"
+    },
+    "B2_offset": {
+      "pr_auc": 0.7591214139525695,
+      "delta_vs_W1": -0.06916377744200264,
+      "ci": [
+        -0.08309917081519803,
+        -0.05394678269508318
+      ],
+      "brier": 0.3040961709706144,
+      "calibration_slope": 0.05089819666078268,
+      "status": "failed_calibration"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "outputs/tables/t09_cutoff_metrics.csv",
+      "sha256": "sha256:360f10af8c7f42517cc5f9a1ebb021e1c089b1d7939c81c83a04359355b5b93e",
+      "rows": 64,
+      "cols": 13
+    },
+    {
+      "path": "outputs/tables/t09_incremental.csv",
+      "sha256": "sha256:4f625bef37a6888453b89bd61879f3953c465348081db172fcb47468162183b7",
+      "rows": 21,
+      "cols": 13
+    },
+    {
+      "path": "outputs/figures/f09_cutoff_curve.png",
+      "sha256": "sha256:bcfb955bb60b07ce47a256aa4fe7100f13c3f6eaa18f5bb2a3ef22ad44d80826"
+    }
+  ],
+  "warnings": [],
+  "notes": "",
+  "error": null
+}

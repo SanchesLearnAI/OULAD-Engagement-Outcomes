@@ -1,0 +1,8 @@
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/statsmodels/genmod/families/links.py:198: RuntimeWarning: overflow encountered in exp
+  t = np.exp(-z)
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/statsmodels/genmod/families/links.py:198: RuntimeWarning: overflow encountered in exp
+  t = np.exp(-z)
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/statsmodels/genmod/families/links.py:198: RuntimeWarning: overflow encountered in exp
+  t = np.exp(-z)
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/statsmodels/genmod/families/links.py:198: RuntimeWarning: overflow encountered in exp
+  t = np.exp(-z)

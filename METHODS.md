@@ -8,6 +8,14 @@ outputs remain outside Git.
 
 ## Revised research question and implementation status
 
+A subsequent [TMA-centered two-week study](results/tma_two_week_20261103/README.md)
+uses days -13 through 0 as the pre-deadline baseline and days +1 through +14
+as the post-deadline behavior window. Its primary pairs match **post-deadline
+clicks** within the same module presentation. The [frozen protocol](research/TMA_TWO_WEEK_PROTOCOL_20261103.md)
+documents the cohort, balance checks, outcome-blind clusters, and model
+ablations. The material below records the earlier +21/+28-day and course-day
+0–27 methods.
+
 The target comparison is among students in the same module presentation with
 similar VLE click volume at 21 or 28 days after the first positive-weight TMA
 deadline: which **post-deadline** submission, activity-timing, and resource-use
