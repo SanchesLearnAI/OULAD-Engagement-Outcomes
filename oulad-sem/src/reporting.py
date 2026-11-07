@@ -141,6 +141,18 @@ def build_latex(ctx) -> str:
     s06 = stages.get("S06", {}).get("metrics", {})
     s07 = stages.get("S07", {}).get("metrics", {})
     s11 = stages.get("S11", {}).get("metrics", {})
+    s05 = stages.get("S05", {}).get("metrics", {})
+    leak_students = s05.get("students_in_train_and_test")
+    leak_share = s05.get("test_row_overlap_share")
+    leak_known = leak_students is not None and leak_share is not None
+    if draft:
+        leak_txt = ("in this rehearsal all grouped splits have zero student overlap")
+    elif leak_known:
+        leak_txt = (f"here a naive row-level 60/20/20 split would place {int(leak_students)} "
+                    f"students in both train and test ({pct(leak_share)} of test rows), "
+                    "while every grouped split has zero student overlap")
+    else:
+        leak_txt = "every grouped split has zero student overlap"
 
     # Model metrics table.
     rows = []
@@ -733,8 +745,8 @@ artefact, not the final full-data submission. Numbers will change in the full ru
         "forward-temporal split (2013B/2013J train, 2014B/2014J test), and a leave-one-module-out "
         "split are also reported. Temporal and LOMO training rows are further restricted so that "
         "no student appears on both sides of a split. In the full-data design, the row-level "
-        "control quantifies the leakage that a naive random split would create; in this "
-        "rehearsal all grouped splits have zero student overlap. CEM uses module $\\times$ "
+        "control quantifies the leakage that a naive random split would create; "
+        + leak_txt + ". CEM uses module $\\times$ "
         "presentation as exact strata and coarsens W1 clicks, "
         "active days, and activity entropy within presentation. Strata without both outcomes are "
         "discarded; treated units receive weight 1 and controls receive $n_t/n_c$ within stratum. "
@@ -884,7 +896,8 @@ artefact, not the final full-data submission. Numbers will change in the full ru
     ctx_note = (
         f"Context alone is close to chance in this run (PR-AUC {f(ctx_alone_pr)} vs no-skill "
         f"{f(no_skill)}; ROC-AUC {f(ctx_alone_roc)}; calibration slope "
-        f"{f(ctx_cal.get('M-1_context', float('nan')))}), so this rehearsal provides little "
+        f"{f(ctx_cal.get('M-1_context', float('nan')))}), so this "
+        f"{'rehearsal' if draft else 'run'} provides little "
         f"context signal for the click features to proxy. "
         if ctx_at_chance else
         f"Context alone reaches PR-AUC {f(ctx_alone_pr)} and ROC-AUC {f(ctx_alone_roc)}. ")
@@ -1064,8 +1077,12 @@ artefact, not the final full-data submission. Numbers will change in the full ru
         "sensitive to the operationalisation of engagement. "
         "The most defensible conclusions are negative and methodological. First, row-level "
         "splitting is not acceptable; grouping by student changes the evaluation and removes a "
-        "design-level leak; this rehearsal has zero student overlap, so it does not estimate "
-        "the size of that leak. Second, Withdrawn cannot be treated as a missing label: the click stream "
+        "design-level leak"
+        + ("; this rehearsal has zero student overlap, so it does not estimate "
+           "the size of that leak. " if draft else
+           (f": a row-level split would share {int(leak_students)} students "
+            f"({pct(leak_share)} of test rows) between train and test. " if leak_known else ". "))
+        + "Second, Withdrawn cannot be treated as a missing label: the click stream "
         "does not stop at unregistration, and the three outcomes have different mechanisms. "
         "Third, a richer model is not automatically better; calibration and external validation "
         "matter more than a small PR-AUC gain on a random split."
