@@ -101,6 +101,11 @@ def _zip(ctx, report_pdf, poster_pdf, readme, report_md, req_lock, data_doc):
             p = root / rel
             if p.exists():
                 z.write(p, rel)
+        # The logger and validator read their schemas from docs/contracts/;
+        # without it an unpacked ZIP cannot start a run.
+        for p in sorted((root / "docs" / "contracts").glob("*")):
+            if p.is_file():
+                z.write(p, str(p.relative_to(root)))
         for d in ("src", "stages", "scripts", "tests"):
             for p in (root / d).rglob("*.py"):
                 if "__pycache__" in str(p) or p.name.startswith("inspect_raw"):
@@ -274,6 +279,9 @@ def run(ctx, st):
         st.check("zip_has_status_final",
                  any(n == f"runs/{ctx.run_id}/STATUS.final.json" for n in names),
                  "STATUS.final.json in ZIP")
+        st.check("zip_has_contracts",
+                 "docs/contracts/log_event.schema.json" in names,
+                 "log-event schema in ZIP so the unpacked code can run")
         st.check("zip_no_stale_hazard",
                  not any(n.endswith("t10_hazard_ratios.csv") for n in names),
                  "stale static-Cox hazard table is not inside the ZIP")

@@ -3,10 +3,11 @@ from pathlib import Path
 import jsonschema
 
 ROOT = Path(__file__).resolve().parents[1]
+SCHEMA = ROOT / "docs" / "contracts" / "log_event.schema.json"
 
 
 def test_event_schema_accepts_valid_event():
-    schema = json.loads((ROOT / "02_contracts" / "log_event.schema.json").read_text())
+    schema = json.loads(SCHEMA.read_text())
     event = {
         "schema_version": "1.0", "seq": 1,
         "ts": "2026-11-04T00:00:00.000Z",
@@ -19,7 +20,7 @@ def test_event_schema_accepts_valid_event():
 
 def test_event_schema_rejects_bad_status():
     import pytest
-    schema = json.loads((ROOT / "02_contracts" / "log_event.schema.json").read_text())
+    schema = json.loads(SCHEMA.read_text())
     event = {
         "schema_version": "1.0", "seq": 1,
         "ts": "2026-11-04T00:00:00.000Z",

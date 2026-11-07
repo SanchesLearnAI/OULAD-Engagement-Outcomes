@@ -1273,7 +1273,7 @@ pip install -r REQUIREMENTS.lock
 
 ## Frozen configuration
 
-`config/config.yaml` is copied from `02_contracts/config.example.yaml`; its sha256 is in
+`config/config.yaml` is copied from `docs/contracts/config.example.yaml`; its sha256 is in
 `config/config.sha256`. Do not edit it in place. Any change requires `CHANGE_REQUEST.md`
 and a new `run_id`.
 

@@ -24,6 +24,11 @@ def project_root() -> Path:
     return Path(os.environ.get("OULAD_ROOT", Path(__file__).resolve().parents[1])).resolve()
 
 
+def contracts_dir() -> Path:
+    """Directory holding the JSON schemas and the example config."""
+    return project_root() / "docs" / "contracts"
+
+
 @dataclass
 class Config:
     data: dict

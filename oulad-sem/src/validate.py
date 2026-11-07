@@ -7,7 +7,7 @@ from pathlib import Path
 
 import jsonschema
 
-from .config import project_root, sha256_file
+from .config import contracts_dir, project_root, sha256_file
 from .logging_utils import STAGES
 from .reporting import citation_scan, load_tables
 
@@ -24,7 +24,7 @@ def validate_run(run_id: str, require_complete: bool = True):
                    if root_status_path.exists() else {})
     is_current = root_status.get("run_id") == run_id
 
-    schema = json.loads((root / "02_contracts" / "log_event.schema.json").read_text())
+    schema = json.loads((contracts_dir() / "log_event.schema.json").read_text())
     lines = (run_dir / "run.jsonl").read_text().splitlines()
     events = []
     last_seq = 0

@@ -1,7 +1,7 @@
 """Append-only event log, stage summaries, handoffs and atomic STATUS updates.
 
 The contract is EXECUTION_SIMULATION.md sections 3 and 4.  Every event is
-validated against 02_contracts/log_event.schema.json before it is written.
+validated against docs/contracts/log_event.schema.json before it is written.
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from pathlib import Path
 
 import jsonschema
 
-from .config import Config, Paths, project_root, sha256_file
+from .config import Config, Paths, contracts_dir, project_root, sha256_file
 
 STAGES = [f"S{i:02d}" for i in range(13)]
 NEXT_STAGE = {s: (STAGES[i + 1] if i + 1 < len(STAGES) else None)
@@ -85,7 +85,7 @@ class RunContext:
         self.run_dir = self.paths.run_dir
         self.jsonl = self.run_dir / "run.jsonl"
         self.schema = json.loads(
-            (project_root() / "02_contracts" / "log_event.schema.json").read_text()
+            (contracts_dir() / "log_event.schema.json").read_text()
         )
         self.seq = self._load_seq()
         self._fh = open(self.jsonl, "a", encoding="utf-8")
