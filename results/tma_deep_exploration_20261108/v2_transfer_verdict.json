@@ -1,0 +1,28 @@
+{
+  "primary_model": "M2",
+  "temporal_ap": 0.6160112222480112,
+  "temporal_auc": 0.7539347155255048,
+  "lomo_folds": 6,
+  "lomo_ap_mean": 0.6202056318270951,
+  "lomo_ap_min": 0.44317570019458924,
+  "lomo_ap_max": 0.6800120222555409,
+  "weakest_module_by_ap": "AAA",
+  "strongest_module_by_ap": "EEE",
+  "weakest_module_by_lift": "CCC",
+  "lomo_ap_lift_mean": 0.3403830581594514,
+  "note_on_raw_ap": "Fold AP is not comparable across folds because the Fail share differs; ap_lift_over_no_skill is the comparable quantity.",
+  "caveat": "Temporal test mixes two effects: it trains on 2013 and tests on 2014, and because CCC has no 2013 presentation, 2014 CCC records are also cross-module.",
+  "smallest_fold": [
+    {
+      "fold": "AAA",
+      "eligible": 696.0,
+      "average_precision": 0.44317570019458924
+    }
+  ],
+  "models": [
+    "M0",
+    "M1",
+    "M2",
+    "M3"
+  ]
+}

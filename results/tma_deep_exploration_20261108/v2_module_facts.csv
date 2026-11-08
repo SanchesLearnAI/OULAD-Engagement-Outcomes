@@ -1,0 +1,7 @@
+code_module,presentations,due_day_median,eligible,years,has_2013,note
+AAA,2,19.0,696,"2013,2014",True,
+BBB,4,19.0,6260,"2013,2014",True,
+CCC,2,32.0,3271,2014,False,"no 2013 presentation, so the temporal test is also cross-module"
+DDD,4,25.0,5045,"2013,2014",True,
+EEE,3,33.0,2485,"2013,2014",True,
+FFF,4,21.5,6368,"2013,2014",True,
