@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.config import load_config, project_root  # noqa: E402
 from src.tma import daily, pairing  # noqa: E402
 from src.tma.anchor import binary_cohort  # noqa: E402
+from src.tma.stats import bh  # noqa: E402
 
 KEY = ["code_module", "code_presentation", "id_student"]
 BATCH = KEY[:2]
@@ -43,20 +44,6 @@ CONTENT_CATS = {"oucontent", "resource", "subpage", "url", "page", "ouwiki",
 def sha256(path: Path) -> str:
     import hashlib
     return hashlib.file_digest(path.open("rb"), "sha256").hexdigest()
-
-
-def bh(p: np.ndarray) -> np.ndarray:
-    """Benjamini-Hochberg adjusted p-values."""
-    p = np.asarray(p, dtype=float)
-    n = len(p)
-    order = np.argsort(p)
-    adj = np.empty(n)
-    running = 1.0
-    for rank, i in enumerate(order[::-1]):
-        k = n - rank
-        running = min(running, p[i] * n / k)
-        adj[i] = running
-    return np.clip(adj, 0, 1)
 
 
 # ---------------------------------------------------------------- E1 / E2 / E3

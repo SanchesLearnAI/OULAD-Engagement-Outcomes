@@ -9,6 +9,6 @@
   "significant_bh": 1,
   "median_mde": 0.032276580488256795,
   "largest_gap": 0.05099283158190515,
-  "interpretation": "Some observed subgroup gaps are larger than the minimum detectable effect, but none survives BH correction: treat them as hypotheses for a larger sample, not as established disparities.",
+  "interpretation": "1 of 10 contrasts survive BH correction: gender (all_features, gap +0.051, BH p 0.025). 6 contrasts have a gap smaller than the minimum detectable effect, so those are undetected rather than absent.",
   "caveat": "MDE uses the Hanley-McNeil AUC standard error with the pooled Fail share; it is an approximation, not a substitute for a proper equivalence test."
 }

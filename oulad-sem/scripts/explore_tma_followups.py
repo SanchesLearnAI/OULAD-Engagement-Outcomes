@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import load_config, project_root  # noqa: E402
 from src.tma import daily, modeling, pairing  # noqa: E402
+from src.tma.stats import bh  # noqa: E402
 from src.tma.anchor import binary_cohort  # noqa: E402
 
 KEY = ["code_module", "code_presentation", "id_student"]
@@ -36,19 +37,6 @@ CATEGORY = {
     "quiz": "assess", "externalquiz": "assess", "questionnaire": "assess",
     "forumng": "forum",
 }
-
-
-def bh(p: np.ndarray) -> np.ndarray:
-    p = np.asarray(p, dtype=float)
-    n = len(p)
-    order = np.argsort(p)
-    adj = np.empty(n)
-    running = 1.0
-    for rank, i in enumerate(order[::-1]):
-        k = n - rank
-        running = min(running, p[i] * n / k)
-        adj[i] = running
-    return np.clip(adj, 0, 1)
 
 
 def events_with_site(root: Path, cohort: pd.DataFrame, post_days: int) -> pd.DataFrame:

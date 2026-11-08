@@ -25,23 +25,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import load_config, project_root  # noqa: E402
 from src.tma import daily, pairing  # noqa: E402
+from src.tma.stats import bh  # noqa: E402
 from src.tma.anchor import binary_cohort  # noqa: E402
 
 KEY = ["code_module", "code_presentation", "id_student"]
 BATCH = KEY[:2]
-
-
-def bh(p: np.ndarray) -> np.ndarray:
-    p = np.asarray(p, dtype=float)
-    n = len(p)
-    order = np.argsort(p)
-    adj = np.empty(n)
-    running = 1.0
-    for rank, i in enumerate(order[::-1]):
-        k = n - rank
-        running = min(running, p[i] * n / k)
-        adj[i] = running
-    return np.clip(adj, 0, 1)
 
 
 def symbols_for(post: np.ndarray) -> np.ndarray:

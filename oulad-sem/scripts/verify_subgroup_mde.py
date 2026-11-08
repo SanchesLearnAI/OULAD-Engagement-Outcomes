@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import load_config, project_root  # noqa: E402
 from src.tma import modeling  # noqa: E402
+from src.tma.stats import bh  # noqa: E402
 
 ATTRIBUTES = {
     "gender": None,
@@ -33,19 +34,6 @@ ATTRIBUTES = {
 }
 BEHAVIOUR = "behaviour_only"
 ALL = "all_features"
-
-
-def bh(p: np.ndarray) -> np.ndarray:
-    p = np.asarray(p, dtype=float)
-    n = len(p)
-    order = np.argsort(p)
-    adj = np.empty(n)
-    running = 1.0
-    for rank, i in enumerate(order[::-1]):
-        k = n - rank
-        running = min(running, p[i] * n / k)
-        adj[i] = running
-    return np.clip(adj, 0, 1)
 
 
 def mde_auc(n1: int, n2: int, prevalence: float, alpha: float = 0.05,
@@ -85,6 +73,25 @@ def collapse(series: pd.Series, how: str | None) -> pd.Series:
                    "Post Graduate Qualification": "he_or_above"}
         return series.astype(str).map(mapping).fillna("other")
     return series.astype(str)
+
+
+def _interpret(table: pd.DataFrame) -> str:
+    """One sentence that matches the table, including the surviving contrast."""
+    if not len(table):
+        return "no contrasts computed"
+    survivors = table[table["reject_bh_0_05"]]
+    below_mde = table[~table["gap_exceeds_mde"]]
+    if len(survivors):
+        names = ", ".join(f"{r['attribute']} ({r['feature_set']}, gap "
+                          f"{r['auc_gap']:+.3f}, BH p {r['p_bh']:.3f})"
+                          for _, r in survivors.iterrows())
+        return (f"{len(survivors)} of {len(table)} contrasts survive BH correction: "
+                f"{names}. {len(below_mde)} contrasts have a gap smaller than the "
+                f"minimum detectable effect, so those are undetected rather than "
+                f"absent.")
+    return (f"No contrast survives BH correction; {len(below_mde)} of {len(table)} "
+            f"have a gap below the minimum detectable effect, which means "
+            f"undetected rather than absent.")
 
 
 def main() -> None:
@@ -176,8 +183,6 @@ def main() -> None:
 
     # Pairwise contrasts inside each attribute: a subgroup bootstrap interval
     # for the AUC gap, next to the minimum detectable effect.
-    subgroup_index = {level: np.where(mask)[0] for level, mask in
-                      ((level, mask) for level, mask in [])}
     contrast_rows = []
     for attribute, how in ATTRIBUTES.items():
         if attribute not in frame:
@@ -236,11 +241,7 @@ def main() -> None:
         "significant_bh": int(table["reject_bh_0_05"].sum()) if len(table) else 0,
         "median_mde": float(table["mde_0.80"].median()) if len(table) else None,
         "largest_gap": (float(table["abs_gap"].max()) if len(table) else None),
-        "interpretation": (
-            "Some observed subgroup gaps are larger than the minimum detectable effect, "
-            "but none survives BH correction: treat them as hypotheses for a larger "
-            "sample, not as established disparities."
-            if len(table) else "no contrasts computed"),
+        "interpretation": _interpret(table),
         "caveat": ("MDE uses the Hanley-McNeil AUC standard error with the pooled Fail "
                    "share; it is an approximation, not a substitute for a proper "
                    "equivalence test."),
