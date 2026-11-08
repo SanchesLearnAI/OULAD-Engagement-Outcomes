@@ -400,7 +400,8 @@ not the final submission.}}
             ["Model", "Features", "Fail AP", "No-skill AP", "ROC-AUC", "Brier",
              "Cal. slope", "F1"],
             rows, "lrrrrrrrr",
-            "Model ladder on the grouped main test split (five-seed mean). M0 uses pre- and "
+            "Model ladder on the grouped main test split (single holdout at the configured "
+            "seed). M0 uses pre- and "
             "post-deadline volume plus submission status; M1 adds post-deadline timing; M2 "
             "adds submission distance and is the primary model; M3 adds resource composition; "
             "M4 adds the first-TMA score and is a retrospective upper bound only. Thresholds "
@@ -466,7 +467,8 @@ not the final submission.}}
     if len(main_models):
         parts.append(_fig("f08_model_ladder.png",
                           "Model ladder on the grouped main test split; whiskers span the "
-                          "five seeds and the dotted line is the no-skill level.",
+                          "five grouped folds of the cross-validation arm and the dotted line "
+                          "is the no-skill level.",
                           "fig:ladder", width="0.72\\linewidth"))
 
     # --------------------------------------------------------------- splits

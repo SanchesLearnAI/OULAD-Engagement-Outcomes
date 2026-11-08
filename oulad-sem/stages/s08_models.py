@@ -168,14 +168,21 @@ def run(ctx, st):
                              f"published={REFERENCE[model]:.6f}")
 
     with st.step("figure"):
-        main = pd.read_csv(ctx.paths.tables_dir / "t08_model_metrics.csv")
-        main = main[main["split"].eq("main_test")]
+        table = pd.read_csv(ctx.paths.tables_dir / "t08_model_metrics.csv")
+        main = table[table["split"].eq("main_test")]
+        folds = table[table["split"].str.startswith("group_kfold")]
         order = [m for m in models + [f"RF_{m}" for m in rf_models]
                  if m in set(main["model"])]
         fig, ax = plt.subplots(figsize=(6.6, 3.6))
         means = [float(main.loc[main["model"].eq(m), "average_precision"].mean()) for m in order]
-        lows = [float(main.loc[main["model"].eq(m), "average_precision"].min()) for m in order]
-        highs = [float(main.loc[main["model"].eq(m), "average_precision"].max()) for m in order]
+        # Whiskers show the grouped-fold spread, which is wider than the single
+        # main holdout and is the honest uncertainty statement for the ladder.
+        lows = [float(min(means[i], folds.loc[folds["model"].eq(m), "average_precision"].min())
+                      if len(folds.loc[folds["model"].eq(m)]) else means[i])
+                for i, m in enumerate(order)]
+        highs = [float(max(means[i], folds.loc[folds["model"].eq(m), "average_precision"].max())
+                       if len(folds.loc[folds["model"].eq(m)]) else means[i])
+                 for i, m in enumerate(order)]
         x = np.arange(len(order))
         ax.bar(x, means, 0.6, color="#3b6ea5")
         ax.errorbar(x, means, yerr=[np.array(means) - lows, np.array(highs) - means],

@@ -194,7 +194,7 @@ RF\_M0 & 7 & 0.6541 & 0.3078 & 0.7576 & 0.1904 & 0.897 & 0.473 \\
 RF\_M2 & 16 & 0.6649 & 0.3078 & 0.7681 & 0.1853 & 0.944 & 0.464 \\
 \bottomrule
 \end{tabular}
-\caption{Model ladder on the grouped main test split (five-seed mean). M0 uses pre- and post-deadline volume plus submission status; M1 adds post-deadline timing; M2 adds submission distance and is the primary model; M3 adds resource composition; M4 adds the first-TMA score and is a retrospective upper bound only. Thresholds are chosen on the validation part.}
+\caption{Model ladder on the grouped main test split (single holdout at the configured seed). M0 uses pre- and post-deadline volume plus submission status; M1 adds post-deadline timing; M2 adds submission distance and is the primary model; M3 adds resource composition; M4 adds the first-TMA score and is a retrospective upper bound only. Thresholds are chosen on the validation part.}
 \label{tab:models}
 \end{table}
 The primary model reaches Fail AP 0.6611 against a no-skill floor of 0.3078. The ladder shows where the gain comes from: M0 already contains submission status and reaches 0.6544, the post-deadline timing block moves it to 0.6574, and the submission-distance terms add the rest up to 0.6611. Most of the predictive signal is submission status rather than the fine structure of the click sequence. A gradient-boosted alternative reaches 0.6649, within noise of the logistic ladder, so there is little evidence of a strong nonlinear pattern that the linear models miss.
@@ -231,7 +231,7 @@ Moving the cutoff from $d+1$ to $d+14$ raises the primary model's AP from 0.6449
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.72\linewidth]{f08_model_ladder.png}
-\caption{Model ladder on the grouped main test split; whiskers span the five seeds and the dotted line is the no-skill level.}
+\caption{Model ladder on the grouped main test split; whiskers span the five grouped folds of the cross-validation arm and the dotted line is the no-skill level.}
 \label{fig:ladder}
 \end{figure}
 \section{Validation design}
