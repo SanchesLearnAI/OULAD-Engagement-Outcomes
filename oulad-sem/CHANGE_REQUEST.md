@@ -89,3 +89,71 @@ Only the `cohort` block changed:
 
 No modelling, split, window or feature parameter changed. Only the direction of
 the label and the bookkeeping that used the label as a group indicator changed.
+
+---
+
+# CR-2026-11-08-a — TMA two-week design replaces the day 0–27 design
+
+**Date:** 2026-11-08
+**Decision owner:** project user; recorded here for the frozen-config audit trail.
+
+## Reason
+
+The research question was fixed as the two-week TMA design
+(`research/TMA_PRIMARY_PROTOCOL.md`): within the same module presentation and
+among Fail / Pass-Distinction records with comparable **post-deadline** clicks,
+which submission and post-deadline persistence patterns differ. The original
+day-0–27 question becomes the historical baseline.
+
+## Old design
+
+- Anchor: presentation start (day 0). Windows W1 = 0–27, W2 = 28–55 (or
+  `first_tma - 1` when earlier).
+- Cohort: T1 = all enrolments with a known outcome, Withdrawn excluded from the
+  binary label; no post-deadline eligibility filter.
+- Matching: CEM on click/active-day/entropy bins within module presentation,
+  treated group = Pass/Distinction.
+- Models: M0–M5 ladder on day-0–27 features; M4 adds scores as an upper bound.
+
+## New design
+
+- Anchor: `d` = deadline of the first `assessment_type = TMA` with `weight > 0`
+  in each presentation (19 presentations, modules AAA–FFF).
+- Windows: `d-13..d` and `d+1..d+14`.
+- Cohort: registered by `d`, still registered at `d+14`, not a banked attempt;
+  binary label Fail = 1 vs Pass/Distinction = 0; Withdrawn reported separately
+  and analysed only in the S10 risk set.
+- Matching: 1:1 within presentation on `post_clicks`, tolerance 5%
+  (0% and 10% sensitivity), zero clicks match zero clicks only.
+- Primary metrics: the six indicators in `study.primary_metrics`, Holm-adjusted.
+- Models: M2 (`M1 + days_early/days_late`) is the primary model; M4 adds the
+  first-TMA score and is a retrospective upper bound.
+- Splits: grouped 60/20/20, grouped 5-fold, 2013→2014 temporal, leave-one-module-out,
+  plus a label-permutation control.
+
+## Affected stages
+
+S02 (cohort), S03 (description), S04 (features), S05 (splits unchanged in shape,
+new cohort), S06 (pairing), S07 (clustering), S08 (models), S09 (cutoff curve),
+S10 (risk set), S11 (robustness), S12 (report, poster, README, ZIP).
+S00/S01 keep their role (acquisition and raw audit).
+
+## Frozen config
+
+- Previous SHA-256: `6dd89b411646871c0e3623a4fc7d22aac983cf795f15fb3fca2de7bf07ae0043`
+- **New SHA-256:** see `config/config.sha256` after this commit.
+- Config keys removed: `cohort.target`, `cohort.at_risk_*`, `cohort.min_w1_clicks`,
+  `windows.*`, `matching.*` (CEM), `models.recall_precision_target`,
+  `models.include_scores_model`.
+- Config keys added: `study.*`, `cohort.min_post_clicks`,
+  `models.primary_model`, `models.upper_bound_model`, `models.rf_models`,
+  `models.threshold_rule`, `models.precision_target`, `models.label_permutations`.
+
+## Run impact
+
+All previous run ids (`run-20261104T045841Z-4f3088`,
+`run-20261107T173321Z-4deefb`, `sim-20261107T172956Z-d470d3`,
+`sim-20261108T083219Z-9f369f`) belong to the day-0–27 design and are archived
+in `results/oulad_sem_day0_27_baseline_20261108/` where relevant. The TMA design
+starts with a new run id; no number from the archived run may be compared
+directly with a TMA number.
