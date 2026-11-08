@@ -1,27 +1,40 @@
-# Same Engagement, Different Outcomes — Group 9
+# Same Deadline, Different Persistence
 
-## Problem
+## Question
 
-Among students with similar first-four-week VLE engagement, which temporal and resource-use patterns are associated with passing rather than failing? Withdrawn students are analysed as a separate outcome.
+Within the same module presentation, among students whose post-deadline clicks after the first positive-weight TMA are comparable, are submission timing and post-deadline persistence associated with eventually failing rather than passing or earning a distinction? Withdrawn remains a separate outcome.
 
-## Data and leakage controls
+## Cohort
 
-- Unit: enrolment (module x presentation x student); 32,593 enrolments in full OULAD.
-- Strict windows: W1 days 0-27; W2 days 28 to min(55, first TMA-1), with a fixed 28-55 fallback when the first TMA is before week 4.
-- No score, banked flag, final result, or post-cutoff click in strict features.
-- Grouped splits; temporal and LOMO folds are student-disjoint.
+- Eligible records: 24,125
+- Binary records: 19,806
+- Fail records: 6,092 (30.8%)
+- Presentations with a positive-weight TMA: 19
 
-## Main results
+## Primary indicators
 
-- M0: PR-AUC 0.529, ROC-AUC 0.701, Brier 0.220.
-- M1: PR-AUC 0.564, ROC-AUC 0.724, Brier 0.213.
-- M2: PR-AUC 0.561, ROC-AUC 0.724, Brier 0.213.
-- M3: PR-AUC 0.576, ROC-AUC 0.729, Brier 0.211.
-- M4: PR-AUC 0.581, ROC-AUC 0.744, Brier 0.207.
-- M5: PR-AUC 0.585, ROC-AUC 0.737, Brier 0.203.
+| Indicator | Pairs | Fail - Pass | 95% interval | p (Holm) |
+|---|---:|---:|---|---:|
+| `submitted_by_cutoff` | 4768 | -0.1235 | [-0.135, -0.112] | 0.0060 |
+| `submitted_after_due` | 4768 | 0.0839 | [0.072, 0.096] | 0.0060 |
+| `relative_submission_day` | 3859 | 1.3809 | [1.182, 1.568] | 0.0060 |
+| `post_active_days` | 4768 | -0.3683 | [-0.440, -0.295] | 0.0060 |
+| `post_longest_inactive_run` | 4768 | 0.3888 | [0.303, 0.473] | 0.0060 |
+| `post_week2_share` | 4768 | -0.0368 | [-0.050, -0.024] | 0.0060 |
 
-M4 includes assessment scores and is an upper bound only.
+## Model ladder (main test, mean)
+
+| Model | Fail AP | No-skill | ROC-AUC | Brier |
+|---|---:|---:|---:|---:|
+| M0 | 0.6544 | 0.3078 | 0.7585 | 0.1658 |
+| M1 | 0.6574 | 0.3078 | 0.7606 | 0.1651 |
+| M2 | 0.6611 | 0.3078 | 0.7647 | 0.1641 |
+| M3 | 0.6608 | 0.3078 | 0.7653 | 0.1640 |
+| RF_M0 | 0.6541 | 0.3078 | 0.7576 | 0.1904 |
+| RF_M2 | 0.6649 | 0.3078 | 0.7681 | 0.1853 |
+
+M4 contains the first-TMA score and is a retrospective upper bound only.
 
 ## Reproducibility
 
-See README.md. Every stage writes run.jsonl, a stage summary, a handoff note, and an atomic STATUS.json update.
+See README.md. Every stage writes `run.jsonl`, a stage summary, a handoff note and an atomic `STATUS.json` update; `validate_run.py` checks them.

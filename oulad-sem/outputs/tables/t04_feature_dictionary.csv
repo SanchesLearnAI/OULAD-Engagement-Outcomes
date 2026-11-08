@@ -1,0 +1,35 @@
+column,dtype,missing,missing_share,origin
+pre_clicks,float64,0,0.0,studentVle
+pre_active_days,float64,0,0.0,studentVle
+last3_share,float64,0,0.0,studentVle
+post_clicks,float64,0,0.0,studentVle
+post_active_days,float64,0,0.0,studentVle
+post_longest_inactive_run,int64,0,0.0,studentVle
+post_week2_share,float64,0,0.0,studentVle
+post_both_weeks,int64,0,0.0,studentVle
+post_peak7_share,float64,0,0.0,studentVle
+post_entropy_norm,float64,0,0.0,studentVle
+post_first_active_day,int64,0,0.0,studentVle
+submitted_by_cutoff,int64,0,0.0,studentAssessment (masked to d+post_days)
+submitted_after_due,int64,0,0.0,studentAssessment (masked to d+post_days)
+days_early,float64,1985,0.10022215490255477,studentAssessment (masked to d+post_days)
+days_late,float64,1985,0.10022215490255477,studentAssessment (masked to d+post_days)
+relative_submission_day,float64,1985,0.10022215490255477,studentAssessment (masked to d+post_days)
+post_resource_share__dataplus,float64,0,0.0,vle.csv
+post_resource_share__dualpane,float64,0,0.0,vle.csv
+post_resource_share__externalquiz,float64,0,0.0,vle.csv
+post_resource_share__forumng,float64,0,0.0,vle.csv
+post_resource_share__glossary,float64,0,0.0,vle.csv
+post_resource_share__homepage,float64,0,0.0,vle.csv
+post_resource_share__htmlactivity,float64,0,0.0,vle.csv
+post_resource_share__oucollaborate,float64,0,0.0,vle.csv
+post_resource_share__oucontent,float64,0,0.0,vle.csv
+post_resource_share__ouelluminate,float64,0,0.0,vle.csv
+post_resource_share__ouwiki,float64,0,0.0,vle.csv
+post_resource_share__page,float64,0,0.0,vle.csv
+post_resource_share__questionnaire,float64,0,0.0,vle.csv
+post_resource_share__quiz,float64,0,0.0,vle.csv
+post_resource_share__resource,float64,0,0.0,vle.csv
+post_resource_share__sharedsubpage,float64,0,0.0,vle.csv
+post_resource_share__subpage,float64,0,0.0,vle.csv
+post_resource_share__url,float64,0,0.0,vle.csv

@@ -1,0 +1,7 @@
+model,threshold_rule
+M0,target_precision
+M1,target_precision
+M2,target_precision
+M3,target_precision
+RF_M0,target_precision
+RF_M2,target_precision

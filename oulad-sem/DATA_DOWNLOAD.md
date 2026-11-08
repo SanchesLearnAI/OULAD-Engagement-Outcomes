@@ -13,7 +13,10 @@ shasum -a 256 data/raw/oulad/oulad.zip
 unzip -o data/raw/oulad/oulad.zip -d data/raw/oulad/
 ```
 
-The ZIP does not contain the raw CSVs. The audit in this run recorded:
+The archive holds seven CSVs: `courses`, `assessments`, `vle`, `studentInfo`,
+`studentRegistration`, `studentAssessment` and `studentVle`. Keep `oulad.zip`
+in `data/raw/oulad/` as well, because S00 records its hash. The audit in this
+run recorded:
 
 | File | Rows | SHA-256 |
 |---|---:|---|

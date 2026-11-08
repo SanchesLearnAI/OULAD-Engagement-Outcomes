@@ -1,0 +1,6 @@
+feature,specs_negative,specs,share_negative
+post_active_days,8,8,1.0
+post_longest_inactive_run,0,8,0.0
+post_week2_share,8,8,1.0
+submitted_after_due,0,8,0.0
+submitted_by_cutoff,8,8,1.0
