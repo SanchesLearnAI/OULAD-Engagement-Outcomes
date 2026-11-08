@@ -375,6 +375,91 @@ AIGC tools assisted with code scaffolding, text editing and LaTeX formatting. Al
 \section*{Data and code availability}
 The unmodified OULAD archive is committed with its SHA-256. Extracted CSVs, student-level features, pair indices and predictions stay outside version control. One command reproduces the analysis; the submission ZIP contains the code, the frozen configuration and the run log.
 \appendix
+\section{Exploratory extensions}
+Four exploratory blocks were run after the primary analysis was frozen. They do not change any primary indicator or the primary model, and each is reported here rather than in the main text.
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{llrrr}
+\toprule
+Covariate & Kind & SMD before & SMD after & $|$SMD$|\le$0.10 \\
+\midrule
+gender & categorical & -0.056 & -0.056 & yes \\
+age\_band & categorical & -0.168 & -0.043 & yes \\
+highest\_education & categorical & -0.331 & -0.360 & no \\
+imd\_band & categorical & 0.180 & 0.161 & no \\
+disability & categorical & 0.072 & 0.072 & yes \\
+num\_of\_prev\_attempts & numeric & 0.261 & 0.195 & no \\
+studied\_credits & numeric & 0.075 & 0.005 & yes \\
+\bottomrule
+\end{tabular}
+\caption{Pre-entry covariates of the matched pairs. Pairing was designed to balance post-deadline clicks only, so a remaining difference here is expected and is reported rather than corrected.}
+\label{tab:c1}
+\end{table}
+The largest residual imbalance is highest\_education at -0.360 standard deviations; education, IMD band and previous attempts remain the least balanced covariates. Restricting the pairs to those that also agree exactly on education and IMD band keeps 3.3\% of them, which is too small to replace the primary comparison.
+On that surviving subset the active-day difference is -0.148 days with a much wider interval, so the direction holds but the precision does not.
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{lrrrr}
+\toprule
+Indicator & Fixed-pair estimate & Re-matched mean & Re-matched 95\% interval & Replicates \\
+\midrule
+post\_active\_days & -0.368 & -0.399 & [-0.455, -0.347] & 20 \\
+post\_longest\_inactive\_run & 0.389 & 0.412 & [0.353, 0.476] & 20 \\
+\bottomrule
+\end{tabular}
+\caption{Re-matching uncertainty: each replicate resamples students, rebuilds the cohort and re-runs the greedy pairing, so the interval includes the pairing itself rather than holding it fixed. Replicates are few, so it is a check on width, not a definitive interval.}
+\label{tab:c2}
+\end{table}
+Both indicators keep their sign and their magnitude under re-matching, and the re-matched intervals are only slightly wider than the fixed-pair ones. Pairing choice is therefore not doing the work here.
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{lrrrr}
+\toprule
+Indicator & Random-effects pooled & 95\% interval & $\tau$ & $I^2$ \\
+\midrule
+post\_active\_days & -0.396 & [-0.489, -0.304] & 0.205 & 99.6\% \\
+post\_longest\_inactive\_run & 0.387 & [0.312, 0.462] & 0.166 & 99.5\% \\
+post\_week2\_share & -0.033 & [-0.046, -0.020] & 0.029 & 99.4\% \\
+\bottomrule
+\end{tabular}
+\caption{Per-presentation differences summarised with a DerSimonian-Laird random-effects model. A high $I^2$ means the presentations do not share one effect size, which is expected when presentations have different cohorts and deadlines.}
+\label{tab:c2b}
+\end{table}
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{lrrr}
+\toprule
+Outcome & Records & Share of non-submitters & Share of eligible cohort \\
+\midrule
+Fail & 1507 & 50.8\% & 6.2\% \\
+Withdrawn & 981 & 33.1\% & 4.1\% \\
+Pass & 478 & 16.1\% & 2.0\% \\
+\bottomrule
+\end{tabular}
+\caption{Records with no submission by $d+14$, split by final outcome. This is the subgroup the binary comparison cannot speak to, because withdrawal and non-submission overlap here.}
+\label{tab:c3}
+\end{table}
+Of the 2,966 records without a submission by $d+14$, 33.1\% eventually withdraw and 50.8\% fail. Non-submission is therefore a stronger signal of leaving than of failing, which is exactly why the binary design excludes Withdrawn.
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{lrrrrr}
+\toprule
+Model & Test records & Fail-or-Withdrawn share & AP & ROC-AUC & Brier \\
+\midrule
+M0 & 4857 & 43.8\% & 0.7483 & 0.7603 & 0.1920 \\
+M1 & 4857 & 43.8\% & 0.7518 & 0.7634 & 0.1908 \\
+M2 & 4857 & 43.8\% & 0.7549 & 0.7675 & 0.1896 \\
+\bottomrule
+\end{tabular}
+\caption{Warning target: Fail-or-Withdrawn among records enrolled at the deadline, with Withdrawn as a positive case. The cohort and the label differ from the binary comparison, so the AP is not comparable with Section~4.}
+\label{tab:c4}
+\end{table}
+Because Withdrawn is a positive case here, the AP level is much higher than in the binary design; the two numbers answer different questions and must not be placed in the same table.
 \section{Reproduction}
 \begin{verbatim}
 make test

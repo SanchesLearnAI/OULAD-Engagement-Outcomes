@@ -1,0 +1,4 @@
+outcome,records,share_of_non_submitters,share_of_eligible,share_never_submitted,share_late_submission,withdrawn_share,non_submitters,eligible_records
+Fail,1507,0.5080917060013486,0.06246632124352332,1.0,0.0,0.0,2966,24125
+Withdrawn,981,0.33074848280512475,0.04066321243523316,1.0,0.0,1.0,2966,24125
+Pass,478,0.16115981119352663,0.019813471502590673,1.0,0.0,0.0,2966,24125
