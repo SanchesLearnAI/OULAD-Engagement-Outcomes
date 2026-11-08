@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "stage": "S03",
+  "run_id": "run-20261104T045841Z-4f3088",
+  "mode": "full",
+  "simulated": false,
+  "status": "pass",
+  "started_at": "2026-11-04T04:58:54.953Z",
+  "finished_at": "2026-11-04T04:58:57.376Z",
+  "duration_ms": 2423,
+  "config_hash": "sha256:1719aea81a6c72eeb4b88626151fc6113f76dea40cf3629b25735231a1003a90",
+  "checks": [
+    {
+      "name": "overlap_computed",
+      "status": "ok",
+      "message": "overlap coefficient available for every cutoff",
+      "metrics": {}
+    },
+    {
+      "name": "zero_click_recorded",
+      "status": "ok",
+      "message": "zero-click share recorded; zero-click rows retained",
+      "metrics": {}
+    }
+  ],
+  "metrics": {
+    "window_end": 27,
+    "n_enrolments": 32593,
+    "zero_click_share": 0.14441751296290614,
+    "median_clicks": 138.0,
+    "min_mean_overlap": 0.6834535494239439,
+    "max_mean_overlap": 0.7370004031148654,
+    "n_full": 32593,
+    "n_t1": 22437,
+    "after_55": 4010,
+    "pre_start": 2676,
+    "W1_0_27": 2356,
+    "W2_28_55": 1021
+  },
+  "artifacts": [
+    {
+      "path": "outputs/tables/t03_clicks_by_outcome.csv",
+      "sha256": "sha256:95501add85b8a556e07c2146c90ba579882a12e22d8a1939a457fc91e952b304",
+      "rows": 32,
+      "cols": 9
+    },
+    {
+      "path": "outputs/tables/t03_overlap.csv",
+      "sha256": "sha256:10128a0badd877870d2d19fef38dd5c76ae65eb4c6681e3c142867b49db9c58e",
+      "rows": 8,
+      "cols": 7
+    },
+    {
+      "path": "outputs/tables/t03_cohort_flow.csv",
+      "sha256": "sha256:0cf4301397abbb72a2b87832941dd33a658daec12ddde637e53c2a5edd9e688a",
+      "rows": 8,
+      "cols": 11
+    },
+    {
+      "path": "outputs/tables/t03_withdrawal_timing.csv",
+      "sha256": "sha256:ef543a0a3164441210a885083c92ff4e8231ee32531a3b2cc9340c7e71ae1e73",
+      "rows": 4,
+      "cols": 2
+    },
+    {
+      "path": "outputs/figures/f03_withdrawal_timing.png",
+      "sha256": "sha256:717f6f79371bdcbc1381e5e266fb6e5ac876cf84be0b430ba898d12c05e8fdda"
+    },
+    {
+      "path": "outputs/figures/f03_click_distribution_by_outcome.png",
+      "sha256": "sha256:fe8593a9fbeba7bda811bfa048de72f70a5ebf4a53f9233c9d60bb6abbe1eaba"
+    }
+  ],
+  "warnings": [],
+  "notes": "",
+  "error": null
+}

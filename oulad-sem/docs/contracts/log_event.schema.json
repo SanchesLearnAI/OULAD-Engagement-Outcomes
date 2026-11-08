@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local/oulad-sem/log_event.schema.json",
+  "title": "OULAD run event",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "seq",
+    "ts",
+    "run_id",
+    "mode",
+    "stage",
+    "event",
+    "status",
+    "config_hash"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "seq": { "type": "integer", "minimum": 1 },
+    "ts": { "type": "string", "format": "date-time" },
+    "run_id": { "type": "string", "pattern": "^(run|sim)-[0-9]{8}T[0-9]{6}Z-[0-9a-f]{6}$" },
+    "mode": { "enum": ["simulation", "full"] },
+    "stage": { "type": "string", "pattern": "^S(0[0-9]|1[0-2])$" },
+    "step": { "type": ["string", "null"] },
+    "event": {
+      "enum": [
+        "stage_start",
+        "step_start",
+        "step_end",
+        "check",
+        "metric",
+        "artifact",
+        "warning",
+        "error",
+        "gate_pass",
+        "gate_fail",
+        "stage_end"
+      ]
+    },
+    "status": { "enum": ["ok", "warn", "fail", "skip"] },
+    "agent": { "type": ["string", "null"] },
+    "config_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "git_commit": { "type": ["string", "null"] },
+    "duration_ms": { "type": ["integer", "null"], "minimum": 0 },
+    "inputs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fileRef" }
+    },
+    "outputs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fileRef" }
+    },
+    "metrics": { "type": "object", "additionalProperties": true },
+    "message": { "type": ["string", "null"] },
+    "error": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["type", "message"],
+          "properties": {
+            "type": { "enum": ["E_ENV", "E_DATA", "E_LEAK", "E_METRIC", "E_RESOURCE", "E_LOGIC", "E_TIMEOUT"] },
+            "message": { "type": "string" },
+            "traceback_ref": { "type": ["string", "null"] }
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "simulated": { "type": "boolean", "default": false }
+  },
+  "$defs": {
+    "fileRef": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string" },
+        "sha256": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+        "rows": { "type": ["integer", "null"], "minimum": 0 },
+        "cols": { "type": ["integer", "null"], "minimum": 0 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

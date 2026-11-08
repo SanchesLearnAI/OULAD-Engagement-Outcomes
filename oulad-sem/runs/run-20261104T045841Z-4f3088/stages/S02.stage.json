@@ -1,0 +1,187 @@
+{
+  "schema_version": "1.0",
+  "stage": "S02",
+  "run_id": "run-20261104T045841Z-4f3088",
+  "mode": "full",
+  "simulated": false,
+  "status": "pass",
+  "started_at": "2026-11-04T04:58:51.552Z",
+  "finished_at": "2026-11-04T04:58:53.712Z",
+  "duration_ms": 2160,
+  "config_hash": "sha256:1719aea81a6c72eeb4b88626151fc6113f76dea40cf3629b25735231a1003a90",
+  "checks": [
+    {
+      "name": "master_key_unique",
+      "status": "ok",
+      "message": "one row per enrolment",
+      "metrics": {}
+    },
+    {
+      "name": "final_result_no_missing",
+      "status": "ok",
+      "message": "final_result has no missing values",
+      "metrics": {}
+    },
+    {
+      "name": "first_tma_missing_recorded",
+      "status": "ok",
+      "message": "2534 enrolments have no TMA/CMA; W2 falls back to day 55",
+      "metrics": {}
+    },
+    {
+      "name": "config_at_risk_consistent",
+      "status": "ok",
+      "message": "at_risk_at_cutoff=False, at_risk_sensitivity=True",
+      "metrics": {}
+    },
+    {
+      "name": "withdrawal_audit_generated",
+      "status": "ok",
+      "message": "audit tables exist",
+      "metrics": {}
+    },
+    {
+      "name": "unregistration_share_recorded",
+      "status": "ok",
+      "message": "0.3090 of enrolments have a non-null date_unregistration",
+      "metrics": {}
+    },
+    {
+      "name": "at_risk_decision_recorded",
+      "status": "ok",
+      "message": "main cohort keeps all T1 (at_risk_at_cutoff=false) and the at-risk cohort is a sensitivity only (at_risk_sensitivity=true). Post-unregistration clicks also rule out silent filtering. Withdrawn remains a separate outcome for T3/competing risk.",
+      "metrics": {}
+    },
+    {
+      "name": "post_unregistration_clicks_recorded",
+      "status": "ok",
+      "message": "29440 click rows after date_unregistration (1272 students); at-risk filtering withheld from the main cohort",
+      "metrics": {}
+    },
+    {
+      "name": "final_master_rows",
+      "status": "ok",
+      "message": "rows=32593 expected=32593",
+      "metrics": {
+        "rows": 32593
+      }
+    },
+    {
+      "name": "final_master_key_unique",
+      "status": "ok",
+      "message": "master key unique",
+      "metrics": {}
+    },
+    {
+      "name": "unregistration_share_not_presupposed",
+      "status": "ok",
+      "message": "0.3090",
+      "metrics": {}
+    }
+  ],
+  "metrics": {
+    "studentInfo": 32593,
+    "studentRegistration": 32593,
+    "assessments": 206,
+    "studentAssessment": 173912,
+    "studentVle": 10655280,
+    "rows": 173912,
+    "join_loss": 0,
+    "courses_missing": 0,
+    "n_withdrawn": 10156,
+    "n_repeaters": 4172,
+    "first_tma_missing": 2534,
+    "n_t1": 22437,
+    "final_result_counts": {
+      "Pass": 12361,
+      "Withdrawn": 10156,
+      "Fail": 7052,
+      "Distinction": 3024
+    },
+    "unregistered_enrolments": 10072,
+    "unregistered_with_clicks": 7094,
+    "students_with_post_click": 1272,
+    "post_unregistration_click_rows": 29440,
+    "post_unregistration_clicks": 98745,
+    "post_click_share_rows": 0.030939416964342954,
+    "median_clicks_after_among_those": 18.0,
+    "max_clicks_after": 2019,
+    "negative_unregistration": 2678,
+    "post_clicks_exist": true,
+    "unregistration_nonnull_share": 0.30902340993464855,
+    "at_risk_at_cutoff_config": false,
+    "at_risk_sensitivity_config": true,
+    "at_risk_filter_applied": false,
+    "decision": "main cohort keeps all T1 (at_risk_at_cutoff=false) and the at-risk cohort is a sensitivity only (at_risk_sensitivity=true). Post-unregistration clicks also rule out silent filtering. Withdrawn remains a separate outcome for T3/competing risk.",
+    "n_total": 32593,
+    "n_t2": 32593,
+    "n_t3": {
+      "Pass": 15385,
+      "Withdrawn": 10156,
+      "Fail": 7052
+    }
+  },
+  "artifacts": [
+    {
+      "path": "outputs/tables/t02_withdrawal_audit.csv",
+      "sha256": "sha256:7615f4fc282d04233997ac1517793d71783b531b149aea6237ea278275061e9d",
+      "rows": 22,
+      "cols": 7
+    },
+    {
+      "path": "outputs/tables/t02_withdrawal_weekly.csv",
+      "sha256": "sha256:1b9cc448d5f6a316883028362fe2ffb18a0173dbcfa875d83b3b905db8ab483c",
+      "rows": 9,
+      "cols": 5
+    },
+    {
+      "path": "outputs/figures/f02_withdrawal_clicks.png",
+      "sha256": "sha256:98f2786e070d6760661bb00736cf8b5225c38e920d62c3ca7f10a3c336e6f0e8"
+    },
+    {
+      "path": "data/interim/master.parquet",
+      "sha256": "sha256:5f4551fcb42bed0f9dfc2ccec35fd2b40e99d4ca9b5a1169f1a56de886a6e114",
+      "rows": 32593,
+      "cols": 38
+    },
+    {
+      "path": "outputs/tables/t02_cohort_flow.csv",
+      "sha256": "sha256:1076a4368b5b5dcd33e639f9661a779cc03cc070bbaaa973925fa4c60f8dec70",
+      "rows": 8,
+      "cols": 12
+    },
+    {
+      "path": "data/interim/cache/studentAssessment_enriched.parquet",
+      "sha256": "sha256:569402cde00bc9a5979bd3cbb9a216920d183ab8251b4cf95851cf827b6733d8",
+      "rows": 173912,
+      "cols": 10
+    },
+    {
+      "path": "data/interim/studentAssessment.parquet",
+      "sha256": "sha256:569402cde00bc9a5979bd3cbb9a216920d183ab8251b4cf95851cf827b6733d8",
+      "rows": 173912,
+      "cols": 10
+    }
+  ],
+  "warnings": [],
+  "notes": "",
+  "error": null,
+  "at_risk_filter_applied": false,
+  "withdrawal_audit": {
+    "unregistered_enrolments": 10072,
+    "unregistered_with_clicks": 7094,
+    "students_with_post_click": 1272,
+    "post_unregistration_click_rows": 29440,
+    "post_unregistration_clicks": 98745,
+    "post_click_share_rows": 0.030939416964342954,
+    "median_clicks_after_among_those": 18.0,
+    "max_clicks_after": 2019,
+    "negative_unregistration": 2678,
+    "post_clicks_exist": true,
+    "unregistration_nonnull_share": 0.30902340993464855,
+    "at_risk_at_cutoff_config": false,
+    "at_risk_sensitivity_config": true,
+    "at_risk_filter_applied": false,
+    "decision": "main cohort keeps all T1 (at_risk_at_cutoff=false) and the at-risk cohort is a sensitivity only (at_risk_sensitivity=true). Post-unregistration clicks also rule out silent filtering. Withdrawn remains a separate outcome for T3/competing risk."
+  }
+}
