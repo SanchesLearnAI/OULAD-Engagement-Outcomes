@@ -1,0 +1,4 @@
+model,n_features,average_precision,roc_auc,no_skill,threshold_rule
+M2,16.0,0.6610774443376342,0.7646975759002119,0.3078093306288032,target_precision
+M2_plus_deep,25.0,0.6619706560071128,0.764387095606206,0.3078093306288032,target_precision
+delta_M2_plus_deep_minus_M2,,0.0008938388491715721,,-0.001104722233546565,ci_low=-0.0011;ci_high=+0.0032;reps=400

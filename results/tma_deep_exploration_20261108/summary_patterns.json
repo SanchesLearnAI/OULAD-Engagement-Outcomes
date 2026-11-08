@@ -1,0 +1,13 @@
+{
+  "patterns_tested": 115,
+  "patterns_significant_bh": 115,
+  "top_pattern": "00",
+  "top_pattern_support_diff": 0.09224105019040607,
+  "never_returns_unmatched_diff": 0.20630503395938282,
+  "never_returns_matched_diff": -0.0534815436241729,
+  "discordant_patterns_tested": 36,
+  "discordant_significant_bh": 24,
+  "top5_precision": 0.9644670050761421,
+  "top20_recall": 0.44481054365733114,
+  "primary_threshold_rule": "target_precision"
+}

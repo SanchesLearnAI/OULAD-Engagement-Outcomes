@@ -1,0 +1,14 @@
+{
+  "records": 19806,
+  "fail": 6092,
+  "pairs": 4768,
+  "config_hash": "sha256:6772d0022b7e1d6fecd07ed46d7f0b461f770980135861ffbec6c3295e0e7926",
+  "post_days": 14,
+  "e1_never_returns_fail_minus_pass": 0.0,
+  "e2_deadlines_per_record_mean": 0.9078057154397657,
+  "e2_missed_deadlines_fail_minus_pass": 0.009437919463087249,
+  "e4_patterns_mined": 27,
+  "e5_ap_all": 0.6777683992919648,
+  "e5_ap_behaviour": 0.6498238556219171,
+  "e5_ap_background": 0.4546458842252099
+}

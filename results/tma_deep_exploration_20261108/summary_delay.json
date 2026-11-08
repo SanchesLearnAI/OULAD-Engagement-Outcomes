@@ -1,0 +1,9 @@
+{
+  "sfi_records_with_submission": 21963,
+  "sfi_mean_fail": 0.9954560047537849,
+  "sfi_mean_pass": 0.9713063988488019,
+  "profiles": 3,
+  "same_profile_share": 0.5159781761496492,
+  "returns_after_silence_fail_minus_pass": -0.09060402684563758,
+  "ended_silent_fail_minus_pass": 0.028733221476510067
+}

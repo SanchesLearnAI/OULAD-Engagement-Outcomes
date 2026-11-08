@@ -1,0 +1,4 @@
+final_result,records,never_returns,median_return_day,p25_return_day,p75_return_day
+Distinction,2609,0.02261402836335761,1.0,1.0,3.0
+Fail,6092,0.252462245567958,4.0,1.0,15.0
+Pass,11105,0.05168842863574966,2.0,1.0,4.0

@@ -1,0 +1,28 @@
+{
+  "a1_presentations": 17,
+  "a1_longest_silence_by_layer": [
+    {
+      "post_click_layer": "Q1_lowest",
+      "fail_minus_pass": 0.15134255492270138,
+      "pairs": 1229
+    },
+    {
+      "post_click_layer": "Q2",
+      "fail_minus_pass": 0.5603448275862069,
+      "pairs": 1160
+    },
+    {
+      "post_click_layer": "Q3",
+      "fail_minus_pass": 0.3941176470588235,
+      "pairs": 1190
+    },
+    {
+      "post_click_layer": "Q4_highest",
+      "fail_minus_pass": 0.46173254835996635,
+      "pairs": 1189
+    }
+  ],
+  "a2_patterns_tested": 35,
+  "a2_significant_bh": 10,
+  "b1_rows": 6
+}

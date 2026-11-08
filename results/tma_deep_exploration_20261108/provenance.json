@@ -1,0 +1,13 @@
+{
+  "config_sha256": "6772d0022b7e1d6fecd07ed46d7f0b461f770980135861ffbec6c3295e0e7926",
+  "inputs_sha256": {
+    "assessments": "9ce92381e4a0ac457f8e251b2eb2c179ed51e023ab30d1d671a0268bd62316ba",
+    "studentAssessment": "b1839e17618a5de36b6d189a242d3123f7939a56c8c9ccef0c17b9199c614a6b",
+    "studentVle": "52668253d876c5becbcb72185977152700cecab2942aca807fecc3dd54b937f0",
+    "studentInfo": "815fbc3e2de29f79900bc63f0345a35db62c9146afaa1d86e7107b8b3beffc60",
+    "studentRegistration": "bbc87a0de1fe2a9ec6decce1ca6c1a02cf17b54ad3bdcc673fc6413b41c61d47",
+    "vle": "d7a146497edd0e47ef536144b58796c07b554002d3753e848b8e4cd8a56f4c38"
+  },
+  "script_sha256": "61caa6ef719002f95997f8a4e1ff20cc72249e7aabc45fec387e346ada93c71b",
+  "limitations": "exploratory; reuses the frozen cohort and pairs; repeated test use; no causal claim; background features are administratively collected and not available to a purely behavioural model"
+}
