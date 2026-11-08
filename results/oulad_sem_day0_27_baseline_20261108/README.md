@@ -22,9 +22,11 @@ sets of numbers must not be ranked against each other.
 | Tests | 13 passed |
 
 Files here are verbatim copies of the tracked `oulad-sem/outputs/tables/*.csv`
-at that commit, plus `Report.pdf` and the run's `STATUS.json`. The sealed
-package and its SHA-256 are recorded in the workspace
-`release/oliver-fixed/SEAL.md`.
+at that commit, plus `Report.pdf` and the run's `STATUS.json`. Figures are not
+duplicated here: the sealed package
+(`release/oliver-fixed/Group_09_Project.zip`, SHA-256 in that folder's
+`SEAL.md`) already contains the complete `tables/` and `figures/` set from
+exactly this run, and TMA figures now occupy `oulad-sem/outputs/figures/`.
 
 ## What was in it
 

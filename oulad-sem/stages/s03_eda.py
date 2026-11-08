@@ -30,28 +30,24 @@ def submission_band(day: pd.Series, post_days: int = 14) -> pd.Series:
 
 def daily_profile(master: pd.DataFrame, vle: pd.DataFrame, *, pre_days: int = 14,
                   post_days: int = 14) -> pd.DataFrame:
-    """Mean clicks and active share per relative day, by final outcome."""
-    cohort = master[master["eligible"] & master["due_day"].notna()]
-    lookup = cohort[KEY + ["due_day", "final_result"]]
-    v = vle[KEY + ["date", "sum_click"]].merge(lookup, on=KEY, how="inner")
-    v["relative_day"] = (v["date"] - v["due_day"]).astype(int)
-    v = v[v["relative_day"].between(-pre_days + 1, post_days)]
-    per_student_day = (v.groupby(KEY + ["relative_day", "final_result"], observed=True)
-                       ["sum_click"].sum().reset_index())
-    rows = []
-    for (outcome, day), group in per_student_day.groupby(["final_result", "relative_day"]):
-        rows.append({"outcome": outcome, "relative_day": int(day),
-                     "records_with_clicks": int(len(group)),
-                     "mean_clicks_among_all": float(group["sum_click"].sum() /
-                                                    max(len(cohort), 1))})
-    # Normalise by the number of records in that outcome so the curve is a mean
-    # per record, not per clicking record.
-    n_by_outcome = cohort["final_result"].value_counts().to_dict()
-    out = pd.DataFrame(rows)
-    out["outcome_records"] = out["outcome"].map(n_by_outcome)
-    out["mean_clicks_per_record"] = out["mean_clicks_among_all"] * \
-        (len(cohort) / out["outcome_records"].replace(0, np.nan))
-    return out.sort_values(["outcome", "relative_day"]).reset_index(drop=True)
+    """Mean clicks per record on each relative day, split by final outcome."""
+    cohort = master[master["eligible"] & master["due_day"].notna()][
+        KEY + ["due_day", "final_result"]].copy()
+    cohort["outcome"] = cohort["final_result"].replace(
+        {"Distinction": "Pass", "Fail": "Fail", "Pass": "Pass", "Withdrawn": "Withdrawn"})
+    # One pass over the event stream: reduce to student-day first, then join.
+    v = vle[KEY + ["date", "sum_click"]]
+    per_day = (v.groupby(KEY + ["date"], observed=True)["sum_click"].sum()
+               .rename("clicks").reset_index())
+    merged = per_day.merge(cohort, on=KEY, how="inner")
+    merged["relative_day"] = (merged["date"] - merged["due_day"]).astype(int)
+    merged = merged[merged["relative_day"].between(-pre_days + 1, post_days)]
+    n_by_outcome = cohort["outcome"].value_counts().to_dict()
+    grouped = (merged.groupby(["outcome", "relative_day"], observed=True)["clicks"]
+               .sum().rename("clicks").reset_index())
+    grouped["outcome_records"] = grouped["outcome"].map(n_by_outcome)
+    grouped["mean_clicks_per_record"] = grouped["clicks"] / grouped["outcome_records"]
+    return grouped.sort_values(["outcome", "relative_day"]).reset_index(drop=True)
 
 
 def run(ctx, st):

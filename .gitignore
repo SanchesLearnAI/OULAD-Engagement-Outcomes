@@ -5,9 +5,13 @@ data/*
 !data/oulad.zip
 !data/README.md
 outputs/
-# The pipeline's committed tables/figures live under oulad-sem/outputs/; the
-# rule above would otherwise hide newly generated ones from git status.
+# S12 compiles LaTeX and writes student-level artefacts next to the tracked
+# tables/figures. Only tables/ and figures/ are committed, so keep the rest of
+# oulad-sem/outputs/ ignored while still tracking new tables and figures.
 !oulad-sem/outputs/
+oulad-sem/outputs/*
+!oulad-sem/outputs/tables/
+!oulad-sem/outputs/figures/
 *.pyc
 research/audit_20261102/source_dictionary.txt
 research/reframe_20261103/run_output.txt

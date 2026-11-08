@@ -81,8 +81,10 @@ def _ladder_model(frame: pd.DataFrame, columns: list[str], rows: np.ndarray,
             ("numeric", make_pipeline(SimpleImputer(strategy="median"), StandardScaler()),
              columns),
             ("context", OneHotEncoder(handle_unknown="ignore"), CONTEXT)])
+        # No class weighting: AP is sensitive to the fitted decision function, and
+        # the published TMA ladder used plain logistic regression. Keeping the
+        # estimator identical is what makes the parity table comparable.
         model = make_pipeline(transform, LogisticRegression(max_iter=2000,
-                                                           class_weight="balanced",
                                                            random_state=seed))
     else:
         transform = ColumnTransformer([

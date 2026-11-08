@@ -72,9 +72,13 @@ def run(ctx, st):
                 st.check("primary_ap_above_no_skill",
                          ap > float(primary_rows["no_skill_pr_auc"].mean()),
                          f"primary AP={ap:.4f} above prevalence")
+                # The published value comes from a five-seed 80/20 holdout; the
+                # 60/20/20 main split answers a slightly different question, so
+                # the exact comparison is t08_parity.csv below.
                 st.check("primary_ap_near_reference",
-                         abs(ap - REFERENCE["M2"]) <= 0.01,
-                         f"primary AP={ap:.4f}, TMA branch={REFERENCE['M2']:.4f}")
+                         abs(ap - REFERENCE["M2"]) <= 0.02,
+                         f"primary AP={ap:.4f}, TMA branch 80/20={REFERENCE['M2']:.4f} "
+                         "(exact comparison in t08_parity.csv)")
         else:
             raise SystemExit("primary model missing from the ladder")
 
