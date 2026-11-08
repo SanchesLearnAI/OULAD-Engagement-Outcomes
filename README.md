@@ -137,6 +137,25 @@ Index only, not part of the study narrative:
 Full index: [results/README.md](results/README.md). Research notes:
 [research/README.md](research/README.md).
 
+## Exploration and verification (beyond the frozen design)
+
+The frozen pipeline above is the main result. Two later bodies of work sit on top
+of it and are indexed in [results/README.md](results/README.md):
+
+- **Deep exploration** — `oulad-sem/scripts/explore_tma_*.py`, outputs in
+  `results/tma_deep_exploration_20261108/`. Descriptive analyses of return
+  latency, multi-deadline trajectories, activity composition, day patterns,
+  data minimisation, delay profiles and silence structure, plus an alert-capacity
+  curve.
+- **Verification** — `oulad-sem/scripts/verify_*.py` with protocols in
+  `research/VERIFICATION_PLAN.md` and `research/TMA_DEEP_PROTOCOL.md`. The
+  pre-registered increment check found no gain (ΔAP +0.0013, interval
+  [−0.0008, +0.0032]); the delay typology and sequence-model advantages did not
+  replicate.
+
+Both reuse the same cohort and test records, so only the pre-registered check
+counts as a frozen test; everything else stays exploratory.
+
 ## Interpretation boundaries
 
 1. AP means average precision for **Fail = 1**, not accuracy. Compare models only within the same cohort, cutoff and test records.

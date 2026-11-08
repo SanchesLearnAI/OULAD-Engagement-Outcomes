@@ -18,7 +18,10 @@
 
 | 文件 | 用途与状态 |
 |---|---|
-| [TMA_TWO_WEEK_PROTOCOL_20261103.md](TMA_TWO_WEEK_PROTOCOL_20261103.md) | **主问题**（前后各 14 天、按截止后点击配对）的冻结设计、运行顺序与判读约束；其他结果的阅读起点 |
+| [TMA_PRIMARY_PROTOCOL.md](TMA_PRIMARY_PROTOCOL.md) | **主问题冻结协议**：人群、窗口、配对、六项主要指标、主模型；先于交付运行写成 |
+| [TMA_DEEP_PROTOCOL.md](TMA_DEEP_PROTOCOL.md) | 深度指标的冻结检验协议；写于首次运行之前，判定阈值 ΔAP ≥ 0.005 且区间不含 0 |
+| [VERIFICATION_PLAN.md](VERIFICATION_PLAN.md) | V0–V6 的验证计划与版本管理约定 |
+| [TMA_TWO_WEEK_PROTOCOL_20261103.md](TMA_TWO_WEEK_PROTOCOL_20261103.md) | 两周设计的**探索性**前期协议；已被上面两份取代，保留作历史 |
 | [ACTIVE_TMA_21_28_RESEARCH.md](ACTIVE_TMA_21_28_RESEARCH.md) | 窗口敏感性（+21/+28 天、按前后合计点击配对）的样本、配对、模型、敏感性和限制 |
 | [CODE_DATA_EXPERIMENT_MAP.md](CODE_DATA_EXPERIMENT_MAP.md) | 六张原始表、代码模块、学生级/汇总产物和各轮实验清单 |
 | [RESEARCH_STATUS_20261103.md](RESEARCH_STATUS_20261103.md) | 原 proposal、当前主线与独立候选题的进展关系 |
