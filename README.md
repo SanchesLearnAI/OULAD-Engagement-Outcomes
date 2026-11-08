@@ -14,11 +14,12 @@ clicks are within 5%. Final Withdrawn records are described separately and are
 excluded from the binary comparison. All findings are observational
 associations, not causal effects.
 
-Read first: [two-week frozen protocol](research/TMA_TWO_WEEK_PROTOCOL_20261103.md),
-[two-week aggregate results](results/tma_two_week_20261103/README.md), and the
-[2026-11-04 synthesis](research/TMA_SYNTHESIS_20261104.md). The primary metric
-set and the main model will be fixed in `research/TMA_PRIMARY_PROTOCOL.md`
-before any new validation run; until then the composite protocol above governs.
+Read first: the [frozen primary protocol](research/TMA_PRIMARY_PROTOCOL.md), the
+[exploratory two-week protocol](research/TMA_TWO_WEEK_PROTOCOL_20261103.md),
+the [two-week aggregate results](results/tma_two_week_20261103/README.md), and the
+[2026-11-04 synthesis](research/TMA_SYNTHESIS_20261104.md). The `oulad-sem/`
+pipeline now executes the frozen protocol end to end; `results/` keeps the
+exploratory tables that led to it.
 
 ## Repository layout
 
@@ -104,8 +105,9 @@ Every stage writes `stages/Sxx.stage.json` and `handoff/Sxx.md` under
 `runs/<run_id>/`; `scripts/validate_run.py` checks the JSONL log against the
 schemas in `docs/contracts/` and must report 0 errors and 0 warnings. Any change
 to `config/config.yaml` requires a `CHANGE_REQUEST.md` entry, a regenerated
-`config/config.sha256`, and a new run id. The pipeline currently executes the
-day-0–27 design; the TMA replacement is in progress.
+`config/config.sha256`, and a new run id. The pipeline executes the TMA
+two-week design; the earlier day-0–27 design is archived under
+`results/oulad_sem_day0_27_baseline_20261108/`.
 
 ## Results index
 
@@ -124,7 +126,7 @@ Window sensitivity (+21/+28 days, clicks matched over the whole window):
 Historical baseline (day 0–27, the original proposal window):
 
 - [Day 0–27 pairs](results/matched_20261102/README.md), [clustering and model diagnostics](results/revised_20261102/README.md), [timing concentration](results/timing_20261102/README.md), [preliminary aggregate](results/local_uci_20261102/README.md).
-- The fixed `oulad-sem/` day-0–27 pipeline run is archived under `results/oulad_sem_day0_27_baseline_20261108/` once the TMA replacement lands.
+- The earlier `oulad-sem/` day-0–27 pipeline run is archived under [results/oulad_sem_day0_27_baseline_20261108](results/oulad_sem_day0_27_baseline_20261108/README.md) with its run id and config hash.
 
 Index only, not part of the study narrative:
 
