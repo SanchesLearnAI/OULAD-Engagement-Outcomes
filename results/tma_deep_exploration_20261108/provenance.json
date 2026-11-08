@@ -8,6 +8,6 @@
     "studentRegistration": "bbc87a0de1fe2a9ec6decce1ca6c1a02cf17b54ad3bdcc673fc6413b41c61d47",
     "vle": "d7a146497edd0e47ef536144b58796c07b554002d3753e848b8e4cd8a56f4c38"
   },
-  "script_sha256": "61caa6ef719002f95997f8a4e1ff20cc72249e7aabc45fec387e346ada93c71b",
+  "script_sha256": "1665259c1e55870e1ee68aa56e4a07b7f63618163a1146dd0a6b6f742330f7e8",
   "limitations": "exploratory; reuses the frozen cohort and pairs; repeated test use; no causal claim; background features are administratively collected and not available to a purely behavioural model"
 }
