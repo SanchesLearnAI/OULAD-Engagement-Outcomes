@@ -16,7 +16,7 @@
 | 配对 | 沿用主设计：同批次，后段点击 5% 容差，1:1，零只配零；4,768 对 |
 | 切分 | 主切分：学生分组 60/20/20，种子 42（`data/processed/splits.json`） |
 | 基线模型 | M2 = 前段点击/活跃日/近截止 3 天份额 + 后段点击（对数与平方）+ 提交状态 + 后段时间特征 + 提交距离，共 16 个特征 |
-| 候选增量特征 | 9 项：`n_silences`、`n_internal_silences`、`longest_silence`、`n_returns_after_silence`、`mean_silence`、`ended_silent`、`missed_deadlines`、`days_late_sum`、`deadlines_in_window` |
+| 候选增量特征 | 8 项：`n_silences`、`n_internal_silences`、`longest_silence`、`n_returns_after_silence`、`mean_silence`、`ended_silent`、`anchor_days_late`、`anchor_submitted` |
 | 分类器 | 逻辑回归（中位数填充 + 标准化 + 独热 `module_presentation`），不做超参搜索 |
 | 阈值 | 验证集最大 F1，若验证集能达到 0.80 精确率则取满足条件的最大召回 |
 | 主要指标 | Fail 平均精确率（AP） |
@@ -41,3 +41,12 @@
 - 不在这份协议的冻结范围内增加或删除特征。
 - 不因为结果不理想而改切分、改阈值规则或改 bootstrap 次数。
 - 不与 80/20 复现表（`t08_parity.csv`）比较——那是另一套切分，用于核对移植是否一致，不是增量检验。
+
+
+## 6. 修订记录
+
+**2026-11-08 晚，首次运行之后**：E2 的"窗口内多截止日"前提被证伪——19 个批次里相邻两个正权重 TMA 的最小间隔是 21 天，大于 14 天的后窗，所以 `deadlines_in_window` 恒为 1，`missed_deadlines` 与 `missed_all` 在数值上完全相同。原先的 9 项里有 3 项因此退化，改用锚点提交的两个量（`anchor_days_late`、`anchor_submitted`）替代，总数变为 8。
+
+这是冻结之后的一次修订，必须在报告里如实写明：它不是"看到了结果再改特征"，而是"发现特征在数据上不可能有变化"。修订前后两次的结论一致（都判无增量），区间都跨零。
+
+另有一个去重补充臂：`longest_silence` 与主分析的 `post_longest_inactive_run` 完全相同，`anchor_submitted` 与 `submitted_by_cutoff` 相同。剔除这两列后的 4 特征臂一并报告，避免把"重新计一遍同样的量"当成增量。

@@ -154,7 +154,11 @@ of it and are indexed in [results/README.md](results/README.md):
   replicate.
 
 Both reuse the same cohort and test records, so only the pre-registered check
-counts as a frozen test; everything else stays exploratory.
+(V1) counts as a frozen test; everything else stays exploratory. The deep
+exploration's E2 block ("how many TMA deadlines fall inside the window") was
+withdrawn after checking the data: the smallest gap between two consecutive
+positive-weight TMA deadlines is 21 days, so the window never contains a second
+deadline.
 
 ## Interpretation boundaries
 

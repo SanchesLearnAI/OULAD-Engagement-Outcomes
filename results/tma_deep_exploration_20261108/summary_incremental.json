@@ -1,5 +1,5 @@
 {
   "ap_m2": 0.6610774443376342,
-  "ap_m2_plus_deep": 0.6619706560071128,
-  "delta_ci": "ci_low=-0.0011;ci_high=+0.0032;reps=400"
+  "ap_m2_plus_deep": 0.6610606804016079,
+  "delta_ci": "ci_low=-0.0012;ci_high=+0.0010;reps=400"
 }

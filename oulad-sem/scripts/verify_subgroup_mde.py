@@ -38,16 +38,24 @@ ALL = "all_features"
 
 def mde_auc(n1: int, n2: int, prevalence: float, alpha: float = 0.05,
             power: float = 0.80) -> float:
-    """Minimum detectable AUC gap between two subgroups (Hanley-McNeil SE)."""
+    """Minimum detectable AUC gap between two subgroups.
+
+    Uses the Hanley-McNeil standard error for a single AUC with the exponential
+    approximation  Q1 = A/(2-A), Q2 = 2A^2/(1+A).  The earlier version zeroed the
+    correlation term and divided by n(n-1), which understated the MDE by about
+    13%; that made "below MDE" too easy to claim.
+    """
     from scipy.stats import norm
+
+    a = float(prevalence)
 
     def se_auc(n: int) -> float:
         if n <= 1:
             return np.nan
-        q1 = prevalence
-        q2 = 1 - q1
-        return float(np.sqrt((q1 * q2 + (n - 1) * (q1 * q2 / 2) * (1 + 2 * 0))
-                             / (n * max(n - 1, 1)))) if n > 1 else np.nan
+        q1 = a / (2 - a)
+        q2 = 2 * a ** 2 / (1 + a)
+        var = (a * (1 - a) + (n - 1) * (q1 - a ** 2) + (n - 1) * (q2 - a ** 2)) / (n * (n - 1))
+        return float(np.sqrt(max(var, 1e-12)))
 
     s1, s2 = se_auc(n1), se_auc(n2)
     if not np.isfinite(s1) or not np.isfinite(s2):
@@ -119,10 +127,12 @@ def main() -> None:
                   "date_registration"]
     # ``module_presentation`` is added by the model wrapper, so it must not be
     # listed as a feature here (it would appear twice in the design matrix).
+    # ``module_presentation_length`` and ``id_assessment`` identify the batch and
+    # therefore the anchor date, so they are not behavioural features.
     excluded = {"final_result", "y_fail", "code_module", "code_presentation",
                 "id_student", "due_day", "cutoff_day", "eligible", "is_withdrawn",
                 "y_t3", "banked_attempt", "score", "has_score_by_cutoff",
-                "module_presentation"}
+                "module_presentation", "module_presentation_length", "id_assessment"}
     behaviour = [c for c in frame.columns if c not in background and c not in excluded]
     numeric = frame.select_dtypes("number").columns
     # The model wrapper imputes numerically, so categorical background columns are
@@ -242,9 +252,22 @@ def main() -> None:
         "median_mde": float(table["mde_0.80"].median()) if len(table) else None,
         "largest_gap": (float(table["abs_gap"].max()) if len(table) else None),
         "interpretation": _interpret(table),
+        "bootstrap_resolution_floor": 1.0 / args.repeats,
+        "at_resolution_limit": (table.loc[table["reject_bh_0_05"],
+                                          "p_bootstrap"].tolist() if len(table) else []),
+        "mde_vs_interval_disagreement": (
+            table.loc[table["gap_exceeds_mde"] & ~table["ci_excludes_zero"],
+                      ["attribute", "feature_set", "auc_gap", "mde_0.80",
+                       "ci_low", "ci_high"]].round(4).to_dict("records")
+            if len(table) else []),
         "caveat": ("MDE uses the Hanley-McNeil AUC standard error with the pooled Fail "
                    "share; it is an approximation, not a substitute for a proper "
-                   "equivalence test."),
+                   "equivalence test. A bootstrap p-value cannot fall below "
+                   "1/repeats, so a surviving contrast whose p equals that floor is "
+                   "'significant at the resolution of the bootstrap', not a measured "
+                   "tail probability. Rows where the gap exceeds the MDE but the "
+                   "interval crosses zero are reported separately instead of being "
+                   "folded into either conclusion."),
     }
     (out / "v3_subgroup_verdict.json").write_text(json.dumps(payload, indent=2),
                                                   encoding="utf-8")

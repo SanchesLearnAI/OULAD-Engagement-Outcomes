@@ -25,9 +25,16 @@ from src.config import load_config, project_root  # noqa: E402
 from src.tma import modeling  # noqa: E402
 
 KEY = ["code_module", "code_presentation", "id_student"]
+# Frozen set (research/TMA_DEEP_PROTOCOL.md). The second-wave E2 rework removed
+# missed_deadlines/days_late_sum/deadlines_in_window, which were degenerate; the
+# anchor submission facts replace them.
 DEEP_FEATURES = ["n_silences", "n_internal_silences", "longest_silence",
                  "n_returns_after_silence", "mean_silence", "ended_silent",
-                 "missed_deadlines", "days_late_sum", "deadlines_in_window"]
+                 "anchor_days_late", "anchor_submitted"]
+# Checked after the run: ``longest_silence`` is byte-identical to the primary
+# feature ``post_longest_inactive_run``, so a de-duplicated set is reported as a
+# post-hoc supplement next to the frozen result.
+DEDUP_FEATURES = ["n_silences", "mean_silence", "ended_silent", "anchor_days_late"]
 THRESHOLD_AP = 0.005
 
 
@@ -48,7 +55,7 @@ def topk_precision(y: np.ndarray, p: np.ndarray, k: float) -> float:
 
 def load(root: Path, out: Path) -> pd.DataFrame:
     frame = pd.read_parquet(root / "data" / "processed" / "features.parquet")
-    for name in ("e9_reengagement_records.parquet", "e2_trajectory_records.parquet"):
+    for name in ("e9_reengagement_records.parquet", "e2_anchor_records.parquet"):
         path = out / name
         if not path.exists():
             raise FileNotFoundError(f"run the exploration pass first: {path}")
@@ -84,7 +91,8 @@ def main() -> None:
 
     base = [c for c in modeling.columns_for(frame, "M2") if c in frame]
     versions = {"M2_frozen_baseline": base,
-                "M2_plus_deep_frozen": base + DEEP_FEATURES}
+                "M2_plus_deep_frozen": base + DEEP_FEATURES,
+                "M2_plus_deep_deduplicated": base + DEDUP_FEATURES}
     preds, rows = {}, []
     for name, cols in versions.items():
         prob, thr, rule = modeling._fit(frame, cols, tr, te, "logistic", cfg["seed"],
@@ -103,7 +111,7 @@ def main() -> None:
     rng = np.random.default_rng(cfg["seed"] + 313)
     groups = frame["id_student"].to_numpy()[te]
     members = list(pd.Series(np.arange(len(te))).groupby(groups).indices.values())
-    ap_delta, auc_delta = [], []
+    ap_delta, auc_delta, dedup_delta = [], [], []
     for _ in range(args.repeats):
         pick = np.concatenate([members[i] for i in rng.integers(len(members),
                                                                size=len(members))])
@@ -111,6 +119,9 @@ def main() -> None:
             continue
         ap_delta.append(average_precision_score(y[te][pick], preds["M2_plus_deep_frozen"][pick])
                         - average_precision_score(y[te][pick], preds["M2_frozen_baseline"][pick]))
+        dedup_delta.append(
+            average_precision_score(y[te][pick], preds["M2_plus_deep_deduplicated"][pick])
+            - average_precision_score(y[te][pick], preds["M2_frozen_baseline"][pick]))
         auc_delta.append(roc_auc_score(y[te][pick], preds["M2_plus_deep_frozen"][pick])
                          - roc_auc_score(y[te][pick], preds["M2_frozen_baseline"][pick]))
     ap_delta = np.asarray(ap_delta)
@@ -119,6 +130,16 @@ def main() -> None:
     point = float(ap_delta.mean())
     has_increment = bool(ci_low > 0 and point >= THRESHOLD_AP)
 
+    dedup = np.asarray(dedup_delta)
+    table.loc[len(table)] = {
+        "model": "delta_deep_deduplicated_minus_baseline", "n_features": np.nan,
+        "average_precision": float(dedup.mean()),
+        "roc_auc": np.nan, "brier": np.nan, "top5_precision": np.nan,
+        "no_skill": float(y[te].mean()),
+        "threshold_rule": (f"ci_low={np.quantile(dedup, .025):+.4f};"
+                           f"ci_high={np.quantile(dedup, .975):+.4f};"
+                           f"reps={len(dedup)}"),
+        "n_test": int(len(te))}
     table.loc[len(table)] = {
         "model": "delta_deep_minus_baseline", "n_features": np.nan,
         "average_precision": point,
@@ -142,6 +163,15 @@ def main() -> None:
             "metric": "average_precision_delta",
             "requires_ci_excludes_zero": True,
             "min_point_estimate": THRESHOLD_AP,
+        },
+        "deduplicated_supplement": {
+            "features": DEDUP_FEATURES,
+            "reason": ("longest_silence duplicates post_longest_inactive_run and "
+                       "anchor_submitted duplicates submitted_by_cutoff; this arm "
+                       "removes them so the increment is not just a re-count"),
+            "point": float(dedup.mean()),
+            "ci_low": float(np.quantile(dedup, .025)),
+            "ci_high": float(np.quantile(dedup, .975)),
         },
         "observed": {"point": point, "ci_low": ci_low, "ci_high": ci_high,
                      "replicates": int(len(ap_delta)),

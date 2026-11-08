@@ -5,16 +5,26 @@ These run on synthetic frames so they stay fast and do not need the OULAD data.
 import numpy as np
 import pandas as pd
 
-from scripts.verify_frozen_increment import DEEP_FEATURES, THRESHOLD_AP, topk_precision
+from scripts.verify_frozen_increment import (DEDUP_FEATURES, DEEP_FEATURES, THRESHOLD_AP,
+                                              topk_precision)
 from scripts.verify_subgroup_mde import bh, collapse, mde_auc
 
 
 def test_deep_feature_set_matches_the_frozen_protocol():
-    # research/TMA_DEEP_PROTOCOL.md fixes exactly these nine columns.
-    assert len(DEEP_FEATURES) == 9
-    assert "days_late_sum" in DEEP_FEATURES
+    # research/TMA_DEEP_PROTOCOL.md was amended when E2 was withdrawn: the three
+    # degenerate window-deadline counters were replaced by the anchor facts.
+    assert len(DEEP_FEATURES) == 8
+    assert "anchor_days_late" in DEEP_FEATURES
     assert "n_internal_silences" in DEEP_FEATURES
+    assert not {"missed_deadlines", "days_late_sum",
+                "deadlines_in_window"} & set(DEEP_FEATURES)
     assert THRESHOLD_AP == 0.005
+
+
+def test_deduplicated_set_drops_the_duplicated_columns():
+    assert "longest_silence" not in DEDUP_FEATURES
+    assert "anchor_submitted" not in DEDUP_FEATURES
+    assert set(DEDUP_FEATURES) <= set(DEEP_FEATURES)
 
 
 def test_topk_precision_counts_ties_at_their_hit_rate():

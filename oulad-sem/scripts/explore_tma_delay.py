@@ -57,7 +57,11 @@ def submission_fraction(master: pd.DataFrame, submissions: pd.DataFrame
         frame["sfi"] = np.where(window > 0, elapsed / window, np.nan)
     frame["sfi"] = frame["sfi"].where(frame["submitted_by_cutoff"].eq(1))
     frame["window_days"] = window
-    frame["sfi_flag_out_of_range"] = (~frame["sfi"].between(0, 1.5)).fillna(False)
+    # A missing SFI means "no submission by the cutoff", which is a different
+    # state from "submitted but the window arithmetic falls outside [0, 1.5]".
+    frame["sfi_flag_out_of_range"] = (
+        frame["sfi"].notna() & ~frame["sfi"].between(0, 1.5))
+    frame["sfi_flag_no_submission"] = frame["sfi"].isna()
     return frame
 
 
@@ -209,7 +213,8 @@ def main() -> None:
     pairs = pairing.make_pairs(frame, 0.05, cfg["seed"])
 
     sfi = submission_fraction(master, submissions)
-    sfi[KEY + ["sfi", "window_days", "sfi_flag_out_of_range"]].to_parquet(
+    sfi[KEY + ["sfi", "window_days", "sfi_flag_out_of_range",
+           "sfi_flag_no_submission"]].to_parquet(
         out / "e8_sfi_records.parquet", index=False)
     describe = (sfi[sfi["eligible"]].groupby("final_result")
                 .agg(records=("id_student", "size"),
@@ -217,7 +222,8 @@ def main() -> None:
                      mean_sfi=("sfi", "mean"),
                      median_sfi=("sfi", "median"),
                      median_window_days=("window_days", "median"),
-                     share_out_of_range=("sfi_flag_out_of_range", "mean"))
+                     share_out_of_range=("sfi_flag_out_of_range", "mean"),
+                     share_no_submission=("sfi_flag_no_submission", "mean"))
                 .reset_index())
     describe.to_csv(out / "e8_sfi_by_outcome.csv", index=False)
 

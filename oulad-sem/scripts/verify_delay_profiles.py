@@ -47,8 +47,10 @@ def main() -> None:
     candidates = pd.read_csv(out / "e8_profile_candidates.csv")
     best = int(candidates.sort_values(["silhouette", "mean_ari"],
                                       ascending=False).iloc[0]["k"])
-    # ``e8_sfi_records.parquet`` only keeps sfi/window/flag, so eligibility comes
-    # from the binary cohort: a record with an SFI is by construction eligible.
+    # Restrict to the binary cohort so the profile table and the outcome mix use
+    # the same population; ``e8_sfi_records.parquet`` covers the full master frame.
+    binary_keys = features[KEY].drop_duplicates()
+    sfi = sfi.merge(binary_keys, on=KEY, how="inner", validate="one_to_one")
     data = sfi[sfi["sfi"].notna()].copy()
     data = data[data["sfi"].between(0, 1.5)].copy()
     x = StandardScaler().fit_transform(data[["sfi", "window_days"]].to_numpy(dtype=float))
@@ -140,6 +142,11 @@ def main() -> None:
                                        if len(within) else None),
         "spread_driven_by_small_group": bool(
             len(within) and within["records"].min() < 500),
+        "window_length_variance_note": (
+            "k-means runs on standardised (SFI, window_days); window_days is "
+            "strongly bimodal (median 55-64 vs 147), so the profiles are close to "
+            "a split on window length alone."),
+        "can_test_typology": False,
         "supports_published_typology": bool(
             within_spread is not None and within_spread >= 0.10
             and not (len(within) and within["records"].min() < 500)),
