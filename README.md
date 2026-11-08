@@ -1,243 +1,169 @@
 # Same Engagement, Different Outcomes
 
-Group 9 data mining project using the [Open University Learning Analytics Dataset (OULAD)](https://doi.org/10.24432/C5KK69).
+Group 9 data mining project on the [Open University Learning Analytics Dataset
+(OULAD)](https://doi.org/10.24432/C5KK69).
 
-The [2026-11-04 integrated synthesis](research/TMA_SYNTHESIS_20261104.md)
-reconciles the model results and matched behavioral evidence across all studies.
-The latest [nonlinear mark-by-engagement attributes](results/tma_response_attributes_20261104/README.md)
-test high-mark decline, low-mark growth, and persistence. Their small average
-AP improvement does not carry over to the historical year-transfer check.
+The study asks whether, **within the same module presentation and among students
+with comparable VLE click volume, submission timing and post-deadline
+persistence are associated with eventually failing the module**. The main
+design anchors each presentation on the deadline `d` of its first
+positive-weight tutor-marked assignment (TMA): engagement is observed for 14
+days before (`d−13…d`) and 14 days after (`d+1…d+14`) that deadline, and Fail
+records are paired 1:1 with Pass/Distinction records whose **post-deadline**
+clicks are within 5%. Final Withdrawn records are described separately and are
+excluded from the binary comparison. All findings are observational
+associations, not causal effects.
 
-A subsequent [submission-by-persistence study](results/tma_submission_persistence_20261104/README.md)
-finds that a non-submission-by-inactivity interaction raises retrospective mean
-AP to 0.7136, with a smaller positive year-transfer change. Within low-click
-matched pairs, on-time submission plus activity in both weeks distinguishes
-outcomes even after additional matching; high-click findings are less stable.
+Read first: [two-week frozen protocol](research/TMA_TWO_WEEK_PROTOCOL_20261103.md),
+[two-week aggregate results](results/tma_two_week_20261103/README.md), and the
+[2026-11-04 synthesis](research/TMA_SYNTHESIS_20261104.md). The primary metric
+set and the main model will be fixed in `research/TMA_PRIMARY_PROTOCOL.md`
+before any new validation run; until then the composite protocol above governs.
 
-## TMA-centered two-week revision candidate
+## Repository layout
 
-The newest completed study uses 14 days before and 14 days after the first
-positive-weight TMA deadline. Its primary pairs have comparable **post-deadline**
-clicks within the same module presentation. Failures show fewer active days,
-longer inactive runs, and less activity in the second week. Pre-deadline
-engagement remains imbalanced, and adding timing features brings only a small,
-uncertain predictive gain. Read the [frozen protocol](research/TMA_TWO_WEEK_PROTOCOL_20261103.md)
-and [aggregate results](results/tma_two_week_20261103/README.md). This is a
-candidate for revising the proposal question; the +21/+28-day work below remains
-the earlier completed main analysis.
+Two code bases share one dataset and deliberately stay in separate directories:
 
-A [post-click volume cluster follow-up](results/tma_click_clusters_20261103/README.md)
-checks Fail–Pass behavior differences separately among zero, low, and high
-post-deadline click groups, using the same within-presentation matched pairs.
-Pre-deadline engagement remains an important limitation.
-A [relative pre/post click-gap ablation](results/tma_relative_gap_20261103/README.md)
-adds the bounded signed difference to the M0/M1 prediction models; its observed
-incremental AP gain is negligible.
-A [first-TMA mark and click-shift follow-up](results/tma_score_gap_20261103/README.md)
-tests the mark, click gap, and their interaction at +14 days. The mark improves
-retrospective prediction, while the interaction adds no reliable AP; grade
-release dates are unavailable.
-A [TMA submission-timing follow-up](results/tma_submission_timing_20261103/README.md)
-adds days early and days late relative to the scheduled deadline. It finds a
-small predictive increment and a later average submission among Fail records
-matched on first TMA mark and post-deadline clicks. Individual extensions are
-not recorded.
-A [short pre-deadline click-burst follow-up](results/tma_predeadline_burst_20261103/README.md)
-compares click-rate changes over the final one and three days before the TMA
-deadline. Clicks rise near the deadline, especially as a share of Fail records'
-prior activity; the new features bring only a tiny pre-deadline model gain and
-no clear gain after submission status and post-deadline behavior are included.
+| Path | Role | Tests |
+|---|---|---|
+| `oulad_analysis/`, `tests/` | Research and exploration code: cohort construction, pairing, clustering, feature ablations, model comparisons. Python 3.11, `unittest`, `duckdb`. | `python -m unittest discover -s tests -v` (28 tests) |
+| `oulad-sem/` | Validation and delivery pipeline: frozen config with a config hash, gated stages S00–S12, JSONL run log plus schema validation, ZIP packaging. Python 3.11, `pytest`, own `Makefile`. | `cd oulad-sem && make test` (13 tests) |
 
-## Research question
+`oulad_analysis/` is where exploratory questions are developed. `oulad-sem/`
+is where a frozen design is executed end to end and packaged. Once the TMA
+replacement in `oulad-sem/` lands, that pipeline carries the main study; the
+research code stays as the exploration and reference implementation.
 
-Within the same module presentation, among students with comparable VLE click
-volume observed by 21 or 28 days after the first positive-weight tutor-marked
-assignment (TMA) deadline, which **post-deadline** submission, activity-timing,
-and resource-use patterns are associated with eventual Pass/Distinction rather
-than Fail? The two cutoffs
-are separate analyses. The VLE observation window starts 13 days before the
-deadline; Withdrawn is described separately.
+- `data/oulad.zip` — unmodified public archive, checksum in [data/README.md](data/README.md).
+- `results/<name>_<date>/` — reviewed aggregate tables, protocols and figures.
+- `research/` — protocols, synthesis notes and the code/data/experiment map.
+- `outputs/` — student-level parquet, pair indices and predictions; git-ignored.
 
-The main pairs currently match clicks over the entire window, including the
-14 pre-deadline days. A smaller sensitivity subset also limits post-deadline
-click differences. The primary match therefore supports a pre/post allocation
-comparison; a strict same-post-click question needs a separate post-click
-matching analysis. Clustering is not required to answer the behavioral question.
+## Setting up
 
-The implemented TMA analysis matches Fail with Pass/Distinction records at each
-cutoff within a module presentation and compares submission, timing, and
-resource-use features. A separate student-grouped model test checks whether
-timing and resource features add predictive information. The earlier day-0–27
-matched analysis remains a historical baseline.
-The Wu et al. model-method probes at
-[+21 days](results/wu_method_probe_20261103/README.md) and
-[+28 days](results/wu_method_probe_28d_20261103/README.md) test HGB and
-sigmoid calibration on this Fail/Pass task. They adapt model settings rather
-than reproducing that paper's withdrawal results.
-
-## Project map and research status
-
-- [Current TMA +21/+28-day research record](research/ACTIVE_TMA_21_28_RESEARCH.md): cohort, click matching, behavior differences, resource and score sensitivity, models, transfer checks, and limitations.
-- [TMA-centered two-week candidate](results/tma_two_week_20261103/README.md): post-click matching, pre-window balance, timing profiles, outcome-blind clusters, and model ablations.
-- [Research status](research/RESEARCH_STATUS_20261103.md): distinguishes the original day-0–27 question, the current TMA question, and the separate post-deadline non-submission candidate.
-- [Code, data, and experiment map](research/CODE_DATA_EXPERIMENT_MAP.md): source tables, modules, local student-level outputs, and aggregate results.
-- [Research notes and scripts](research/README.md) and [aggregate result index](results/README.md).
-
-The original proposal remains background for a later research-question revision. The current +21/+28-day analysis is the implemented main question; the non-submission subgroup has feasibility and preliminary strata, but its controlled three-outcome analysis is still pending.
-
-## Current analyses
-
-**Primary TMA comparison:** see
-[`results/tma_matched_21_28_20261103`](results/tma_matched_21_28_20261103/README.md).
-It uses exact, 5%, and 10% total-click matching at each cutoff. A secondary
-sensitivity analysis also restricts post-deadline clicks, since similar total
-clicks can hide different pre/post allocation. Resource clicks are joined to
-the original `vle.csv` activity types and reconciled to the node totals.
-
-**First-TMA mark sensitivity:**
-[`results/tma_score_probe_20261103`](results/tma_score_probe_20261103/README.md)
-compares the same behavior among students with both similar clicks and similar
-first weighted TMA scores. It reports within-assessment score ranks. OULAD has
-no mark-release timestamp, so this is retrospective analysis rather than a
-claim that marks were available at the observation cutoff.
-The [full score/rank training round](results/tma_score_model_20261103/README.md)
-compares the timing baseline with score, training-only rank, and all resource
-features on the same student-grouped holdouts. Its gain is also retrospective.
-
-**Earlier four-week baseline:** compare Fail against Pass/Distinction within the same
-module presentation and closely matched day-0–27 click counts. Run `--stage
-matched` after features (also included in `--stage all`). Read
-`matched_balance.csv`, `matched_effects.csv`, and
-`matched_presentation_effects.csv` first. The original all-nonzero-student
-clustering is supplementary exploratory EDA; its high/low activity groups do
-not answer the research question. Classification on unmatched student holdouts
-is a separate incremental-prediction check, not a substitute for this comparison.
-The earlier matched results are in
-[`results/matched_20261102`](results/matched_20261102/README.md).
-
-**TMA prediction check:** `oulad_analysis.assessment_node` evaluates days 1–21 and
-1–28 after the first weighted TMA deadline; see
-[`results/assessment_node_windows_20261103`](results/assessment_node_windows_20261103/README.md).
-
-The following is the earlier four-week pipeline:
-
-- Join OULAD's studentInfo, studentVle, and vle tables. Each observation is one student in one module presentation.
-- Use only days 0–27 to build features. Compare Pass/Distinction with Fail; describe Withdrawn separately.
-- Within each module presentation, compare students with similar total clicks. Derive weekly activity and resource-type shares.
-- Use clustering only as supplementary exploration; do not present uncontrolled activity clusters as profiles at comparable engagement.
-- Compare an engagement-only logistic regression with models that also use behavioral features. Use a random forest to check nonlinear patterns.
-- Review high-activity failures and low-activity successes as descriptive exceptions.
-
-## Evaluation
-
-Split by student ID before modeling. Compare models on the same unmatched held-out set using recall, F1, and precision-recall AUC. Check class balance, cluster stability, sensitivity to click-range thresholds, and consistency across module presentations. This is an observational study; findings describe associations, not causal effects.
-
-## Deliverables and dates
-
-- Nov 7: data preparation, study population, features, and exploratory analysis.
-- Nov 20: clustering, exception analysis, model comparisons, and ablations.
-- Nov 27: poster submission.
-- Dec 4: poster presentation.
-- Dec 11: final report, code, README, and project package.
-
-## Collaboration
-
-Use GitHub Issues to track tasks and decisions. Keep data processing rules, matching thresholds, random seeds, and model settings documented so results can be reproduced. The public UCI dataset archive is stored in `data/oulad.zip`; do not commit extracted CSVs, private data, or row-level model predictions.
-
-## Python environment
-
-The project uses Python 3.11. Install the core analysis libraries from `requirements.txt`; `requirements-lock.txt` records the versions verified on the course HPC environment. The core workflow uses CPU-based data processing and classical machine learning, so no GPU framework is required for setup.
+Python 3.11 is required. Each code base keeps its own dependency file; do not
+merge them.
 
 ```bash
+# research code, from the repository root
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
+
+# pipeline, in the same environment
+python -m pip install pyyaml jsonschema pytest     # plus the requirements above
 ```
 
-## Run the analysis
+`requirements-lock.txt` and `oulad-sem/REQUIREMENTS.lock` record the versions
+verified on the course HPC environment; use them to diagnose version problems.
+The pipeline additionally ships `oulad-sem/config/config.example.yaml` and the
+JSON schemas under `oulad-sem/docs/contracts/`.
 
-For the first weighted TMA experiment, also extract `assessments.csv` and
-`studentAssessment.csv` from the same OULAD archive. Run it in a separate new
-output directory:
+## Data
+
+Extract the committed archive; nothing else needs downloading:
 
 ```bash
-python -m oulad_analysis.assessment_node --data-dir /path/to/oulad --output-dir outputs/node_2w --post-weeks 2
-python -m oulad_analysis.assessment_node --data-dir /path/to/oulad --output-dir outputs/node_3w --post-weeks 3
-python -m oulad_analysis.assessment_node --data-dir /path/to/oulad --output-dir outputs/node_4w --post-weeks 4
-python -m oulad_analysis.assessment_node_compare --two outputs/node_2w --three outputs/node_3w --four outputs/node_4w --output outputs/node_common_cohort.csv
-python -m oulad_analysis.tma_matched --data-dir /path/to/oulad --three outputs/node_3w --four outputs/node_4w --output-dir outputs/tma_matched_21_28
-python -m oulad_analysis.tma_score_probe --data-dir /path/to/oulad --three outputs/node_3w --four outputs/node_4w --matched-dir outputs/tma_matched_21_28 --output-dir outputs/tma_score_probe
-python -m oulad_analysis.tma_score_model --three outputs/tma_score_probe --four outputs/tma_score_probe --output-dir outputs/tma_score_model
+mkdir -p data/raw && unzip -o data/oulad.zip -d data/raw              # research code
+mkdir -p oulad-sem/data/raw/oulad
+unzip -o data/oulad.zip -d oulad-sem/data/raw/oulad                    # pipeline
+cp data/oulad.zip oulad-sem/data/raw/oulad/                            # S00 records the ZIP hash
 ```
 
-The command writes `node_protocol.json`, `node_models.csv`,
-`node_ap_intervals.csv`, `node_course_deltas.csv` and an ignored student-level
-`node_features.parquet`; `node_year_transfer.csv` checks 2013-to-2014 transfer.
-`--post-weeks` accepts 2, 3, or 4; each run needs a new output directory.
-The comparison command restricts all three runs to records present at every
-cutoff and uses the same student split at each horizon. It is a retrospective
-window comparison because membership requires remaining enrolled through the
-four-week cutoff. Read same-horizon B3-B2 gains first; AP across horizons
-uses different information times and should not be called a method gain.
-The TMA experiment applies to
-six modules and 19 presentations with a positive-weight TMA. It excludes
-banked submissions and records that are not registered at the deadline or
-have unregistered by the observation cutoff. Pass/Distinction versus Fail is
-evaluated among the remaining non-Withdrawn records; Withdrawn counts are
-retained in the protocol. See [METHODS.md](METHODS.md) for exact boundaries.
+Both `data/raw/` and `oulad-sem/data/` are git-ignored. The pipeline needs the
+same seven CSVs; S00 refuses to continue if any is missing and it cannot
+verify the archive hash.
 
-Extract the public archive at `data/oulad.zip` into a local directory. The
-workflow requires `studentInfo.csv`, `studentVle.csv`, `vle.csv`, and
-`studentRegistration.csv`. Run in a **new** output directory:
+## Running
+
+Research code, in a **new** output directory each time:
 
 ```bash
-python -m oulad_analysis --data-dir /path/to/oulad --output-dir outputs/run_001
+python -m oulad_analysis.assessment_node --data-dir data/raw --output-dir outputs/node_2w --post-weeks 2
+python -m oulad_analysis.tma_two_week --data-dir data/raw --node-dir outputs/node_2w \
+    --output-dir outputs/two_week --seed 42 --repeats 1000 --bootstrap 500 --cluster-pairs 800
+python -m oulad_analysis.tma_click_clusters --input-dir outputs/two_week \
+    --output-dir outputs/click_clusters --seed 42 --repeats 1000
+python -m oulad_analysis.tma_submission_timing --data-dir data/raw --node-dir outputs/node_2w \
+    --two-week-dir outputs/two_week --cluster-dir outputs/click_clusters \
+    --output-dir outputs/submission_timing --seed 42 --bootstrap 500 --repeats 1000
+python -m oulad_analysis.tma_submission_persistence --data-dir data/raw --node-dir outputs/node_2w \
+    --two-week-dir outputs/two_week --cluster-dir outputs/click_clusters \
+    --output-dir outputs/submission_persistence
 ```
 
-The command creates a feature table and quality report, similar-click
-comparisons, cluster profiles and plots, and grouped-holdout model results.
-It also records input hashes, code revision, Python and dependency versions in
-`run_manifest.json`. Existing results are never overwritten. Use a separate
-output directory and `--deduplicate-events` for exact-duplicate sensitivity.
-The main analysis preserves the original source rows.
-`eligible_by_presentation.csv` describes students still registered through day
-27; it is a sensitivity population, not the default binary-model cohort.
-`click_balance.csv` reports residual click differences within strata, and
-`similar_click_ci.csv` gives student-bootstrap intervals for selected features.
-`balanced_similar_click_comparison.csv` restricts the 20-bin comparison to
-strata with absolute standardized click difference at most 0.1 and reports
-how many rows remain; it is a sensitivity check, not causal matching.
-Model outputs now include nonlinear-click controlled baselines and
-`robustness.csv` (five grouped splits and a 2013-to-2014 check). These remain
-exploratory evaluations because the original holdout has already been inspected.
-Cluster diagnostics report click distributions, module composition, and the
-time-only clustering comparison.
-The timing extension adds weekly evenness, active weeks, maximum calendar-week
-and rolling-week shares, and evenness among active days. See the feature
-definitions in [METHODS.md](METHODS.md). `timing_summary.csv`,
-`timing_quantiles.csv`, and `timing_distribution.png` distinguish broad temporal
-coverage from concentrated activity. The experimental `concentration_full_lr`
-model tests incremental value over the existing complete model on identical
-student splits; older feature tables must be regenerated before running it.
-Individual stages can be run with `--stage features|compare|cluster|model`;
-the latter three read `features.parquet` from the output directory. See
-[METHODS.md](METHODS.md) for feature definitions, inclusion rules and model
-settings. A synthetic end-to-end check is available with
-`python -m unittest discover -s tests -v`.
+Pipeline, from `oulad-sem/`:
 
-The raw data are from the [UCI OULAD release](https://doi.org/10.24432/C5KK69)
-by Kuzilek, Hlosta and Zdrahal, licensed CC BY 4.0. The unmodified source
-archive is committed with [source and checksum details](data/README.md).
-Extracted CSVs and student-level outputs are excluded from Git. The
-`results/local_uci_20261102` directory contains preliminary aggregate results.
-The revised exploratory run and its checks are in
-[`results/revised_20261102`](results/revised_20261102/README.md).
-Timing concentration distributions and the incremental-feature experiment are
-in [`results/timing_20261102`](results/timing_20261102/README.md).
+```bash
+make test
+make sim   && make validate RUN_ID=$(cat .last_sim_run)
+make full  && make validate RUN_ID=$(cat .last_full_run)
+```
 
-For HPC Phase II, [jobs/oulad_cpu.slurm](jobs/oulad_cpu.slurm) requests four
-CPU cores, 16 GB RAM and 30 minutes on `i64m512u`. Verify the remote project,
-environment and raw-data paths first. The script can extract an official
-OULAD ZIP on the compute node if the CSVs are absent. Set a new `RUN_DIR` when
-submitting; the script refuses to overwrite an existing run directory. No GPU
-is requested.
+Every stage writes `stages/Sxx.stage.json` and `handoff/Sxx.md` under
+`runs/<run_id>/`; `scripts/validate_run.py` checks the JSONL log against the
+schemas in `docs/contracts/` and must report 0 errors and 0 warnings. Any change
+to `config/config.yaml` requires a `CHANGE_REQUEST.md` entry, a regenerated
+`config/config.sha256`, and a new run id. The pipeline currently executes the
+day-0–27 design; the TMA replacement is in progress.
+
+## Results index
+
+Main design (TMA, 14 days before and after the deadline, post-deadline click
+pairing):
+
+- [Two-week aggregate results](results/tma_two_week_20261103/README.md) — pairing, balance, timing profiles, model ablations.
+- [Post-click volume clusters](results/tma_click_clusters_20261103/README.md) — exploratory, within zero/low/high post-click groups.
+- [Submission timing](results/tma_submission_timing_20261103/README.md) and [submission × persistence](results/tma_submission_persistence_20261104/README.md) — exploratory; the latter's `0.7136` combination was selected after inspection and is not a pre-registered main model.
+- [Relative pre/post click gap](results/tma_relative_gap_20261103/README.md), [pre-deadline click burst](results/tma_predeadline_burst_20261103/README.md), [nonlinear mark interaction](results/tma_response_attributes_20261104/README.md) — exploratory ablations; the nonlinear interaction does not hold up in the year-transfer check.
+
+Window sensitivity (+21/+28 days, clicks matched over the whole window):
+
+- [+21/+28-day pairs and resources](results/tma_matched_21_28_20261103/README.md), [complete record](research/ACTIVE_TMA_21_28_RESEARCH.md), [node models](results/assessment_node_windows_20261103/README.md).
+
+Historical baseline (day 0–27, the original proposal window):
+
+- [Day 0–27 pairs](results/matched_20261102/README.md), [clustering and model diagnostics](results/revised_20261102/README.md), [timing concentration](results/timing_20261102/README.md), [preliminary aggregate](results/local_uci_20261102/README.md).
+- The fixed `oulad-sem/` day-0–27 pipeline run is archived under `results/oulad_sem_day0_27_baseline_20261108/` once the TMA replacement lands.
+
+Index only, not part of the study narrative:
+
+- `results/tma_score_probe_20261103/`, `results/tma_score_model_20261103/`, `results/tma_score_gap_20261103/` — these use the first-TMA mark, which is not available as an online feature at the cutoff; retrospective upper bounds only.
+- `results/wu_method_probe_20261103/`, `results/wu_method_probe_28d_20261103/` — method probes adapted from an unrelated paper's withdrawal task, not a reproduction.
+- `results/assessment_node_20261103/` — the 2/3/4-week window ladder used to choose the observation horizon.
+
+Full index: [results/README.md](results/README.md). Research notes:
+[research/README.md](research/README.md).
+
+## Interpretation boundaries
+
+1. AP means average precision for **Fail = 1**, not accuracy. Compare models only within the same cohort, cutoff and test records.
+2. Pairing is 1:1 by design and cannot estimate the population failure rate; greedy matching is not globally optimal, and the fixed-pair component bootstrap ignores re-matching uncertainty.
+3. The binary cohort excludes records that withdrew before the observation cutoff, so it is not a real-time early-warning system for all enrolled students.
+4. The first-TMA mark itself contributes to the final result; models with marks are retrospective and cannot be presented as available online features.
+5. The OULAD test splits have been inspected many times across rounds, so intervals and increments are exploratory.
+6. VLE `activity_type` is a platform category, not content quality; `studentVle` has day-level clicks only, so study time cannot be measured.
+
+## Evaluation and deliverables
+
+Split by student ID before modeling; compare models on the same held-out
+records. Report average precision for Fail, with the Fail prevalence as the
+no-skill reference, alongside recall/F1 at a validation-chosen threshold, Brier
+score and calibration. Check class balance, pairing balance, cluster stability,
+tolerance sensitivity and consistency across presentations.
+
+- Nov 7: data preparation, study population, features, exploratory analysis.
+- Nov 20: clustering, exception analysis, model comparisons, ablations.
+- Nov 27: poster submission; Dec 4: poster presentation.
+- Dec 11: final report, code, README and project package (`Group_09_Project.zip`).
+
+Use GitHub issues for tasks and decisions. Record processing rules, matching
+thresholds, seeds and model settings. Do not commit extracted CSVs, student-level
+outputs or predictions.
+
+## Data source
+
+Raw data: [UCI OULAD release](https://doi.org/10.24432/C5KK69) by Kuzilek,
+Hlosta and Zdrahal, CC BY 4.0. The unmodified archive and its checksum are in
+[`data/README.md`](data/README.md). Timing, clustering and model definitions for
+the research code are in [METHODS.md](METHODS.md).

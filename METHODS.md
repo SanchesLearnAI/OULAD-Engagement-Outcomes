@@ -6,31 +6,31 @@ and `vle.csv` at the student × module × presentation grain. The public UCI
 source ZIP is committed with attribution. Extracted CSVs and student-level
 outputs remain outside Git.
 
-## Revised research question and implementation status
+## Research question and implementation status
 
-A subsequent [TMA-centered two-week study](results/tma_two_week_20261103/README.md)
+The main study, [TMA-centered two-week design](results/tma_two_week_20261103/README.md),
 uses days -13 through 0 as the pre-deadline baseline and days +1 through +14
 as the post-deadline behavior window. Its primary pairs match **post-deadline
 clicks** within the same module presentation. The [frozen protocol](research/TMA_TWO_WEEK_PROTOCOL_20261103.md)
 documents the cohort, balance checks, outcome-blind clusters, and model
-ablations. The material below records the earlier +21/+28-day and course-day
-0–27 methods.
+ablations.
 
 The target comparison is among students in the same module presentation with
-similar VLE click volume at 21 or 28 days after the first positive-weight TMA
-deadline: which **post-deadline** submission, activity-timing, and resource-use
-patterns differ between eventual Pass/Distinction and Fail? These are separate
-observation cutoffs, with VLE features measured from deadline day -13 through
-the cutoff. The pre-deadline period supplies context; the substantive focus is
-behavior after the TMA deadline. The implemented primary match uses total
-clicks across both periods. Its post-click restriction is a selected-pair
-sensitivity, not a new post-click-matched primary analysis.
-`assessment_node` tests incremental prediction at those cutoffs on unmatched
-student holdouts. `tma_matched` performs the within-presentation click
-matching, resource-type comparisons, and resource model ablation.
-`tma_score_probe` then checks whether behavior persists at comparable first-TMA
-marks. The `matched` analysis below uses course days 0–27 and is an earlier
-baseline.
+similar post-deadline VLE click volume: which **post-deadline** submission,
+activity-timing, and resource-use patterns differ between eventual
+Pass/Distinction and Fail? The pre-deadline period supplies context and a
+starting-point balance check; the substantive focus is behavior after the TMA
+deadline. The 1:1 match fixes Fail against Pass/Distinction, so it cannot
+estimate the population failure rate.
+
+The earlier +21/+28-day variant matches total clicks across both periods and is
+now the window sensitivity; the course-day 0–27 `matched` analysis below is the
+historical baseline. `assessment_node` tests incremental prediction at the
+2/3/4-week cutoffs on unmatched student holdouts, `tma_matched` performs the
++21/+28 within-presentation click matching, resource-type comparisons and
+resource model ablation, and `tma_score_probe` checks whether behavior persists
+at comparable first-TMA marks. Models that use the mark are retrospective upper
+bounds, because OULAD records no mark-release date.
 
 ## Cleaning and feature dictionary
 
