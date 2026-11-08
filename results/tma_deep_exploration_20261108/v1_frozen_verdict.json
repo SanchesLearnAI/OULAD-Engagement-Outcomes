@@ -1,7 +1,7 @@
 {
   "protocol": "research/TMA_DEEP_PROTOCOL.md",
-  "protocol_sha256": "58b2a0cb6a58c3b300a29750db1e13446cc9b0af456526a3809f4e42d3c2c5c2",
-  "script_sha256": "3563afd45c76d3635f4c7aadc908c93d98c3a8b035375af1b0a8631da766e3f3",
+  "protocol_sha256": "862bf2bedc6e52f9800fd88b27d45e0d06c42adc0c01d414cf04a3e33153fcd0",
+  "script_sha256": "1b10f701168bc03b048ed506ac5ef9c5e40013f8cef8b9e6399600aaf3cd0cf3",
   "config_sha256": "6772d0022b7e1d6fecd07ed46d7f0b461f770980135861ffbec6c3295e0e7926",
   "splits_sha256": "2073fdecd6a0199a8c32c7cd1433a4d4e4f0547401c0c30b70ed5871e6c485e7",
   "features_sha256": "9bd3a211ced0dee2fb9ea4b0bb8190e9e388a7cc6832f490f2abef170f3e1b3d",
@@ -14,23 +14,34 @@
     "n_returns_after_silence",
     "mean_silence",
     "ended_silent",
-    "missed_deadlines",
-    "days_late_sum",
-    "deadlines_in_window"
+    "anchor_days_late",
+    "anchor_submitted"
   ],
   "decision_rule": {
     "metric": "average_precision_delta",
     "requires_ci_excludes_zero": true,
     "min_point_estimate": 0.005
   },
+  "deduplicated_supplement": {
+    "features": [
+      "n_silences",
+      "mean_silence",
+      "ended_silent",
+      "anchor_days_late"
+    ],
+    "reason": "longest_silence duplicates post_longest_inactive_run and anchor_submitted duplicates submitted_by_cutoff; this arm removes them so the increment is not just a re-count",
+    "point": 0.00016038736383354097,
+    "ci_low": -0.0005081083350279653,
+    "ci_high": 0.0008524837930587891
+  },
   "observed": {
-    "point": 0.0012690867901526304,
-    "ci_low": -0.0007458850377527192,
-    "ci_high": 0.0032488373868059346,
+    "point": 0.00027471078524469203,
+    "ci_low": -0.0003869340416199962,
+    "ci_high": 0.0009542060146225985,
     "replicates": 400,
-    "auc_delta_point": 1.875869978134187e-05,
+    "auc_delta_point": 0.00025477477841592296,
     "ap_baseline": 0.6610774443376342,
-    "ap_candidate": 0.6624258968703005
+    "ap_candidate": 0.6613345754202191
   },
   "has_increment": false,
   "expected_before_run": "no increment",

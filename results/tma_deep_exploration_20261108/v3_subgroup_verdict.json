@@ -1,14 +1,28 @@
 {
   "overall_auc": {
-    "behaviour_only": 0.7656407842569293,
-    "all_features": 0.7909242597051493
+    "behaviour_only": 0.7658245379003205,
+    "all_features": 0.7910343911991359
   },
   "contrasts": 10,
-  "detectable_contrasts": 4,
+  "detectable_contrasts": 3,
   "ci_excludes_zero": 2,
   "significant_bh": 1,
-  "median_mde": 0.032276580488256795,
-  "largest_gap": 0.05099283158190515,
-  "interpretation": "1 of 10 contrasts survive BH correction: gender (all_features, gap +0.051, BH p 0.025). 6 contrasts have a gap smaller than the minimum detectable effect, so those are undetected rather than absent.",
-  "caveat": "MDE uses the Hanley-McNeil AUC standard error with the pooled Fail share; it is an approximation, not a substitute for a proper equivalence test."
+  "median_mde": 0.036637303664775314,
+  "largest_gap": 0.05077289289323683,
+  "interpretation": "1 of 10 contrasts survive BH correction: gender (all_features, gap +0.051, BH p 0.025). 7 contrasts have a gap smaller than the minimum detectable effect, so those are undetected rather than absent.",
+  "bootstrap_resolution_floor": 0.0025,
+  "at_resolution_limit": [
+    0.0025
+  ],
+  "mde_vs_interval_disagreement": [
+    {
+      "attribute": "age_band",
+      "feature_set": "behaviour_only",
+      "auc_gap": 0.0407,
+      "mde_0.80": 0.0364,
+      "ci_low": -0.0004,
+      "ci_high": 0.0777
+    }
+  ],
+  "caveat": "MDE uses the Hanley-McNeil AUC standard error with the pooled Fail share; it is an approximation, not a substitute for a proper equivalence test. A bootstrap p-value cannot fall below 1/repeats, so a surviving contrast whose p equals that floor is 'significant at the resolution of the bootstrap', not a measured tail probability. Rows where the gap exceeds the MDE but the interval crosses zero are reported separately instead of being folded into either conclusion."
 }

@@ -15,3 +15,8 @@ oulad-sem/outputs/*
 *.pyc
 research/audit_20261102/source_dictionary.txt
 research/reframe_20261103/run_output.txt
+
+# Student-level artefacts from the deep exploration: keyed by id_student, kept
+# local only (see results/tma_deep_exploration_20261108/HOW_TO_REBUILD.md).
+results/tma_deep_exploration_20261108/*records.parquet
+results/tma_deep_exploration_20261108/a2_type_coverage.csv

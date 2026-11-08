@@ -83,55 +83,64 @@ def return_curve(frame: pd.DataFrame, post_days: int = 14) -> pd.DataFrame:
 
 
 def multi_deadline(master: pd.DataFrame, assessments: pd.DataFrame,
-                   submissions: pd.DataFrame, post_days: int) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Submission behaviour across every TMA deadline that falls inside the window.
+                   submissions: pd.DataFrame, post_days: int
+                   ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Anchor submission facts plus the spacing between consecutive TMAs.
 
-    Only deadlines with ``due_day <= d + post_days`` are used, so every counted
-    submission is observable at the cutoff.
+    A first version treated "how many TMA deadlines fall inside the observation
+    window" as a behavioural variable. That premise does not hold on OULAD: the
+    smallest gap between two consecutive positive-weight TMA deadlines in any of
+    the 19 presentations is 21 days, while the post window is 14 days, so the
+    count is always exactly one. The spacing table below is what makes that
+    visible; the degenerate derivatives were removed.
     """
     tma = assessments[assessments["assessment_type"].eq("TMA")
                       & assessments["weight"].gt(0)].copy()
     tma["date"] = pd.to_numeric(tma["date"], errors="coerce")
     tma = tma.dropna(subset=["date"]).sort_values(BATCH + ["date", "id_assessment"])
     tma["deadline_rank"] = tma.groupby(BATCH).cumcount() + 1
+
+    gaps = []
+    for (module, presentation), group in tma.groupby(BATCH):
+        dates = group["date"].to_numpy(dtype=float)
+        if len(dates) < 2:
+            continue
+        gaps.append({"code_module": module, "code_presentation": presentation,
+                     "tma_deadlines": int(len(dates)),
+                     "min_gap_days": float(np.min(np.diff(dates))),
+                     "first_deadline": float(dates[0])})
+    spacing = pd.DataFrame(gaps)
+    if len(spacing):
+        spacing["second_deadline_in_window"] = spacing["min_gap_days"] <= post_days
+
     sub = submissions[["id_assessment", "id_student", "date_submitted", "is_banked"]]
     sub = sub[sub["is_banked"].fillna(0).eq(0)]
-    merged = tma.merge(sub, on="id_assessment", how="left", validate="one_to_many")
+    anchor = tma[tma["deadline_rank"].eq(1)][BATCH + ["id_assessment", "date"]]
+    anchor = anchor.rename(columns={"date": "due_day"})
+    merged = anchor.merge(sub, on="id_assessment", how="left", validate="one_to_many")
 
-    first = (master[KEY + ["due_day", "eligible", "final_result"]]
-             .dropna(subset=["due_day"]))
+    first = master[KEY + ["due_day", "eligible", "final_result"]].dropna(subset=["due_day"])
     rows = []
     for (module, presentation), group in merged.groupby(BATCH):
         cohort = first[(first["code_module"] == module)
                        & (first["code_presentation"] == presentation)]
         if cohort.empty:
             continue
-        base = cohort["due_day"].iloc[0]
-        in_window = group[group["date"] <= base + post_days]
-        if in_window.empty:
-            continue
-        for rank, block in in_window.groupby("deadline_rank"):
-            block = block.drop_duplicates(["id_assessment", "id_student"])
-            observed = block["date_submitted"].where(block["date_submitted"].le(base + post_days))
-            relative = observed - block["date"]
-            piece = block[["code_module", "code_presentation", "id_student"]].copy()
-            piece["deadline_rank"] = int(rank)
-            piece["due_offset"] = block["date"] - base
-            piece["submitted"] = observed.notna().astype(int)
-            piece["days_late"] = relative.clip(lower=0)
-            rows.append(piece)
+        base = float(cohort["due_day"].iloc[0])
+        observed = group["date_submitted"].where(group["date_submitted"].le(base + post_days))
+        piece = group[["code_module", "code_presentation", "id_student"]].copy()
+        piece["anchor_due_day"] = base
+        piece["anchor_submitted"] = observed.notna().astype(int)
+        piece["anchor_days_late"] = (observed - base).clip(lower=0)
+        rows.append(piece.drop_duplicates(KEY))
     if not rows:
-        return pd.DataFrame(), pd.DataFrame()
+        return spacing, pd.DataFrame(), pd.DataFrame()
     long = pd.concat(rows, ignore_index=True)
     agg = (long.groupby(KEY)
-           .agg(deadlines_in_window=("deadline_rank", "nunique"),
-                submissions_in_window=("submitted", "sum"),
-                days_late_sum=("days_late", "sum"),
-                max_days_late=("days_late", "max"))
+           .agg(anchor_submitted=("anchor_submitted", "max"),
+                anchor_days_late=("anchor_days_late", "max"))
            .reset_index())
-    agg["missed_deadlines"] = agg["deadlines_in_window"] - agg["submissions_in_window"]
-    agg["missed_all"] = (agg["submissions_in_window"] == 0).astype(int)
-    return long, agg
+    return spacing, long, agg
 
 
 def composition_shift(frame: pd.DataFrame, daily: pd.DataFrame,
@@ -226,11 +235,12 @@ def run_structure(pairs: pd.DataFrame, post: np.ndarray) -> pd.DataFrame:
     for row in active:
         change = np.flatnonzero(np.diff(row.astype(int))) + 1
         lengths = np.diff(np.concatenate([[0], change, [len(row)]]))
+        # The flag for each run is the value at the run's FIRST position, so the
+        # flag vector must start with row[0] rather than end with row[-1].
+        run_active = np.concatenate([[bool(row[0])], row[change]])
         runs.append(len(lengths))
-        longest_on.append(max([l for l, on in zip(lengths, np.append(row[change], row[-1]))
-                               if on] or [0]))
-        longest_off.append(max([l for l, on in zip(lengths, np.append(row[change], row[-1]))
-                                if not on] or [0]))
+        longest_on.append(max([l for l, on in zip(lengths, run_active) if on] or [0]))
+        longest_off.append(max([l for l, on in zip(lengths, run_active) if not on] or [0]))
     runs = np.asarray(runs, dtype=float)
     longest_on = np.asarray(longest_on, dtype=float)
     longest_off = np.asarray(longest_off, dtype=float)
@@ -364,6 +374,9 @@ def data_minimisation(frame: pd.DataFrame, behaviour: list[str], seed: int = 42,
     sub = pd.DataFrame(sub_rows)
     if len(sub):
         # Gap per attribute between the two largest subgroups, behaviour vs all.
+        # No p-value is attached here: the subgroup sizes are small and the gaps
+        # are descriptive. ``verify_subgroup_mde.py`` adds a student-bootstrap
+        # interval for the same contrasts, which is the number to quote.
         gaps = []
         for attr, group in sub.groupby("attribute"):
             levels = group.groupby("subgroup")["n"].sum().sort_values(ascending=False).index[:2]
@@ -376,10 +389,8 @@ def data_minimisation(frame: pd.DataFrame, behaviour: list[str], seed: int = 42,
         if gaps:
             gap_table = pd.DataFrame(gaps)
             gap_table["abs_gap"] = gap_table["auc_gap"].abs()
-            gap_table["p_raw"] = gap_table["abs_gap"].clip(lower=0) / \
-                (gap_table["abs_gap"].std(ddof=0) + 1e-12)
-            gap_table["p_bh"] = bh(gap_table["p_raw"].clip(0, 1).to_numpy())
-            sub = sub.merge(gap_table[["attribute", "feature_set", "auc_gap", "p_bh"]],
+            gap_table["note"] = "descriptive; see verify_subgroup_mde.py for intervals"
+            sub = sub.merge(gap_table[["attribute", "feature_set", "auc_gap", "note"]],
                             on=["attribute", "feature_set"], how="left")
     return table, pd.concat([ci.assign(kind="delta"), sub.assign(kind="subgroup")],
                             ignore_index=True)
@@ -427,32 +438,25 @@ def main() -> None:
     curve.to_csv(out / "e1_return_curve.csv", index=False)
 
     # E2
-    long, agg = multi_deadline(master, assessments, submissions, post_days)
-    long.to_csv(out / "e2_deadline_events.csv", index=False)
+    spacing, long, agg = multi_deadline(master, assessments, submissions, post_days)
+    spacing.to_csv(out / "e2_deadline_spacing.csv", index=False)
+    long.to_csv(out / "e2_anchor_events.csv", index=False)
     merged = frame.merge(agg, on=KEY, how="left", validate="one_to_one")
-    merged[["deadlines_in_window", "submissions_in_window", "missed_deadlines",
-            "missed_all", "days_late_sum"]] = merged[
-        ["deadlines_in_window", "submissions_in_window", "missed_deadlines",
-         "missed_all", "days_late_sum"]].fillna(0)
+    e2_cols = ["anchor_submitted", "anchor_days_late"]
+    merged[e2_cols] = merged[e2_cols].fillna(0)
     e2_rows = []
-    for name in ("deadlines_in_window", "submissions_in_window", "missed_deadlines",
-                 "missed_all", "days_late_sum", "max_days_late"):
+    for name in e2_cols:
         fail = merged.iloc[pairs["fail_index"]][name].to_numpy(dtype=float)
         passing = merged.iloc[pairs["pass_index"]][name].to_numpy(dtype=float)
         e2_rows.append({"feature": name, "pairs": int(len(pairs)),
                         "fail_mean": float(fail.mean()),
                         "pass_mean": float(passing.mean()),
                         "fail_minus_pass": float((fail - passing).mean())})
-    pd.DataFrame(e2_rows).to_csv(out / "e2_trajectory_pairs.csv", index=False)
-    (merged.groupby("final_result")[["deadlines_in_window", "submissions_in_window",
-                                     "missed_deadlines", "missed_all", "days_late_sum"]]
-     .mean().reset_index().to_csv(out / "e2_trajectory_by_outcome.csv", index=False))
-    # ``days_late_sum`` and ``max_days_late`` are part of the frozen deep-feature
-    # set in research/TMA_DEEP_PROTOCOL.md, so they are saved here as well.
-    merged[KEY + ["final_result", "deadlines_in_window", "submissions_in_window",
-                  "missed_deadlines", "missed_all", "days_late_sum",
-                  "max_days_late"]].to_parquet(
-        out / "e2_trajectory_records.parquet", index=False)
+    pd.DataFrame(e2_rows).to_csv(out / "e2_anchor_pairs.csv", index=False)
+    (merged.groupby("final_result")[e2_cols].mean().reset_index()
+     .to_csv(out / "e2_anchor_by_outcome.csv", index=False))
+    merged[KEY + ["final_result"] + e2_cols].to_parquet(
+        out / "e2_anchor_records.parquet", index=False)
 
     # E3
     comp, comp_records = composition_shift(frame, daily_events, catalog, post_days)
@@ -480,8 +484,11 @@ def main() -> None:
 
     summary.update({
         "e1_never_returns_fail_minus_pass": float(latency.iloc[0]["fail_minus_pass"]),
-        "e2_deadlines_per_record_mean": float(merged["deadlines_in_window"].mean()),
-        "e2_missed_deadlines_fail_minus_pass": float(e2_rows[2]["fail_minus_pass"]),
+        "e2_min_gap_between_tma_days": float(spacing["min_gap_days"].min())
+        if len(spacing) else None,
+        "e2_presentations_with_second_deadline_in_window": int(
+            spacing["second_deadline_in_window"].sum()) if len(spacing) else 0,
+        "e2_anchor_days_late_fail_minus_pass": float(e2_rows[-1]["fail_minus_pass"]),
         "e4_patterns_mined": int(len(patterns)),
         "e5_ap_all": float(ablation.set_index("feature_set").loc["all", "average_precision"]),
         "e5_ap_behaviour": float(ablation.set_index("feature_set").loc["behaviour", "average_precision"]),

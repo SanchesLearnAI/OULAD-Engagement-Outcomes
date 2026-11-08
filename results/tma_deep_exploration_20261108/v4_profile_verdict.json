@@ -1,35 +1,31 @@
 {
   "profiles": 3,
   "records_profiled": 17806,
-  "median_window_days_spread": 92.0,
-  "mean_sfi_spread": 0.2221025122261533,
-  "fail_share_range": 0.10120246904893143,
+  "median_window_days_spread": 88.0,
+  "mean_sfi_spread": 0.14181943467076297,
+  "fail_share_range": 0.12077745542389537,
   "same_profile_share_in_pairs": 0.5159781761496492,
-  "chance_agreement": 0.5417247067937742,
+  "chance_agreement": 0.47911644198901404,
   "clamped_records": 16037,
-  "clamped_fail_share_range": 0.13936504942774547,
-  "within_window_fail_spread": 0.15157064229070116,
+  "clamped_fail_share_range": 0.10878284197328517,
+  "within_window_fail_spread": 0.153366391184573,
   "within_window_small_groups": [
     {
-      "window_bucket": "short",
+      "window_bucket": "long",
       "profile_name": "consistent_early",
-      "records": 262,
-      "fail_share": 0.206
-    },
-    {
-      "window_bucket": "medium",
-      "profile_name": "consistent_early",
-      "records": 151,
-      "fail_share": 0.106
+      "records": 121,
+      "fail_share": 0.124
     },
     {
       "window_bucket": "long",
       "profile_name": "gradual_late",
-      "records": 420,
-      "fail_share": 0.252
+      "records": 375,
+      "fail_share": 0.277
     }
   ],
   "spread_driven_by_small_group": true,
+  "window_length_variance_note": "k-means runs on standardised (SFI, window_days); window_days is strongly bimodal (median 55-64 vs 147), so the profiles are close to a split on window length alone.",
+  "can_test_typology": false,
   "supports_published_typology": false,
   "caveat": "Profile labels come from k-means on (SFI, window length) with no outcome input. ``within_window_fail_spread`` is the largest fail-share spread between profiles inside one window-length bucket: if it is small, the profiles mostly proxy window length and do not reproduce the published high/low/sporadic delayer typology."
 }

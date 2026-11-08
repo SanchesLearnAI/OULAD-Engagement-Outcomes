@@ -26,16 +26,18 @@ from src.tma.anchor import binary_cohort  # noqa: E402
 
 KEY = ["code_module", "code_presentation", "id_student"]
 
+# Candidate increments that exist in the exploration outputs. ``profile_late``
+# is never written, and the three window-deadline counters were dropped together
+# with the E2 rework (the window never contains a second deadline).
 EXTRA = ["n_silences", "n_internal_silences", "longest_silence",
          "n_returns_after_silence", "mean_silence", "ended_silent",
-         "missed_deadlines", "days_late_sum", "deadlines_in_window",
-         "sfi", "profile_late"]
+         "anchor_days_late", "sfi"]
 
 
 def build_frame(root: Path, out: Path, seed: int) -> pd.DataFrame:
     frame = pd.read_parquet(root / "data" / "processed" / "features.parquet")
     joined = frame.copy()
-    for name in ("e9_reengagement_records.parquet", "e2_trajectory_records.parquet",
+    for name in ("e9_reengagement_records.parquet", "e2_anchor_records.parquet",
                  "e8_sfi_records.parquet"):
         path = out / name
         if not path.exists():
@@ -52,7 +54,7 @@ def build_frame(root: Path, out: Path, seed: int) -> pd.DataFrame:
         pass
     if "ended_silent" in joined:
         joined["ended_silent"] = joined["ended_silent"].astype(float).fillna(0)
-    for name in ("missed_deadlines", "days_late_sum", "deadlines_in_window"):
+    for name in ("anchor_days_late",):
         if name in joined:
             joined[name] = joined[name].fillna(0)
     if "profile_name" not in joined:
