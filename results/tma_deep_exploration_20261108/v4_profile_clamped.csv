@@ -1,0 +1,4 @@
+profile_name,records,fail_share
+consistent_early,183,0.1092896174863388
+gradual_early,5076,0.21690307328605202
+gradual_late,10778,0.24865466691408425

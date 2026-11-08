@@ -460,8 +460,11 @@ def main() -> None:
     (merged.groupby("final_result")[["deadlines_in_window", "submissions_in_window",
                                      "missed_deadlines", "missed_all", "days_late_sum"]]
      .mean().reset_index().to_csv(out / "e2_trajectory_by_outcome.csv", index=False))
+    # ``days_late_sum`` and ``max_days_late`` are part of the frozen deep-feature
+    # set in research/TMA_DEEP_PROTOCOL.md, so they are saved here as well.
     merged[KEY + ["final_result", "deadlines_in_window", "submissions_in_window",
-                  "missed_deadlines", "missed_all"]].to_parquet(
+                  "missed_deadlines", "missed_all", "days_late_sum",
+                  "max_days_late"]].to_parquet(
         out / "e2_trajectory_records.parquet", index=False)
 
     # E3

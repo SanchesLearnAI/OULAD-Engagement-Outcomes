@@ -1,0 +1,38 @@
+{
+  "protocol": "research/TMA_DEEP_PROTOCOL.md",
+  "protocol_sha256": "58b2a0cb6a58c3b300a29750db1e13446cc9b0af456526a3809f4e42d3c2c5c2",
+  "script_sha256": "3563afd45c76d3635f4c7aadc908c93d98c3a8b035375af1b0a8631da766e3f3",
+  "config_sha256": "6772d0022b7e1d6fecd07ed46d7f0b461f770980135861ffbec6c3295e0e7926",
+  "splits_sha256": "2073fdecd6a0199a8c32c7cd1433a4d4e4f0547401c0c30b70ed5871e6c485e7",
+  "features_sha256": "9bd3a211ced0dee2fb9ea4b0bb8190e9e388a7cc6832f490f2abef170f3e1b3d",
+  "n_records": 19806,
+  "n_test": 3944,
+  "candidate_features": [
+    "n_silences",
+    "n_internal_silences",
+    "longest_silence",
+    "n_returns_after_silence",
+    "mean_silence",
+    "ended_silent",
+    "missed_deadlines",
+    "days_late_sum",
+    "deadlines_in_window"
+  ],
+  "decision_rule": {
+    "metric": "average_precision_delta",
+    "requires_ci_excludes_zero": true,
+    "min_point_estimate": 0.005
+  },
+  "observed": {
+    "point": 0.0012690867901526304,
+    "ci_low": -0.0007458850377527192,
+    "ci_high": 0.0032488373868059346,
+    "replicates": 400,
+    "auc_delta_point": 1.875869978134187e-05,
+    "ap_baseline": 0.6610774443376342,
+    "ap_candidate": 0.6624258968703005
+  },
+  "has_increment": false,
+  "expected_before_run": "no increment",
+  "matches_expectation": true
+}

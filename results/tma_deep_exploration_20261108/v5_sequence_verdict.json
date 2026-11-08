@@ -1,0 +1,84 @@
+{
+  "backend": "scikit-learn MLPClassifier (PyTorch unavailable: 138 MB wheel did not finish downloading on this link)",
+  "is_recurrent": false,
+  "epochs": 40,
+  "models": [
+    {
+      "model": "mlp_ordered_daily",
+      "average_precision": 0.5472,
+      "roc_auc": 0.7105,
+      "brier": 0.1855,
+      "top5_precision": 0.7589
+    },
+    {
+      "model": "mlp_shuffled_daily",
+      "average_precision": 0.5495,
+      "roc_auc": 0.7115,
+      "brier": 0.1856,
+      "top5_precision": 0.7665
+    },
+    {
+      "model": "mlp_bag_summary",
+      "average_precision": 0.5556,
+      "roc_auc": 0.7125,
+      "brier": 0.1843,
+      "top5_precision": 0.7777
+    },
+    {
+      "model": "mlp_ordered_plus_M2",
+      "average_precision": 0.655,
+      "roc_auc": 0.7562,
+      "brier": 0.1657,
+      "top5_precision": 0.9645
+    },
+    {
+      "model": "mlp_bag_plus_M2",
+      "average_precision": 0.6562,
+      "roc_auc": 0.7592,
+      "brier": 0.1645,
+      "top5_precision": 0.9594
+    },
+    {
+      "model": "M2_logistic_reference",
+      "average_precision": 0.6611,
+      "roc_auc": 0.7647,
+      "brier": 0.1641,
+      "top5_precision": 0.9645
+    }
+  ],
+  "contrasts": [
+    {
+      "contrast": "ordered_mlp_minus_M2",
+      "point": -0.1138,
+      "ci_low": -0.1304,
+      "ci_high": -0.0966,
+      "replicates": 200
+    },
+    {
+      "contrast": "ordered_minus_shuffled",
+      "point": -0.0022,
+      "ci_low": -0.0073,
+      "ci_high": 0.0031,
+      "replicates": 200
+    },
+    {
+      "contrast": "ordered_mlp_plus_M2_minus_M2",
+      "point": -0.0059,
+      "ci_low": -0.0135,
+      "ci_high": 0.0034,
+      "replicates": 200
+    },
+    {
+      "contrast": "ordered_plus_M2_minus_bag_plus_M2",
+      "point": -0.0014,
+      "ci_low": -0.0068,
+      "ci_high": 0.004,
+      "replicates": 200
+    }
+  ],
+  "ordered_beats_shuffled": false,
+  "mlp_beats_m2": false,
+  "mlp_with_M2_features_beats_M2": false,
+  "order_helps_when_M2_features_present": false,
+  "caveat": "A 14-day MLP on ordered daily clicks is not a GRU or Transformer, so this cannot confirm or refute published sequence-model numbers; it only tests whether day ordering adds information beyond volume within this design."
+}
