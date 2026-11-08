@@ -13,8 +13,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from src.data import KEY, read_master, read_vle
+from src.data import KEY, read_master, read_splits, read_tma_features, read_vle
 from src.tma import daily, effects, pairing
+from src.tma import exploration
 from src.tma.anchor import binary_cohort
 
 SPECS = [
@@ -132,6 +133,147 @@ def run(ctx, st):
                     st.metric(f"direction_{feature}",
                               {"share_negative": float(row["share_negative"].iloc[0]),
                                "specs": int(row["specs"].iloc[0])})
+
+    with st.step("exploration_c1_background"):
+        flags = cfg.get("exploration", {}) or {}
+        features = read_tma_features(ctx)
+        main_pairs = pd.read_parquet(
+            ctx.paths.outputs_dir / f"pairs_{int(round(float(cfg['study']['tolerance']) * 100)):02d}.parquet")
+        pools = {col: ctx.paths.interim_dir / f"explore_{col}.csv" for col in ()}
+        if flags.get("background_balance", False):
+            # S04 keeps the pre-entry covariates on the feature table, so the row
+            # order matches the pair indices directly.
+            merged = features
+            table = exploration.background_balance(merged, main_pairs)
+            p = ctx.paths.tables_dir / "t11_x_background_balance.csv"
+            table.to_csv(p, index=False)
+            st.artifact(p, rows=len(table), cols=table.shape[1] if len(table) else 0,
+                        message="C1 pre-entry background of the pairs")
+            if len(table):
+                worst = float(table["abs_smd_matched"].max())
+                st.metric("explore_background", {
+                    "covariates": int(len(table)),
+                    "max_abs_smd_matched": worst,
+                    "covariates_within_0_10": int(table["balanced_matched"].sum())})
+                st.check("explore_background_recorded", True,
+                         f"max abs SMD after pairing={worst:.3f}")
+            subset, info = exploration.constrained_repair(merged, main_pairs)
+            p = ctx.paths.tables_dir / "t11_x_background_constrained.csv"
+            info.to_csv(p, index=False)
+            st.artifact(p, rows=len(info), cols=info.shape[1],
+                        message="C1 pairs that also agree on education and IMD")
+            if len(subset):
+                eff = effects.effect_table(features, subset,
+                                           ["post_active_days", "post_longest_inactive_run",
+                                            "post_week2_share"], seed, repeats)
+                eff.insert(0, "exact_on", "highest_education + imd_band")
+                p = ctx.paths.tables_dir / "t11_x_background_effects.csv"
+                eff.to_csv(p, index=False)
+                st.artifact(p, rows=len(eff), cols=eff.shape[1],
+                            message="C1 effects on the education/IMD-agreeing subset")
+
+    with st.step("exploration_c2_rematching"):
+        flags = cfg.get("exploration", {}) or {}
+        if flags.get("rematching_uncertainty", False):
+            repeats_cap = int(flags.get("rematching_repeats", 20))
+            summaries, draws = [], []
+            for metric in ("post_active_days", "post_longest_inactive_run"):
+                summary, values = exploration.rematching_interval(
+                    features, metric=metric,
+                    tolerance=float(cfg["study"]["tolerance"]), seed=seed,
+                    repeats=repeats_cap)
+                summaries.append(summary)
+                values["metric"] = metric
+                draws.append(values)
+            table = pd.concat(summaries, ignore_index=True)
+            p = ctx.paths.tables_dir / "t11_x_rematching.csv"
+            table.to_csv(p, index=False)
+            st.artifact(p, rows=len(table), cols=table.shape[1],
+                        message="C2 resample-then-repair intervals")
+            values = pd.concat(draws, ignore_index=True)
+            p = ctx.paths.tables_dir / "t11_x_rematching_draws.csv"
+            values.to_csv(p, index=False)
+            st.artifact(p, rows=len(values), cols=values.shape[1],
+                        message="C2 bootstrap draws")
+            st.metric("explore_rematching", {
+                r["metric"]: {"observed": float(r["observed"]),
+                              "ci_low": float(r["ci_low"]),
+                              "ci_high": float(r["ci_high"]),
+                              "repeats_used": int(r["repeats_used"])}
+                for _, r in table.iterrows()})
+            wide = float((table["ci_high"] - table["ci_low"]).max())
+            st.check("explore_rematching_reported", True,
+                     f"widest re-matched interval={wide:.3f}")
+
+        if flags.get("heterogeneity", False):
+            pres = t_present = pd.read_csv(
+                ctx.paths.tables_dir / "t06_presentation_effects.csv")
+            rows = []
+            for metric in ("post_active_days", "post_longest_inactive_run",
+                           "post_week2_share"):
+                summary = exploration.heterogeneity(pres, metric)
+                if len(summary):
+                    rows.append(summary)
+            table = pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
+            p = ctx.paths.tables_dir / "t11_x_heterogeneity.csv"
+            table.to_csv(p, index=False)
+            st.artifact(p, rows=len(table), cols=table.shape[1] if len(table) else 0,
+                        message="C2 random-effects summary across presentations")
+            if len(table):
+                st.metric("explore_heterogeneity", {
+                    r["metric"]: {"pooled": float(r["pooled_effect"]),
+                                  "i_squared": float(r["i_squared"])}
+                    for _, r in table.iterrows()})
+
+    with st.step("exploration_c3_non_submitters"):
+        flags = cfg.get("exploration", {}) or {}
+        if flags.get("non_submitters", False):
+            outcomes = exploration.non_submitter_outcomes(master)
+            p = ctx.paths.tables_dir / "t11_x_non_submitter_outcomes.csv"
+            outcomes.to_csv(p, index=False)
+            st.artifact(p, rows=len(outcomes), cols=outcomes.shape[1] if len(outcomes) else 0,
+                        message="C3 outcomes among records without a submission by d+14")
+            # Behaviour needs the three-outcome cohort, which S10 rebuilds.
+            st.metric("explore_non_submitters", {
+                "non_submitters": int(outcomes["non_submitters"].iloc[0]) if len(outcomes) else 0,
+                "outcomes": int(len(outcomes))})
+            st.check("explore_non_submitters_recorded", True,
+                     "three-outcome split of the non-submitting subgroup")
+
+    with st.step("exploration_c4_at_risk"):
+        flags = cfg.get("exploration", {}) or {}
+        if flags.get("at_risk_warning", False):
+            risk = master[master["eligible"] & master["due_day"].notna()].reset_index(drop=True)
+            risk["y_t3"] = risk["final_result"].map(
+                {"Pass": "Pass", "Distinction": "Pass", "Fail": "Fail",
+                 "Withdrawn": "Withdrawn"})
+            risk = risk.sort_values(KEY).reset_index(drop=True)
+            lookup = risk[KEY + ["due_day"]]
+            matrix = daily.daily_events(read_vle(ctx), lookup, pre_days=14, post_days=14)
+            risk_features, _, _ = daily.build_daily_features(
+                risk, matrix, None, pre_days=14, post_days=14)
+            # The warning target needs its own student-grouped partition: the
+            # binary split cannot be reused because this cohort is larger.
+            risk_features["y_fail"] = risk_features["y_t3"].isin(
+                ["Fail", "Withdrawn"]).astype(int)
+            from src.splits import build_tma_splits
+            _, risk_splits, _ = build_tma_splits(risk_features, cfg.data, seed)
+            data, table = exploration.at_risk_warning_set(
+                risk_features, risk_splits, seed=seed, models=["M0", "M1", "M2"])
+            p = ctx.paths.tables_dir / "t11_x_at_risk_warning.csv"
+            table.to_csv(p, index=False)
+            st.artifact(p, rows=len(table), cols=table.shape[1] if len(table) else 0,
+                        message="C4 Fail-or-Withdrawn prediction in the at-risk set")
+            if len(table):
+                st.metric("explore_at_risk", {
+                    "records": int(len(data)),
+                    "positive_share": float(data["y_fail"].mean()),
+                    "n_test": int(table["n_test"].iloc[0]),
+                    "ap_M2": float(table.loc[table["model"].eq("M2"),
+                                             "average_precision"].mean()),
+                    "models": int(len(table))})
+                st.check("explore_at_risk_recorded", True,
+                         "withdrawal is a positive case here, unlike the binary design")
 
     with st.step("figure"):
         eff = pd.DataFrame(effect_rows)

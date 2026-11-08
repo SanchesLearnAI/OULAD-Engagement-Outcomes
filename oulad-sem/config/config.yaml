@@ -64,6 +64,16 @@ clustering:
   max_pairs: 800
   ari_threshold: 0.60
 
+# Third work segment: exploratory blocks C1-C4.  They never touch the primary
+# indicators or the primary model; each writes t11_x_* / t13_* tables.
+exploration:
+  background_balance: true          # C1 pre-entry covariates of the pairs
+  rematching_uncertainty: true      # C2 resample-then-repair interval
+  rematching_repeats: 20            # capped: every replicate re-runs the pairing
+  heterogeneity: true               # C2 random-effects summary per presentation
+  non_submitters: true              # C3 records without a submission by d+14
+  at_risk_warning: true             # C4 Fail-or-Withdrawn in the at-risk set
+
 models:
   ladder: [M0, M1, M2, M3, M4]
   primary_model: M2              # M1 + submission distance, no scores

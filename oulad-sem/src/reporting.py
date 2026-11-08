@@ -601,6 +601,105 @@ not the final submission.}}
         "One command reproduces the analysis; the submission ZIP contains the code, the "
         "frozen configuration and the run log.")
     parts.append(r"\appendix")
+    parts.append(r"\section{Exploratory extensions}")
+    parts.append(
+        "Four exploratory blocks were run after the primary analysis was frozen. They do not "
+        "change any primary indicator or the primary model, and each is reported here rather "
+        "than in the main text.")
+    bg = t.get("t11_x_background_balance", pd.DataFrame())
+    bg_eff = t.get("t11_x_background_effects", pd.DataFrame())
+    bg_info = t.get("t11_x_background_constrained", pd.DataFrame())
+    rematch = t.get("t11_x_rematching", pd.DataFrame())
+    hetero = t.get("t11_x_heterogeneity", pd.DataFrame())
+    nonsub = t.get("t11_x_non_submitter_outcomes", pd.DataFrame())
+    atrisk = t.get("t11_x_at_risk_warning", pd.DataFrame())
+
+    if len(bg):
+        rows = [[_tex(r["covariate"]), _tex(r["kind"]), f(r["smd_unmatched"], 3),
+                 f(r["smd_matched"], 3),
+                 "yes" if bool(r["balanced_matched"]) else "no"] for _, r in bg.iterrows()]
+        parts.append(_table(
+            ["Covariate", "Kind", "SMD before", "SMD after", "$|$SMD$|\\le$0.10"],
+            rows, "llrrr",
+            "Pre-entry covariates of the matched pairs. Pairing was designed to balance "
+            "post-deadline clicks only, so a remaining difference here is expected and is "
+            "reported rather than corrected.", "tab:c1", size="\\footnotesize"))
+        worst = bg.sort_values("abs_smd_matched", ascending=False).iloc[0]
+        parts.append(
+            f"The largest residual imbalance is {_tex(worst['covariate'])} at "
+            f"{f(worst['smd_matched'], 3)} standard deviations; education, IMD band and "
+            f"previous attempts remain the least balanced covariates. Restricting the pairs to "
+            f"those that also agree exactly on education and IMD band keeps "
+            f"{pct(bg_info['share_of_main_pairs'].iloc[0]) if len(bg_info) else '--'} of them, "
+            f"which is too small to replace the primary comparison.")
+        if len(bg_eff):
+            parts.append(
+                "On that surviving subset the active-day difference is "
+                f"{f(bg_eff.loc[bg_eff['feature'].eq('post_active_days'), 'fail_minus_pass'].iloc[0], 3)} "
+                "days with a much wider interval, so the direction holds but the precision "
+                "does not.")
+
+    if len(rematch):
+        rows = [[_tex(r["metric"]), f(r["observed"], 3), f(r["mean_rematched"], 3),
+                 f"[{f(r['ci_low'], 3)}, {f(r['ci_high'], 3)}]", str(int(r["repeats_used"]))]
+                for _, r in rematch.iterrows()]
+        parts.append(_table(
+            ["Indicator", "Fixed-pair estimate", "Re-matched mean", "Re-matched 95\\% interval",
+             "Replicates"],
+            rows, "lrrrr",
+            "Re-matching uncertainty: each replicate resamples students, rebuilds the cohort "
+            "and re-runs the greedy pairing, so the interval includes the pairing itself "
+            "rather than holding it fixed. Replicates are few, so it is a check on width, not "
+            "a definitive interval.", "tab:c2", size="\\footnotesize"))
+        parts.append(
+            "Both indicators keep their sign and their magnitude under re-matching, and the "
+            "re-matched intervals are only slightly wider than the fixed-pair ones. Pairing "
+            "choice is therefore not doing the work here.")
+    if len(hetero):
+        rows = [[_tex(r["metric"]), f(r["pooled_effect"], 3),
+                 f"[{f(r['ci_low'], 3)}, {f(r['ci_high'], 3)}]", f(r["tau"], 3),
+                 pct(r["i_squared"] / 100)] for _, r in hetero.iterrows()]
+        parts.append(_table(
+            ["Indicator", "Random-effects pooled", "95\\% interval", "$\\tau$",
+             "$I^2$"],
+            rows, "lrrrr",
+            "Per-presentation differences summarised with a DerSimonian-Laird random-effects "
+            "model. A high $I^2$ means the presentations do not share one effect size, which "
+            "is expected when presentations have different cohorts and deadlines.",
+            "tab:c2b", size="\\footnotesize"))
+    if len(nonsub):
+        rows = [[_tex(r["outcome"]), str(int(r["records"])),
+                 pct(r["share_of_non_submitters"]), pct(r["share_of_eligible"])]
+                for _, r in nonsub.iterrows()]
+        parts.append(_table(
+            ["Outcome", "Records", "Share of non-submitters", "Share of eligible cohort"],
+            rows, "lrrr",
+            "Records with no submission by $d+14$, split by final outcome. This is the "
+            "subgroup the binary comparison cannot speak to, because withdrawal and "
+            "non-submission overlap here.", "tab:c3", size="\\footnotesize"))
+        parts.append(
+            f"Of the {int(nonsub['non_submitters'].iloc[0]):,} records without a submission by "
+            f"$d+14$, {pct(nonsub.loc[nonsub['outcome'].eq('Withdrawn'), 'share_of_non_submitters'].sum())} "
+            f"eventually withdraw and "
+            f"{pct(nonsub.loc[nonsub['outcome'].eq('Fail'), 'share_of_non_submitters'].sum())} "
+            f"fail. Non-submission is therefore a stronger signal of leaving than of failing, "
+            f"which is exactly why the binary design excludes Withdrawn.")
+    if len(atrisk):
+        rows = [[_tex(r["model"]), str(int(r["n_test"])), pct(r["positive_share"]),
+                 f(r["average_precision"], 4), f(r["roc_auc"], 4), f(r["brier"], 4)]
+                for _, r in atrisk.iterrows()]
+        parts.append(_table(
+            ["Model", "Test records", "Fail-or-Withdrawn share", "AP", "ROC-AUC",
+             "Brier"],
+            rows, "lrrrrr",
+            "Warning target: Fail-or-Withdrawn among records enrolled at the deadline, with "
+            "Withdrawn as a positive case. The cohort and the label differ from the binary "
+            "comparison, so the AP is not comparable with Section~4.", "tab:c4",
+            size="\\footnotesize"))
+        parts.append(
+            "Because Withdrawn is a positive case here, the AP level is much higher than in "
+            "the binary design; the two numbers answer different questions and must not be "
+            "placed in the same table.")
     parts.append(r"\section{Reproduction}")
     parts.append(
         r"""\begin{verbatim}

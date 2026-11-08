@@ -157,3 +157,45 @@ All previous run ids (`run-20261104T045841Z-4f3088`,
 in `results/oulad_sem_day0_27_baseline_20261108/` where relevant. The TMA design
 starts with a new run id; no number from the archived run may be compared
 directly with a TMA number.
+
+---
+
+# CR-2026-11-08-b — Exploratory blocks C1–C4 behind a config flag
+
+**Date:** 2026-11-08
+
+## Reason
+
+The third work segment of the merge plan asks for four exploratory checks that
+were deferred until the frozen primary design was delivered: pre-entry
+background balance of the matched pairs (C1), re-matching uncertainty and
+per-presentation heterogeneity (C2), the non-submitting subgroup (C3), and an
+at-risk warning set that includes later Withdrawn records (C4).
+
+## What changes
+
+- New `exploration:` block in `config/config.yaml` with five booleans and one
+  replicate cap. Every block can be switched off without touching the primary
+  design.
+- `src/tma/exploration.py` holds the implementations; S11 calls them after the
+  robustness curve and writes `t11_x_*` tables.
+- S12 adds an appendix section that reports the four blocks.
+- No primary indicator, primary model, split, window or matching parameter
+  changes.
+
+## Affected stages
+
+S11 (new exploratory steps) and S12 (appendix text and tables). S02–S10 are
+unchanged.
+
+## Frozen config
+
+- Previous SHA-256: `77ae257566a39c0c89266ca59cc4f896f9ce429611b3e1e4cb63129c8027f1c8`
+- **New SHA-256:** see `config/config.sha256`.
+
+## Run impact
+
+New run ids are required because the config hash changes. The primary tables
+(`t06_primary_holm.csv`, `t08_model_metrics.csv`, `t08_parity.csv`) are expected
+to be identical to the previous run: the new blocks only read tables that the
+earlier stages produced and append new ones.
