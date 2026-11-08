@@ -1,4 +1,9 @@
-"""S07 — W1 behavioural profiles, k selection and bootstrap stability."""
+"""S07 — outcome-blind clustering of post-deadline timing in the paired sample.
+
+Exploratory only: the clusters describe timing profiles among students with
+comparable post-deadline clicks, and the final outcome is never used to choose
+k or features.
+"""
 from __future__ import annotations
 
 import numpy as np
@@ -6,190 +11,128 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from sklearn.metrics import silhouette_samples
+from sklearn.cluster import KMeans
+from sklearn.metrics import adjusted_rand_score, silhouette_score
+from sklearn.preprocessing import StandardScaler
 
-from src.clustering import (consensus, pca_reduce, per_presentation_z,
-                            stability)
-from src.data import KEY, read_features, read_master
-from src.features import feature_columns
+from src.data import read_tma_features
+
+CLUSTER_FEATURES = ["post_active_days", "post_longest_inactive_run",
+                    "post_week2_share", "post_peak7_share", "post_entropy_norm"]
 
 
 def run(ctx, st):
     cfg = ctx.cfg
-    master = read_master(ctx)
-    f = read_features(ctx, 28)
-    cols = feature_columns(f, 1, 28)
-    df = f.merge(master[KEY + ["final_result", "y_t1"]], on=KEY, how="inner")
-    n_all = len(df)
-    min_days = int(cfg["features"].get("min_active_days_for_clustering", 1))
-    df = df[df["w1_active_days"] >= min_days].reset_index(drop=True)
-    st.metric("clustering_cohort", {
-        "n_all": int(n_all), "n_clustered": int(len(df)),
-        "excluded_low_activity": int(n_all - len(df)),
-        "min_active_days": min_days, "n_features": len(cols),
-    })
-    st.check("enough_rows", len(df) >= 30, f"n={len(df)}")
-    if len(df) < 30:
+    seed = cfg["seed"]
+    frame = read_tma_features(ctx)
+    tolerance = float(cfg["study"]["tolerance"])
+    pairs_path = ctx.paths.outputs_dir / f"pairs_{int(round(tolerance * 100)):02d}.parquet"
+    if not pairs_path.exists():
+        st.check("pairs_available", False, f"missing {pairs_path.name}")
+        return
+    pairs = pd.read_parquet(pairs_path)
+    positive = pairs[pairs["fail_clicks"].gt(0)].reset_index(drop=True)
+    st.metric("clustering_input", {"pairs": int(len(pairs)),
+                                   "positive_pairs": int(len(positive))})
+    if len(positive) < 30:
+        # The rehearsal sample can be too small to cluster; record that and let
+        # S12 report the absence instead of failing the run.
+        st.check("enough_pairs", ctx.mode == "full",
+                 f"positive pairs={len(positive)}; clustering needs at least 30",
+                 warn_only=ctx.mode != "full")
+        if ctx.mode != "full":
+            st.warn("clustering skipped: too few positive-click pairs in the sample")
+            for name in ("t07_cluster_candidates.csv", "t07_cluster_profile.csv"):
+                pd.DataFrame().to_csv(ctx.paths.tables_dir / name, index=False)
+            return
+
+    max_pairs = int(cfg["clustering"].get("max_pairs", 800))
+    rng = np.random.default_rng(seed)
+    chosen = positive.iloc[np.sort(rng.choice(len(positive),
+                                             size=min(max_pairs, len(positive)),
+                                             replace=False))].reset_index(drop=True)
+    n = len(chosen)
+    rows = np.concatenate([chosen["fail_index"].to_numpy(), chosen["pass_index"].to_numpy()])
+    sample = frame.iloc[rows].reset_index(drop=True).copy()
+    sample["pair_side"] = np.where(np.arange(len(sample)) < n, "fail", "pass_distinction")
+    sample["pair_id"] = np.concatenate([np.arange(n), np.arange(n)])
+    missing = [c for c in CLUSTER_FEATURES if c not in sample]
+    if missing:
+        st.check("cluster_features_present", False, f"missing={missing}")
         return
 
-    Xdf = per_presentation_z(df, cols, ["code_module", "code_presentation"])
-    Xraw = Xdf[cols].to_numpy(dtype=float)
-    X, evr = pca_reduce(Xraw, max_components=8, seed=cfg["seed"])
-    st.metric("pca", {"n_components": int(X.shape[1]),
-                      "explained_variance_ratio": [round(x, 4) for x in evr],
-                      "cumulative": round(float(np.sum(evr)), 4)})
-
+    x = StandardScaler().fit_transform(sample[CLUSTER_FEATURES].to_numpy(dtype=float))
     k_lo, k_hi = cfg["clustering"]["k_range"]
-    k_list = list(range(int(k_lo), int(k_hi) + 1))
-    with st.step("stability"):
-        tab, base, aris = stability(
-            X, k_list, cfg["clustering"]["n_init"],
-            cfg["clustering"]["bootstrap"], cfg["seed"])
-        p = ctx.paths.tables_dir / "t07_stability.csv"
-        tab.to_csv(p, index=False)
-        st.artifact(p, rows=len(tab), cols=tab.shape[1], message="stability table")
-        st.check("stability_all_k", len(tab) == len(k_list),
-                 f"k rows={len(tab)} expected={len(k_list)}")
-        st.check("stability_metrics_recorded", tab["mean_ari"].notna().all(),
-                 "mean ARI recorded for every k")
+    candidates, labels_by_k = [], {}
+    for k in range(int(k_lo), int(k_hi) + 1):
+        model = KMeans(n_clusters=k, n_init=int(cfg["clustering"]["n_init"]),
+                       random_state=seed).fit(x)
+        labels = model.labels_
+        counts = np.bincount(labels)
+        if counts.min() < max(5, int(np.ceil(0.03 * len(sample)))):
+            continue
+        stability = []
+        for repeat in range(int(cfg["clustering"]["bootstrap"])):
+            sub = np.sort(rng.choice(len(sample), size=int(0.8 * len(sample)), replace=False))
+            rerun = KMeans(n_clusters=k, n_init=10, random_state=seed + repeat + 1) \
+                .fit_predict(x[sub])
+            stability.append(float(adjusted_rand_score(labels[sub], rerun)))
+        candidates.append({"k": k,
+                           "silhouette": float(silhouette_score(
+                               x, labels, sample_size=min(800, len(sample)), random_state=seed)),
+                           "mean_ari": float(np.mean(stability)),
+                           "min_cluster_share": float(counts.min() / len(sample))})
+        labels_by_k[k] = labels
+    if not candidates:
+        st.check("cluster_candidates", False, "no admissible k")
+        return
+    table = pd.DataFrame(candidates).sort_values("k").reset_index(drop=True)
+    p = ctx.paths.tables_dir / "t07_cluster_candidates.csv"
+    table.to_csv(p, index=False)
+    st.artifact(p, rows=len(table), cols=table.shape[1], message="k candidates")
 
-    with st.step("select_k"):
-        thr = float(cfg["clustering"]["ari_threshold"])
-        ok = tab[tab["mean_ari"] >= thr]
-        if len(ok):
-            chosen = ok.sort_values(["mean_ari", "silhouette"],
-                                    ascending=[False, False]).iloc[0]
-            reason = (f"k={int(chosen.k)} selected from k with mean ARI >= {thr}; "
-                      f"maximum stability first, silhouette as tie-break")
-            stable = True
-        else:
-            chosen = tab.sort_values("mean_ari", ascending=False).iloc[0]
-            reason = (f"no k reached mean ARI {thr}; k={int(chosen.k)} chosen by "
-                      "maximum mean ARI and flagged unstable")
-            stable = False
-        k = int(chosen["k"])
-        labels = base[k]
-        st.notes = reason
-        st.extra["k_reason"] = reason
-        st.metric("k_selection", {
-            "k_chosen": k, "mean_ari": float(chosen["mean_ari"]),
-            "min_cluster_jaccard": float(chosen["min_cluster_jaccard"]),
-            "silhouette": float(chosen["silhouette"]),
-            "ari_threshold": thr, "stable": stable,
-            "cluster_sizes": [int(x) for x in np.bincount(labels)],
-        })
-        st.check("k_selection_recorded", True, reason)
+    best = max(candidates, key=lambda row: (row["silhouette"], row["mean_ari"]))
+    labels = labels_by_k[best["k"]]
+    sample["cluster"] = labels
+    sample[["code_module", "code_presentation", "id_student", "pair_id", "pair_side",
+            "cluster", "post_clicks", "final_result"]].to_parquet(
+        ctx.paths.outputs_dir / "cluster_sample.parquet", index=False)
 
-    with st.step("cluster_outcome"):
-        df["cluster"] = labels
-        ct = pd.crosstab(df["cluster"], df["final_result"])
-        prop = ct.div(ct.sum(axis=1), axis=0)
-        out = ct.copy()
-        out.columns = [f"n_{c}" for c in out.columns]
-        for c in prop.columns:
-            out[f"share_{c}"] = prop[c]
-        out["n"] = ct.sum(axis=1)
-        out = out.reset_index()
-        p = ctx.paths.tables_dir / "t07_cluster_outcome.csv"
-        out.to_csv(p, index=False)
-        st.artifact(p, rows=len(out), cols=out.shape[1],
-                    message="cluster x outcome")
-        st.metric("outcome_rates_by_cluster",
-                  {str(r["cluster"]): {c: round(float(r[f"share_{c}"]), 4)
-                                       for c in prop.columns}
-                   for _, r in out.iterrows()})
-        st.check("cluster_outcome_counts", int(ct.values.sum()) == len(df),
-                 f"crosstab total={int(ct.values.sum())}")
+    profile = (sample.groupby("cluster")
+               .agg(n=("id_student", "size"),
+                    mean_post_clicks=("post_clicks", "mean"),
+                    median_post_clicks=("post_clicks", "median"),
+                    submitted_by_cutoff=("submitted_by_cutoff", "mean"),
+                    fail_share=("final_result", lambda s: float(s.eq("Fail").mean())))
+               .join(sample.groupby("cluster")[CLUSTER_FEATURES].mean())
+               .reset_index())
+    p = ctx.paths.tables_dir / "t07_cluster_profile.csv"
+    profile.to_csv(p, index=False)
+    st.artifact(p, rows=len(profile), cols=profile.shape[1], message="cluster profiles")
 
-    with st.step("figures"):
-        fig, ax = plt.subplots(figsize=(6.8, 3.8))
-        data = [aris[int(kk)] for kk in k_list]
-        ax.boxplot(data, tick_labels=[str(kk) for kk in k_list],
-                   showfliers=False)
-        ax.axhline(cfg["clustering"]["ari_threshold"], color="#b23b3b",
-                   ls="--", lw=1, label=f"ARI threshold={cfg['clustering']['ari_threshold']}")
-        ax.set_xlabel("k"); ax.set_ylabel("bootstrap ARI")
-        ax.set_title("Cluster stability across k")
-        ax.legend(frameon=False, fontsize=8)
-        fig.tight_layout()
-        fp = ctx.paths.figures_dir / "f07_ari_distribution.png"
-        fig.savefig(fp, dpi=160); plt.close(fig)
-        st.artifact(fp, message="ARI distribution")
+    # Membership contrast: the same pair should mostly land in one cluster.
+    membership = sample.pivot_table(index="pair_id", columns="pair_side",
+                                    values="cluster", aggfunc="first")
+    same = float((membership["fail"] == membership["pass_distinction"]).mean()) \
+        if {"fail", "pass_distinction"} <= set(membership.columns) else float("nan")
+    st.metric("cluster_outcome", {"k": int(best["k"]),
+                                  "silhouette": best["silhouette"],
+                                  "mean_ari": best["mean_ari"],
+                                  "pairs_in_same_cluster": same})
+    st.check("cluster_stability_reported",
+             bool(np.isfinite(best["mean_ari"])),
+             f"mean ARI={best['mean_ari']:.3f} at k={best['k']}")
+    st.check("clusters_exploratory", True,
+             "k and features were chosen without the final outcome")
 
-        vis, cm = consensus(X, k, cfg["clustering"]["n_init"],
-                            cfg["clustering"]["bootstrap"], cfg["seed"],
-                            max_vis=2000)
-        order = np.argsort(labels[vis], kind="stable")
-        fig, ax = plt.subplots(figsize=(5.6, 5.0))
-        im = ax.imshow(cm[np.ix_(order, order)], cmap="viridis", vmin=0, vmax=1,
-                       interpolation="nearest")
-        ax.set_title(f"Consensus matrix (k={k})")
-        ax.set_xticks([]); ax.set_yticks([])
-        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-        fig.tight_layout()
-        fp = ctx.paths.figures_dir / "f07_consensus_matrix.png"
-        fig.savefig(fp, dpi=160); plt.close(fig)
-        st.artifact(fp, message="consensus matrix")
-
-        fig, ax = plt.subplots(figsize=(6.8, 3.8))
-        order_cols = [c for c in ["Distinction", "Pass", "Fail", "Withdrawn"]
-                      if c in prop.columns]
-        bottom = np.zeros(len(prop))
-        colors = {"Distinction": "#2f6f4e", "Pass": "#6ea36f",
-                  "Fail": "#c05b5b", "Withdrawn": "#8a8a8a"}
-        for c in order_cols:
-            vals = prop[c].to_numpy()
-            ax.bar([str(i) for i in prop.index], vals, bottom=bottom,
-                   color=colors.get(c, "#999"), label=c)
-            bottom += vals
-        ax.set_xlabel("cluster"); ax.set_ylabel("share of cluster")
-        ax.set_title("Outcome mix by W1 behavioural profile")
-        ax.legend(frameon=False, fontsize=8, ncol=4, loc="upper center",
-                  bbox_to_anchor=(0.5, -0.14))
-        fig.tight_layout()
-        fp = ctx.paths.figures_dir / "f07_cluster_outcome.png"
-        fig.savefig(fp, dpi=160); plt.close(fig)
-        st.artifact(fp, message="cluster x outcome figure")
-
-        # PCA diagnostic and silhouette distribution (chosen k).
-        rng = np.random.default_rng(cfg["seed"])
-        idx = np.arange(len(X))
-        if len(idx) > 5000:
-            idx = rng.choice(idx, 5000, replace=False)
-        fig, ax = plt.subplots(figsize=(6.4, 4.8))
-        for cl in sorted(np.unique(labels)):
-            m = labels[idx] == cl
-            ax.scatter(X[idx][m, 0], X[idx][m, 1], s=4, alpha=0.18,
-                       label=f"cluster {cl}")
-        ax.set_xlabel(f"PC1 ({100*evr[0]:.1f}%)")
-        ax.set_ylabel(f"PC2 ({100*evr[1]:.1f}%)")
-        ax.set_title(f"PCA diagnostic (8 PCs, cumulative {100*sum(evr):.1f}%)")
-        ax.legend(frameon=False, fontsize=7, markerscale=3)
-        fig.tight_layout()
-        fp = ctx.paths.figures_dir / "f07_pca_scatter.png"
-        fig.savefig(fp, dpi=160); plt.close(fig)
-        st.artifact(fp, message="PCA scatter")
-
-        sil = silhouette_samples(X[idx], labels[idx])
-        fig, ax = plt.subplots(figsize=(6.4, 3.6))
-        ax.hist(sil, bins=40, color="#3b6ea5", edgecolor="white", linewidth=0.3)
-        ax.axvline(float(sil.mean()), color="#b23b3b", ls="--", lw=1,
-                   label=f"mean={sil.mean():.3f}")
-        ax.set_xlabel("silhouette (sample)")
-        ax.set_ylabel("count")
-        ax.set_title(f"Silhouette distribution, k={k}")
-        ax.legend(frameon=False, fontsize=8)
-        fig.tight_layout()
-        fp = ctx.paths.figures_dir / "f07_silhouette.png"
-        fig.savefig(fp, dpi=160); plt.close(fig)
-        st.artifact(fp, message="silhouette distribution")
-
-    with st.step("unstable_clusters"):
-        minj = float(chosen["min_cluster_jaccard"])
-        if minj < 0.5:
-            st.check("unstable_cluster_decision", True,
-                     f"min cluster Jaccard={minj:.3f} < 0.5; cluster retained "
-                     "but flagged as unstable and conclusions downgraded")
-        else:
-            st.check("cluster_jaccard", minj >= 0.5,
-                     f"min cluster Jaccard={minj:.3f}")
+    fig, ax = plt.subplots(figsize=(6.4, 3.6))
+    ax.scatter(sample["post_active_days"], sample["post_longest_inactive_run"],
+               c=labels, cmap="viridis", s=10, alpha=0.75)
+    ax.set_xlabel("post-deadline active days")
+    ax.set_ylabel("longest inactive run (days)")
+    ax.set_title(f"Outcome-blind timing clusters (k={best['k']}) in the paired sample")
+    fig.tight_layout()
+    fp = ctx.paths.figures_dir / "f07_clusters.png"
+    fig.savefig(fp, dpi=170)
+    plt.close(fig)
+    st.artifact(fp, message="cluster scatter")

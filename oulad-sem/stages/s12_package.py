@@ -8,15 +8,15 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-import pandas as pd
-
-from src.config import project_root, sha256_file
+from src.config import project_root
 from src.logging_utils import (StageFailure, atomic_write_json, atomic_write_text,
                                load_status, utc_now)
 from src.reporting import (build_latex, build_markdown, build_poster,
-                           build_readme, citation_scan, compile_pdf,
-                           pdf_pages)
+                           build_readme, citation_scan, compile_pdf, pdf_pages)
 from src.validate import validate_run
+
+REQUIRED_TABLES = ("t06_primary_holm.csv", "t06_effects.csv",
+                   "t08_model_metrics.csv", "t02_cohort_flow.csv")
 
 
 def _manifest_all(ctx) -> dict:
@@ -49,13 +49,13 @@ def _requirements_lock(root: Path):
 
 
 def _data_download(ctx, root: Path) -> Path:
-    raw_manifest = ctx.run_dir / "manifest.json"
+    manifest = ctx.run_dir / "manifest.json"
     rows = []
-    if raw_manifest.exists():
+    if manifest.exists():
         try:
-            m = json.loads(raw_manifest.read_text())
-            for f in m.get("files", []):
-                rows.append(f"| {f['name']} | {f['rows']} | `{f['sha256']}` |")
+            m = json.loads(manifest.read_text())
+            for item in m.get("files", []):
+                rows.append(f"| {item['name']} | {item['rows']} | `{item['sha256']}` |")
         except Exception:
             pass
     text = """# Data download
@@ -73,7 +73,10 @@ shasum -a 256 data/raw/oulad/oulad.zip
 unzip -o data/raw/oulad/oulad.zip -d data/raw/oulad/
 ```
 
-The ZIP does not contain the raw CSVs. The audit in this run recorded:
+The archive holds seven CSVs: `courses`, `assessments`, `vle`, `studentInfo`,
+`studentRegistration`, `studentAssessment` and `studentVle`. Keep `oulad.zip`
+in `data/raw/oulad/` as well, because S00 records its hash. The audit in this
+run recorded:
 
 | File | Rows | SHA-256 |
 |---|---:|---|
@@ -83,21 +86,17 @@ The ZIP does not contain the raw CSVs. The audit in this run recorded:
     return p
 
 
-def _zip(ctx, report_pdf, poster_pdf, readme, report_md, req_lock, data_doc):
+def _zip(ctx, report_pdf, readme, report_md, req_lock, data_doc):
     root = project_root()
     out = root / "Group_09_Project.zip"
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-        for p, arc in ((report_pdf, "Report.pdf"),
-                       (readme, "README.md"), (report_md, "REPORT.md"),
-                       (req_lock, "REQUIREMENTS.lock"),
+        for p, arc in ((report_pdf, "Report.pdf"), (readme, "README.md"),
+                       (report_md, "REPORT.md"), (req_lock, "REQUIREMENTS.lock"),
                        (data_doc, "DATA_DOWNLOAD.md")):
             if p.exists():
                 z.write(p, arc)
-        for rel in ("config/config.yaml", "config/config.sha256"):
-            p = root / rel
-            if p.exists():
-                z.write(p, rel)
-        for rel in ("Makefile", "STATUS.json"):
+        for rel in ("config/config.yaml", "config/config.sha256", "Makefile",
+                    "STATUS.json"):
             p = root / rel
             if p.exists():
                 z.write(p, rel)
@@ -113,7 +112,7 @@ def _zip(ctx, report_pdf, poster_pdf, readme, report_md, req_lock, data_doc):
                 z.write(p, str(p.relative_to(root)))
         for d in ("tables", "figures"):
             for p in (ctx.paths.outputs_dir / d).glob("*"):
-                if p.is_file() and p.name != "t10_hazard_ratios.csv":
+                if p.is_file():
                     z.write(p, str(p.relative_to(ctx.paths.outputs_dir)))
         for rel in ("run.jsonl", "env.json", "manifest.json", "manifest_all.json",
                     "STATUS.final.json"):
@@ -123,11 +122,6 @@ def _zip(ctx, report_pdf, poster_pdf, readme, report_md, req_lock, data_doc):
         for d in ("stages", "handoff"):
             for p in (ctx.run_dir / d).glob("*"):
                 z.write(p, f"runs/{ctx.run_id}/{d}/{p.name}")
-        cards = ctx.run_dir / "artifacts" / "model_cards.json"
-        if cards.exists():
-            z.write(cards, f"runs/{ctx.run_id}/artifacts/model_cards.json")
-    # The revision guide requires a single Group_09 archive; remove the old
-    # literal-name copy if it exists.
     old_xx = root / "Group_XX_Project.zip"
     if old_xx.exists():
         old_xx.unlink()
@@ -149,26 +143,18 @@ def _pages_from_log(log: str) -> int:
     return int(m.group(1)) if m else -1
 
 
-def _write_b2_failed(ctx, st):
-    """WP5.2: keep the failed B2 row out of Table 7 but preserve it in appendix."""
-    p = ctx.paths.tables_dir / "t09_incremental.csv"
-    if not p.exists():
-        return
-    d = pd.read_csv(p)
-    b2 = d[(d["cutoff"] == 56) & (d["cohort"] == "fixed") &
-           (d["method"] == "B2_offset")].copy()
-    if len(b2) == 0:
-        return
-    out = ctx.paths.tables_dir / "t09_b2_failed.csv"
-    b2.to_csv(out, index=False)
-    st.artifact(out, rows=len(b2), cols=b2.shape[1],
-                message="failed B2 appendix table")
-
-
 def run(ctx, st):
     root = project_root()
     out = ctx.paths.outputs_dir
-    _write_b2_failed(ctx, st)
+
+    with st.step("required_tables"):
+        missing = [t for t in REQUIRED_TABLES
+                   if not (ctx.paths.tables_dir / t).exists()]
+        st.check("required_tables_present", not missing, f"missing={missing}")
+        if missing:
+            # A rehearsal may skip exploratory tables, but these four drive the
+            # report and must exist before packaging.
+            raise StageFailure(f"required tables missing: {missing}", "E_LOGIC")
 
     with st.step("manifest"):
         ma = _manifest_all(ctx)
@@ -187,13 +173,14 @@ def run(ctx, st):
             pages = _pages_from_log(log)
         st.artifact(out / "Report.pdf", message="Report.pdf")
         main_pages = _main_text_pages(out / "Report.pdf")
-        st.metric("report", {"pages": pages, "main_pages": main_pages,
-                             "mode": ctx.mode})
+        st.metric("report", {"pages": pages, "main_pages": main_pages, "mode": ctx.mode})
         st.check("report_pdf_exists", (out / "Report.pdf").exists(), "Report.pdf")
         st.check("report_page_count", 6 <= pages <= 20,
-                 f"total pages={pages}; appendix/references excluded from main-text count")
+                 f"total pages={pages}; appendix and references are excluded from the "
+                 "main-text count")
         st.check("main_text_page_count", 6 <= main_pages <= 10,
-                 f"main text pages={main_pages} (target 6-10)")
+                 f"main text pages={main_pages} (target 6-10)",
+                 warn_only=ctx.mode != "full")
         text = tex.read_text()
         st.check("disclosures_present", "Disclosures" in text,
                  "AIGC / external collaborator disclosure section present")
@@ -244,30 +231,27 @@ def run(ctx, st):
     with st.step("status_final"):
         stf = load_status() or {}
         stf.setdefault("stages", {})["S12"] = {
-            "status": "pass", "started_at": st.started_at,
-            "finished_at": utc_now(),
+            "status": "pass", "started_at": st.started_at, "finished_at": utc_now(),
             "log": f"runs/{ctx.run_id}/run.jsonl",
             "stage_json": f"runs/{ctx.run_id}/stages/S12.stage.json",
-            "artifacts": [], "notes": "final status written before packaging",
-        }
-        stf.update({"run_id": ctx.run_id, "mode": ctx.mode,
-                    "current_stage": "S12", "next_stage": None,
-                    "run_status": "complete", "updated_at": utc_now()})
+            "artifacts": [], "notes": "final status written before packaging"}
+        stf.update({"run_id": ctx.run_id, "mode": ctx.mode, "current_stage": "S12",
+                    "next_stage": None, "run_status": "complete",
+                    "updated_at": utc_now()})
         sfp = ctx.run_dir / "STATUS.final.json"
         atomic_write_json(sfp, stf)
-        # The root STATUS.json is the gate that lets a later stage resume a run.
-        # Shipping it lets an unpacked ZIP continue from the recorded run.
+        # The root STATUS.json is the gate that lets a later stage resume a run;
+        # shipping it lets an unpacked ZIP continue from the recorded run.
         atomic_write_json(project_root() / "STATUS.json", stf)
         st.artifact(sfp, message="STATUS.final.json")
 
     with st.step("zip"):
         report_pdf = out / "Report.pdf"
-        poster_pdf = out / "Poster.pdf"
         readme = root / "README.md"
         report_md = root / "REPORT.md"
         req = root / "REQUIREMENTS.lock"
         dd = root / "DATA_DOWNLOAD.md"
-        zp = _zip(ctx, report_pdf, poster_pdf, readme, report_md, req, dd)
+        zp = _zip(ctx, report_pdf, readme, report_md, req, dd)
         st.artifact(zp, message="Group_09_Project.zip")
         with zipfile.ZipFile(zp) as z:
             names = z.namelist()
@@ -275,29 +259,24 @@ def run(ctx, st):
                  not any(n.startswith("data/") or n.endswith("studentVle.csv")
                          for n in names),
                  "raw full data is not inside the ZIP")
-        st.check("zip_has_report", any(n == "Report.pdf" for n in names),
-                 "Report.pdf in ZIP")
-        st.check("zip_poster_excluded", not any(n == "Poster.pdf" for n in names),
+        st.check("zip_has_report", "Report.pdf" in names, "Report.pdf in ZIP")
+        st.check("zip_poster_excluded", "Poster.pdf" not in names,
                  "Poster.pdf is submitted separately, not inside the final ZIP")
         st.check("zip_has_root_status", "STATUS.json" in names,
                  "root STATUS.json in ZIP so a run can be resumed")
         st.check("zip_has_status_final",
-                 any(n == f"runs/{ctx.run_id}/STATUS.final.json" for n in names),
+                 f"runs/{ctx.run_id}/STATUS.final.json" in names,
                  "STATUS.final.json in ZIP")
         st.check("zip_has_contracts",
                  "docs/contracts/log_event.schema.json" in names,
                  "log-event schema in ZIP so the unpacked code can run")
-        st.check("zip_no_stale_hazard",
-                 not any(n.endswith("t10_hazard_ratios.csv") for n in names),
-                 "stale static-Cox hazard table is not inside the ZIP")
-        wp5_tables = ("tables/t08_context_delta.csv",
-                      "tables/t09_b2_failed.csv",
-                      "tables/t11_placebo_exposure.csv")
-        st.check("zip_has_wp5_tables",
-                 all(t in names for t in wp5_tables),
-                 "WP5 context-delta, B2-appendix and placebo-exposure tables in ZIP")
+        st.check("zip_has_primary_tables",
+                 all(f"tables/{t}" in names for t in ("t06_primary_holm.csv",
+                                                      "t08_model_metrics.csv")),
+                 "primary tables in ZIP")
+        st.check("zip_has_tma_module", "src/tma/pairing.py" in names,
+                 "TMA code in ZIP so the unpacked pipeline can rerun")
         zips = sorted(p.name for p in root.glob("Group_*_Project.zip"))
         st.check("single_submission_zip", zips == ["Group_09_Project.zip"],
                  f"submission ZIPs={zips}")
-        st.metric("zip", {"entries": len(names),
-                          "bytes": zp.stat().st_size})
+        st.metric("zip", {"entries": len(names), "bytes": zp.stat().st_size})

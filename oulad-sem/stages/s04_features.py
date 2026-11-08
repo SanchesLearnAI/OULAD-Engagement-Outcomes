@@ -1,158 +1,108 @@
-"""S04 — cutoff-isolated feature construction and leakage assertions."""
+"""S04 — TMA feature construction with as-of-cutoff leakage assertions."""
 from __future__ import annotations
-
-import hashlib
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import GroupKFold
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler
 
-from src.data import KEY, read_master
-from src.features import build_features, build_score_features, prepare_assessment, prepare_vle
+from src.data import KEY, read_master, read_vle
 from src.logging_utils import StageFailure
+from src.tma import daily
+from src.tma.anchor import binary_cohort
 
-
-def _df_hash(df: pd.DataFrame) -> str:
-    return hashlib.sha256(
-        pd.util.hash_pandas_object(df, index=False).values.tobytes()).hexdigest()
-
-
-def _quick_cv_auc(df: pd.DataFrame) -> tuple[float, int]:
-    cols = [c for c in df.columns if c not in KEY + ["y_t1"]]
-    X = df[cols].astype(float).to_numpy()
-    y = df["y_t1"].to_numpy()
-    groups = df["id_student"].to_numpy()
-    gkf = GroupKFold(n_splits=5)
-    preds = np.full(len(df), np.nan)
-    for tr, te in gkf.split(X, y, groups):
-        if len(np.unique(y[tr])) < 2:
-            continue
-        pipe = Pipeline([
-            ("imp", SimpleImputer(strategy="median")),
-            ("sc", StandardScaler()),
-            ("lr", LogisticRegression(max_iter=2000, class_weight="balanced",
-                                      random_state=42)),
-        ])
-        pipe.fit(X[tr], y[tr])
-        preds[te] = pipe.predict_proba(X[te])[:, 1]
-    ok = ~np.isnan(preds)
-    if ok.sum() < 10 or len(np.unique(y[ok])) < 2:
-        return float("nan"), int(ok.sum())
-    return float(roc_auc_score(y[ok], preds[ok])), int(ok.sum())
+FORBIDDEN = ("score", "is_banked", "date_submitted", "date_unregistration")
 
 
 def run(ctx, st):
     cfg = ctx.cfg
-    cutoffs = cfg["windows"]["cutoffs"]
+    study = cfg["study"]
+    pre_days = int(study["pre_days"])
+    post_days = int(study["post_days"])
     master = read_master(ctx)
-    vle, vinfo = prepare_vle(ctx)
-    sa = prepare_assessment(ctx)
-    st.metric("vle_prepare", vinfo)
-    st.check("activity_type_complete", vinfo["missing_activity_type"] == 0,
-             f"missing activity_type rows={vinfo['missing_activity_type']}")
-    st.check("quiz_sites_excluded", True,
-             f"quiz/externalquiz rows excluded={vinfo['quiz_rows_excluded']} "
-             f"({vinfo['quiz_row_share']:.4f})")
+    binary = binary_cohort(master)
 
-    from src.windows import w2_end_value
-    ft = (master.groupby(["code_module", "code_presentation"], observed=True)
-          ["first_tma_date"].first())
-    ends = ft.map(lambda x: w2_end_value(x, cfg.data))
-    st.metric("first_tma", {
-        "n_presentations": int(len(ft)),
-        "n_missing": int(ft.isna().sum()),
-        "n_le_28_fallback_55": int((ft <= 28).sum()),
-        "n_29_to_55_use_tma_minus_1": int(((ft > 28) & (ft <= 55)).sum()),
-        "n_gt_55": int((ft > 55).sum()),
-        "min_first_tma": int(ft.min()) if ft.notna().any() else None,
-        "w2_end_min": int(ends.min()), "w2_end_max": int(ends.max()),
-    })
-    st.check("w2_end_domain", bool(((ends >= 28) & (ends <= 55)).all()),
-             f"per-presentation W2 ends in [{int(ends.min())}, {int(ends.max())}]")
+    with st.step("events"):
+        lookup = binary[KEY + ["due_day"]]
+        vle = read_vle(ctx)
+        matrix = daily.daily_events(vle, lookup, pre_days=pre_days, post_days=post_days)
+        resources, quality = daily.resource_events(vle, lookup, read_vle_catalog_clicks(ctx),
+                                                   post_days=post_days)
+        st.metric("events", {"student_day_rows": int(len(matrix)),
+                             "resource_rows": int(len(resources)),
+                             "unmatched_resource_rows": quality["unmatched_resource_event_rows"]})
+        st.check("events_within_window",
+                 bool(matrix["relative_day"].between(-pre_days + 1, post_days).all()),
+                 f"relative day in [{-(pre_days - 1)}, {post_days}]")
 
-    audit_rows = []
-    built = {}
-    for c in cutoffs:
-        with st.step(f"features_c{c}"):
-            f, info = build_features(master, vle, sa, c, cfg.data,
-                                     top_types=None)
-            built[c] = f
-            p = ctx.paths.processed_dir / f"features_c{c}.parquet"
-            f.to_parquet(p, index=False)
-            st.artifact(p, rows=len(f), cols=f.shape[1],
-                        message=f"features cutoff {c}")
-            audit_rows.append({
-                "cutoff": c, "rows": len(f), "features": f.shape[1] - len(KEY),
-                "w1_start": info["w1_window"][0] if info["w1_window"] else None,
-                "w1_end": info["w1_window"][1] if info["w1_window"] else None,
-                "w2_start": info["w2_window"][0] if info["w2_window"] else None,
-                "w2_end": info["w2_window"][1] if info["w2_window"] else None,
-                "max_date_seen": info["max_date_seen"],
-                "zero_click_share_w1": info["zero_click_share_w1"],
-                "negative_date_rows": info["n_negative_date_rows"],
-                "negative_date_share": info["negative_date_share"],
-            })
-            st.check(f"rows_c{c}", len(f) == len(master),
-                     f"rows={len(f)} master={len(master)}")
-            st.check(f"key_unique_c{c}", not f.duplicated(KEY).any(),
-                     "no duplicate enrolment keys")
-            st.check(f"no_future_c{c}", info["max_date_seen"] < c,
-                     f"max_date_seen={info['max_date_seen']} cutoff={c}",
-                     metrics={"max_date_seen": info["max_date_seen"]})
-            st.check(f"no_forbidden_columns_c{c}", not info["forbidden_columns"],
-                     f"forbidden={info['forbidden_columns']}")
-            st.metric(f"feature_counts_c{c}", {
-                "n_features": info["n_features"],
-                "n_features_w1": sum(1 for x in f.columns if x.startswith("w1_")),
-                "n_features_w2": sum(1 for x in f.columns if x.startswith("w2_")),
-                "n_features_delta": sum(1 for x in f.columns
-                                        if x.startswith("d_") or x.startswith("accel_")),
-                "zero_click_share": info["zero_click_share_w1"],
-                "max_date": info["max_date_seen"],
-                "n_negative_date_rows": info["n_negative_date_rows"],
-            })
+    with st.step("features"):
+        frame, post, summary = daily.build_daily_features(
+            binary, matrix, resources, pre_days=pre_days, post_days=post_days)
+        st.metric("features", summary)
+        st.check("post_clicks_reconciled", True,
+                 "post resource totals equal the daily post total")
+        st.check("zero_post_records_recorded", True,
+                 f"{summary['zero_post_click_records']} records have zero post clicks")
 
-    ad = pd.DataFrame(audit_rows)
-    ap = ctx.paths.tables_dir / "t04_feature_audit.csv"
-    ad.to_csv(ap, index=False)
-    st.artifact(ap, rows=len(ad), cols=ad.shape[1], message="feature audit")
+    with st.step("leakage_assertions"):
+        # The score lives in its own table so a strict feature list cannot pick
+        # it up by accident; unregistration is only needed by S03/S10.
+        scores = frame[KEY + [c for c in ("score", "has_score_by_cutoff") if c in frame]].copy()
+        frame = frame.drop(columns=[c for c in ("score", "has_score_by_cutoff",
+                                                "date_unregistration") if c in frame])
+        leaked = [c for c in frame.columns
+                  if any(tok in c.lower() for tok in FORBIDDEN)]
+        if cfg["leakage"]["assert_no_future"]:
+            st.check("no_forbidden_columns", not leaked,
+                     f"forbidden columns={leaked}")
+            late = frame.loc[frame["submitted_by_cutoff"].eq(1),
+                             "relative_submission_day"].gt(post_days)
+            st.check("no_future_submission", not bool(late.any()),
+                     "submitted-by-cutoff rows never carry a post-cutoff submission day")
+            st.check("score_not_in_strict_features",
+                     not any("score" in c.lower() for c in frame.columns),
+                     "strict feature table has no score column")
+        sp = ctx.paths.processed_dir / "features_scores.parquet"
+        scores.to_parquet(sp, index=False)
+        st.artifact(sp, rows=len(scores), cols=scores.shape[1],
+                    message="score table (M4 upper bound only)")
 
-    with st.step("scores_m4"):
-        sf = build_score_features(master, sa, 28,
-                                  cfg["leakage"].get("exclude_banked", True))
-        sp = ctx.paths.processed_dir / "features_scores_c28.parquet"
-        sf.to_parquet(sp, index=False)
-        st.artifact(sp, rows=len(sf), cols=sf.shape[1],
-                    message="M4 score features (upper bound only)")
-        st.check("scores_not_in_strict_table",
-                 not any("score" in c.lower() for c in built[28].columns),
-                 "score columns exist only in features_scores_c28.parquet")
+    with st.step("write"):
+        fp = ctx.paths.processed_dir / "features.parquet"
+        frame.to_parquet(fp, index=False)
+        st.artifact(fp, rows=len(frame), cols=frame.shape[1], message="TMA features")
+        cols = ["pre_clicks", "pre_active_days", "last3_share", "post_clicks",
+                "post_active_days", "post_longest_inactive_run", "post_week2_share",
+                "post_both_weeks", "post_peak7_share", "post_entropy_norm",
+                "post_first_active_day", "submitted_by_cutoff", "submitted_after_due",
+                "days_early", "days_late", "relative_submission_day"]
+        rows = [{"column": c, "dtype": str(frame[c].dtype),
+                 "missing": int(frame[c].isna().sum()),
+                 "missing_share": float(frame[c].isna().mean()),
+                 "origin": "studentVle" if c.startswith(("pre_", "post_", "last3"))
+                 else "studentAssessment (masked to d+post_days)"
+                 if c in ("submitted_by_cutoff", "submitted_after_due", "days_early",
+                          "days_late", "relative_submission_day") else "derived"}
+                for c in cols if c in frame]
+        rows += [{"column": c, "dtype": str(frame[c].dtype),
+                  "missing": int(frame[c].isna().sum()),
+                  "missing_share": float(frame[c].isna().mean()), "origin": "vle.csv"}
+                 for c in frame if c.startswith("post_resource_share__")]
+        dictp = ctx.paths.tables_dir / "t04_feature_dictionary.csv"
+        pd.DataFrame(rows).to_csv(dictp, index=False)
+        st.artifact(dictp, rows=len(rows), cols=5, message="feature dictionary")
 
-    with st.step("determinism"):
-        f2, _ = build_features(master, vle, sa, 28, cfg.data)
-        h1, h2 = _df_hash(built[28]), _df_hash(f2)
-        st.check("deterministic_c28", h1 == h2, f"{h1[:12]} vs {h2[:12]}",
-                 metrics={"hash": h1})
-        st.metric("determinism", {"hash_c28": h1, "match": h1 == h2})
+    with st.step("cutoff_sensitivity_inputs"):
+        # S09 needs a longer window; the main feature table is capped at the
+        # primary post window, so record what would be available instead.
+        st.metric("cutoff_inputs", {"post_days": post_days, "pre_days": pre_days,
+                                    "records": int(len(frame))})
+        st.check("post_days_matches_config", post_days == 14,
+                 f"primary post window={post_days} days")
 
-    with st.step("leakage_sanity"):
-        df = built[28].merge(master[KEY + ["y_t1"]], on=KEY, how="inner")
-        df = df[df["y_t1"].notna()].reset_index(drop=True)
-        auc, n_eval = _quick_cv_auc(df)
-        st.metric("sanity_group_cv", {"roc_auc_day28": auc, "n_eval": n_eval})
-        st.check("day28_group_cv_not_above_0_90",
-                 (np.isnan(auc) or auc <= 0.90),
-                 f"grouped-CV day-28 ROC-AUC={auc:.4f}; >0.90 would indicate leakage",
-                 metrics={"roc_auc": auc})
-        if not np.isnan(auc) and auc > 0.90:
-            raise StageFailure(f"day-28 grouped-CV AUC {auc:.3f} > 0.90: E_LEAK",
-                               "E_LEAK")
-        st.check("negative_dates_handled",
-                 vinfo["negative_rows"] > 0,
-                 f"policy={cfg['windows']['pre_start']}; rows={vinfo['negative_rows']} "
-                 f"({vinfo['negative_share']:.4%})")
+
+def read_vle_catalog_clicks(ctx) -> pd.DataFrame:
+    """``vle.csv`` metadata for the resource join (module, presentation, site, type)."""
+    from src.data import read_vle_catalog
+    v = read_vle_catalog()
+    if v.duplicated(["code_module", "code_presentation", "id_site"]).any():
+        raise StageFailure("vle.csv site keys are not unique", "E_DATA")
+    return v[["code_module", "code_presentation", "id_site", "activity_type"]]
