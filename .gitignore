@@ -5,6 +5,9 @@ data/*
 !data/oulad.zip
 !data/README.md
 outputs/
+# The pipeline's committed tables/figures live under oulad-sem/outputs/; the
+# rule above would otherwise hide newly generated ones from git status.
+!oulad-sem/outputs/
 *.pyc
 research/audit_20261102/source_dictionary.txt
 research/reframe_20261103/run_output.txt
