@@ -64,3 +64,19 @@ def read_splits(ctx) -> dict:
     import json
     p = ctx.paths.processed_dir / "splits.json"
     return json.loads(p.read_text())
+
+
+def read_tma_features(ctx) -> pd.DataFrame:
+    """S04 output for the TMA design."""
+    p = ctx.paths.processed_dir / "features.parquet"
+    if not p.exists():
+        raise FileNotFoundError(p)
+    return pd.read_parquet(p)
+
+
+def read_tma_scores(ctx) -> pd.DataFrame:
+    """Score columns kept apart from the strict feature table (M4 only)."""
+    p = ctx.paths.processed_dir / "features_scores.parquet"
+    if not p.exists():
+        raise FileNotFoundError(p)
+    return pd.read_parquet(p)

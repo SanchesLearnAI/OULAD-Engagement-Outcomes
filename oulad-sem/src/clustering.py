@@ -14,6 +14,11 @@ from scipy.optimize import linear_sum_assignment
 
 def align_labels(base: np.ndarray, pred: np.ndarray, k: int) -> np.ndarray:
     """K-means labels are permutation-invariant; align pred to base for Jaccard."""
+
+# Legacy module kept for the archived day-0-27 design (see
+# results/oulad_sem_day0_27_baseline_20261108/). The TMA pipeline in
+# stages/ does not import it; it reads config keys that the frozen
+# config no longer carries, so run it only against the archived config.
     cm = np.zeros((k, k), dtype=int)
     for a, b in zip(base, pred):
         cm[int(a), int(b)] += 1

@@ -1,15 +1,29 @@
-"""Run validator: schema, sequence, gates, artifact hashes, handoffs and citations."""
+"""Structural validator: schema, sequence, gates, artifact hashes and handoffs.
+
+The stage-specific hard checks are listed in ``HARD_CHECKS`` so the TMA stages
+can add their own without touching the validator body.
+"""
 from __future__ import annotations
 
 import json
 from collections import defaultdict
-from pathlib import Path
 
 import jsonschema
 
 from .config import contracts_dir, project_root, sha256_file
 from .logging_utils import STAGES
-from .reporting import citation_scan, load_tables
+from .reporting import citation_scan
+
+# Checks that must be ``ok`` on every run.  Anything a rehearsal may legally
+# downgrade to ``warn`` is deliberately absent here.
+HARD_CHECKS = {
+    "S04": ("no_forbidden_columns", "no_future_submission", "score_not_in_strict_features"),
+    "S05": ("main_train_test_student_overlap", "main_val_test_student_overlap",
+            "group_fold_disjoint", "temporal_student_overlap", "lomo_student_overlap"),
+    "S06": ("pairs_have_no_reused_record", "zero_only_matches_zero",
+            "primary_family_complete"),
+    "S08": ("binary_label_fail",),
+}
 
 
 def validate_run(run_id: str, require_complete: bool = True):
@@ -60,7 +74,8 @@ def validate_run(run_id: str, require_complete: bool = True):
         starts = [e for e in ev if e["event"] == "stage_start"]
         ends = [e for e in ev if e["event"] == "stage_end"]
         gates = [e for e in ev if e["event"] in ("gate_pass", "gate_fail")]
-        if require_complete or s != "S12":
+        required = require_complete or s != "S12"
+        if required:
             if not starts:
                 errors.append(f"{s}: missing stage_start")
             if not ends:
@@ -70,7 +85,7 @@ def validate_run(run_id: str, require_complete: bool = True):
         stage_status[s] = (ends[-1]["status"] if ends else None)
         sj = run_dir / "stages" / f"{s}.stage.json"
         ho = run_dir / "handoff" / f"{s}.md"
-        if (require_complete or s != "S12"):
+        if required:
             if not sj.exists():
                 errors.append(f"{s}: missing {sj.name}")
             if not ho.exists():
@@ -80,10 +95,6 @@ def validate_run(run_id: str, require_complete: bool = True):
             if g["event"] == "gate_fail" or g["status"] == "fail":
                 errors.append(f"{s}: gate failed: {g.get('message')}")
 
-    # Check only the final artifact event per path: retries are append-only.
-    # For a non-current run, root deliverables (README/REPORT/ZIP/STATUS) and
-    # shared output files may have been replaced by a later run.  Verify the
-    # run-local files and the run-local manifest instead of comparing to root.
     for path, o in last_artifact.items():
         if not is_current and not path.startswith(f"runs/{run_id}/"):
             continue
@@ -106,24 +117,15 @@ def validate_run(run_id: str, require_complete: bool = True):
             if not ma.get("artifacts"):
                 errors.append("manifest_all.json has no artifacts")
 
-    # Hard checks from S04/S05.
-    s04_checks = {c["name"]: c["status"] for c in
-                  json.loads((run_dir / "stages" / "S04.stage.json").read_text())["checks"]} \
-        if (run_dir / "stages" / "S04.stage.json").exists() else {}
-    for name, st in s04_checks.items():
-        if (name.startswith("no_future_c") or name.startswith("no_forbidden_columns_c")) \
-                and st != "ok":
-            errors.append(f"S04 hard check failed: {name}={st}")
-    s05_checks = {c["name"]: c["status"] for c in
-                  json.loads((run_dir / "stages" / "S05.stage.json").read_text())["checks"]} \
-        if (run_dir / "stages" / "S05.stage.json").exists() else {}
-    for name in ("main_train_test_student_overlap", "group_fold_disjoint",
-                 "temporal_student_overlap", "lomo_student_overlap"):
-        if name in s05_checks and s05_checks[name] != "ok":
-            errors.append(f"S05 hard check failed: {name}={s05_checks[name]}")
+    for stage, names in HARD_CHECKS.items():
+        path = run_dir / "stages" / f"{stage}.stage.json"
+        if not path.exists():
+            continue
+        checks = {c["name"]: c["status"] for c in json.loads(path.read_text())["checks"]}
+        for name in names:
+            if name in checks and checks[name] == "fail":
+                errors.append(f"{stage} hard check failed: {name}={checks[name]}")
 
-    # STATUS continuity.  A non-current run is checked against its run-local
-    # STATUS.final.json, never against the shared root STATUS.json.
     spath = root / "STATUS.json" if is_current else run_dir / "STATUS.final.json"
     if spath.exists():
         st = json.loads(spath.read_text())
@@ -140,8 +142,6 @@ def validate_run(run_id: str, require_complete: bool = True):
     else:
         errors.append(f"{spath.name} missing")
 
-    # Report citation scan only for the current run; root README/REPORT belong
-    # to the latest run and are not run-local artifacts.
     if is_current:
         for rel in ("REPORT.md", "Report.tex"):
             p = root / rel

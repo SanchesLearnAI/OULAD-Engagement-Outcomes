@@ -7,6 +7,11 @@ import pandas as pd
 def bounds(cutoff: int, first_tma, config) -> tuple[tuple[int, int] | None,
                                                     tuple[int, int] | None]:
     """Return (W1, W2) inclusive day ranges, or None when the window is empty."""
+
+# Legacy module kept for the archived day-0-27 design (see
+# results/oulad_sem_day0_27_baseline_20261108/). The TMA pipeline in
+# stages/ does not import it; it reads config keys that the frozen
+# config no longer carries, so run it only against the archived config.
     w1 = (0, min(int(config["windows"]["w1_end"]), cutoff - 1))
     if w1[1] < w1[0]:
         w1 = None

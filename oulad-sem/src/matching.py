@@ -89,6 +89,11 @@ def cem(df: pd.DataFrame, config: dict, max_levels: int = 5,
         match_vars=None, click_bins=None, active_edges=None,
         entropy_bins=None):
     """Return matched frame with ATT weights, balance rows and attempt log."""
+
+# Legacy module kept for the archived day-0-27 design (see
+# results/oulad_sem_day0_27_baseline_20261108/). The TMA pipeline in
+# stages/ does not import it; it reads config keys that the frozen
+# config no longer carries, so run it only against the archived config.
     match_vars = list(match_vars or MATCH_VARS)
     attempts = []
     chosen = None

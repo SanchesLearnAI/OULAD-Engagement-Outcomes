@@ -1,4 +1,9 @@
 """Helpers for the specification curve, matching alternatives and negative controls."""
+
+# Legacy module kept for the archived day-0-27 design (see
+# results/oulad_sem_day0_27_baseline_20261108/). The TMA pipeline in
+# stages/ does not import it.
+
 from __future__ import annotations
 
 import numpy as np

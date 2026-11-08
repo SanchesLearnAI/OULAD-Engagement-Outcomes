@@ -16,6 +16,11 @@ def build_master(si: pd.DataFrame, sr: pd.DataFrame, courses: pd.DataFrame,
     makes Fail the positive class of T1 (and Fail-or-Withdrawn of T2).
     ``is_pass`` is always Pass/Distinction=1, Fail=0, Withdrawn=NaN.
     """
+
+# Legacy module kept for the archived day-0-27 design (see
+# results/oulad_sem_day0_27_baseline_20261108/). The TMA pipeline in
+# stages/ does not import it; it reads config keys that the frozen
+# config no longer carries, so run it only against the archived config.
     info = {}
     si = si.copy()
     sr = sr.copy()

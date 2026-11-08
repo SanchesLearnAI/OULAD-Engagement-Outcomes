@@ -3,6 +3,11 @@
 Only studentVle.date < cutoff and studentAssessment.date_submitted < cutoff are
 ever read.  Scores and is_banked are excluded from strict features.
 """
+
+# Legacy module kept for the archived day-0-27 design (see
+# results/oulad_sem_day0_27_baseline_20261108/). The TMA pipeline in
+# stages/ does not import it; it reads config keys that the frozen
+# config no longer carries, so run it only against the archived config.
 from __future__ import annotations
 
 import numpy as np
