@@ -147,6 +147,8 @@ of it and are indexed in [results/README.md](results/README.md):
   latency, multi-deadline trajectories, activity composition, day patterns,
   data minimisation, delay profiles and silence structure, plus an alert-capacity
   curve.
+- **Chinese report** — `oulad-sem/Report_zh.pdf`, generated from the same tables by
+  `oulad-sem/scripts/build_report_zh.py`. The English report is authoritative.
 - **Verification** — `oulad-sem/scripts/verify_*.py` with protocols in
   `research/VERIFICATION_PLAN.md` and `research/TMA_DEEP_PROTOCOL.md`. The
   pre-registered increment check found no gain (ΔAP +0.0013, interval
