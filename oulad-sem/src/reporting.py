@@ -51,6 +51,42 @@ def _tex(s):
     return s.replace("\x00", r"\textbackslash{}")
 
 
+def load_verification() -> tuple[dict, dict]:
+    """Side-analysis outputs from ``results/tma_deep_exploration_20261108``.
+
+    These are not pipeline artefacts: they come from the exploration and
+    verification scripts.  They are committed with the repository but are not
+    inside the submission ZIP, so a missing file yields an empty dict and the
+    appendix says so instead of failing the stage.
+    """
+    import json
+
+    from .config import project_root
+
+    folder = project_root().parent / "results" / "tma_deep_exploration_20261108"
+    tables, verdicts = {}, {}
+    for name in ("v1_frozen_increment", "v2_transfer_rows", "v3_contrasts_mde",
+                 "v3_overall", "v4_profile_stats", "v4_profile_within_window",
+                 "v5_sequence_models", "v5_sequence_contrasts",
+                 "e7_capacity_curve", "e7_pair_discordance",
+                 "a1_silence_by_click_layer", "a2_type_patterns_pairs"):
+        path = folder / f"{name}.csv"
+        if path.exists():
+            try:
+                tables[name] = pd.read_csv(path)
+            except Exception:
+                pass
+    for name in ("v1_frozen_verdict", "v2_transfer_verdict", "v3_subgroup_verdict",
+                 "v4_profile_verdict", "v5_sequence_verdict"):
+        path = folder / f"{name}.json"
+        if path.exists():
+            try:
+                verdicts[name] = json.loads(path.read_text())
+            except Exception:
+                pass
+    return tables, verdicts
+
+
 def load_tables(ctx):
     import json
     t = {}
@@ -119,6 +155,7 @@ def _ensure_figures(ctx) -> None:
 
 def build_latex(ctx) -> str:
     t, stages = load_tables(ctx)
+    vtab, vverdict = load_verification()
     draft = ctx.mode == "simulation"
     _ensure_figures(ctx)
 
@@ -401,10 +438,11 @@ not the final submission.}}
              "Cal. slope", "F1"],
             rows, "lrrrrrrrr",
             "Model ladder on the grouped main test split (single holdout at the configured "
-            "seed). M0 uses pre- and "
-            "post-deadline volume plus submission status; M1 adds post-deadline timing; M2 "
-            "adds submission distance and is the primary model; M3 adds resource composition; "
-            "M4 adds the first-TMA score and is a retrospective upper bound only. Thresholds "
+            "seed). M0 uses pre- and post-deadline volume plus submission status; M1 adds "
+            "post-deadline timing; M2 adds submission distance and is the primary model; M3 "
+            "adds resource composition. M4, which adds the first-TMA score, is omitted here "
+            "because the frozen configuration excludes scores from the strict models; "
+            "it is reported separately only as a retrospective upper bound. Thresholds "
             "are chosen on the validation part.",
             "tab:models", size="\\footnotesize\\setlength{\\tabcolsep}{3pt}"))
         m0 = (float(main_models.loc[main_models["model"].eq("M0"), "average_precision"].mean())
@@ -700,6 +738,126 @@ not the final submission.}}
             "Because Withdrawn is a positive case here, the AP level is much higher than in "
             "the binary design; the two numbers answer different questions and must not be "
             "placed in the same table.")
+    # A hard page break keeps the deferred floats of Section 6 and Appendix A out
+    # of the verification text, which otherwise interleaves badly.
+    parts.append(r"\clearpage")
+    parts.append(r"\section{Verification of the exploratory extensions}")
+    if not vtab:
+        parts.append(
+            "The verification tables were not found next to this checkout, so this section "
+            "is omitted. Run the exploration and verification scripts "
+            "(``oulad-sem/scripts/explore_*`` and ``verify_*``) to regenerate them.")
+    else:
+        parts.append(
+            "The blocks in Appendix~A are exploratory. Four checks were added afterwards to "
+            "test whether any of them survives: a pre-registered increment test, a transfer "
+            "summary, a subgroup audit with a minimum detectable effect, and two negative "
+            "controls (delay typology and sequence ordering). None of them changes a primary "
+            "number.")
+        v1 = vtab.get("v1_frozen_increment")
+        if v1 is not None and len(v1):
+            rows = []
+            for _, r in v1.iterrows():
+                if str(r["model"]).startswith("delta"):
+                    continue
+                rows.append([_tex(r["model"]), str(int(r["n_features"])),
+                             f(r["average_precision"], 5)])
+            delta = v1[v1["model"].astype(str).str.startswith("delta")]
+            for _, r in delta.iterrows():
+                label = str(r["model"]).replace("delta_", "")
+                rows.append(["$\\Delta$ " + _tex(label), "--",
+                             f"{float(r['average_precision']):+.5f}"])
+            parts.append(_table(
+                ["Increment arm", "Features", "Fail AP"], rows, "lrr",
+                "Pre-registered increment test (protocol frozen before the run). The "
+                "decision rule was an interval that excludes zero \\emph{and} a point "
+                "estimate of at least 0.005; neither arm meets it, so the deep indicators "
+                "add no predictive information.", "tab:v1", size="\\footnotesize"))
+            verdict = vverdict.get("v1_frozen_verdict", {})
+            obs = verdict.get("observed", {})
+            if obs:
+                parts.append(
+                    f"The frozen arm moves Fail AP from {f(obs.get('ap_baseline'), 5)} to "
+                    f"{f(obs.get('ap_candidate'), 5)}, a difference of "
+                    f"{float(obs.get('point', float('nan'))):+.5f} "
+                    f"with a 95\\% interval of "
+                    f"[{float(obs.get('ci_low', float('nan'))):+.5f}, "
+                    f"{float(obs.get('ci_high', float('nan'))):+.5f}]. A de-duplicated arm, "
+                    f"which removes the two columns that duplicate primary features, gives "
+                    f"the same verdict.")
+
+        v2 = vtab.get("v2_transfer_rows")
+        if v2 is not None and len(v2) and "average_precision" in v2:
+            m2 = v2[v2["model"].eq("M2")]
+            rows = [[_tex(r["split"]), str(int(r["n_test"])), pct(r["no_skill_pr_auc"]),
+                     f(r["average_precision"], 4),
+                     f(float(r["average_precision"] - r["no_skill_pr_auc"]), 3)]
+                    for _, r in m2.iterrows()]
+            if rows:
+                parts.append(_table(
+                    ["Split", "Test records", "Fail share", "Fail AP", "AP $-$ no-skill"],
+                    rows, "lrrrr",
+                    "Extrapolation summary for the primary model. Raw AP is not comparable "
+                    "across folds because the Fail share differs from 0.14 to 0.34, so the "
+                    "last column is the comparable quantity. CCC has no 2013 presentation, "
+                    "which makes the temporal test partly a cross-module test.",
+                    "tab:v2", size="\\scriptsize"))
+
+        v3 = vtab.get("v3_contrasts_mde")
+        if v3 is not None and len(v3):
+            rows = [[_tex(r["attribute"]), _tex(r["feature_set"]),
+                     f(r["auc_gap"], 3),
+                     f"[{f(r['ci_low'], 3)}, {f(r['ci_high'], 3)}]",
+                     f(r["mde_0.80"], 3),
+                     "yes" if bool(r["reject_bh_0_05"]) else "no"]
+                    for _, r in v3.iterrows()]
+            parts.append(_table(
+                ["Attribute", "Features", "AUC gap", "95\\% interval",
+                 "MDE (80\\% power)", "Survives BH"],
+                rows, "llrrrr",
+                "Subgroup audit. A gap smaller than the minimum detectable effect means the "
+                "sample cannot resolve it, which is not the same as no difference. The "
+                "bootstrap p-value floor is 1/repeats, so a surviving contrast whose p sits at "
+                "that floor is significant only at the resolution of the bootstrap.",
+                "tab:v3", size="\\scriptsize\\setlength{\\tabcolsep}{3pt}"))
+            v3v = vverdict.get("v3_subgroup_verdict", {})
+            if v3v.get("interpretation"):
+                parts.append(_tex(v3v["interpretation"]))
+
+        v4 = vtab.get("v4_profile_stats")
+        v4v = vverdict.get("v4_profile_verdict", {})
+        if v4 is not None and len(v4) and v4v:
+            parts.append(
+                "Two negative controls complete the picture. The delay profiles in "
+                "Appendix~A cannot test the published high/low/sporadic delayer typology: the "
+                "clustering runs on (submission fraction, window length) and the window "
+                "length is strongly bimodal, so the profiles are close to a split on window "
+                "length alone. The honest statement is that this operationalisation cannot "
+                "separate delay from window length, not that the typology is wrong.")
+        v5 = vtab.get("v5_sequence_models")
+        v5c = vtab.get("v5_sequence_contrasts")
+        if v5 is not None and len(v5):
+            rows = [[_tex(r["model"]), str(int(r["n_features"])),
+                     f(r["average_precision"], 4), f(r["roc_auc"], 4)]
+                    for _, r in v5.iterrows()]
+            parts.append(_table(
+                ["Sequence arm", "Features", "Fail AP", "ROC-AUC"], rows, "lrrr",
+                "Ordering control on the same split. PyTorch was unavailable, so these are "
+                "feed-forward networks on the ordered day vector rather than recurrent "
+                "models; the contrast that matters is ordered versus shuffled.", "tab:v5",
+                size="\\footnotesize"))
+            if v5c is not None and len(v5c):
+                ordered = v5c[v5c["contrast"].eq("ordered_minus_shuffled")]
+                if len(ordered):
+                    r = ordered.iloc[0]
+                    parts.append(
+                        f"Shuffling the fourteen day vectors changes Fail AP by "
+                        f"{float(r['point']):+.4f} "
+                        f"({f(r['ci_low'], 4)} to {f(r['ci_high'], 4)}), so the order of the "
+                        f"days carries no information beyond their multiset. This does not "
+                        f"refute published sequence-model results, which use a different "
+                        f"label and a different split; it says that within this design the "
+                        f"sequence representation adds nothing.")
     parts.append(r"\section{Reproduction}")
     parts.append(
         r"""\begin{verbatim}

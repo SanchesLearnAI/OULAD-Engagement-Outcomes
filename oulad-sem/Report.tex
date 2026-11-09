@@ -194,7 +194,7 @@ RF\_M0 & 7 & 0.6541 & 0.3078 & 0.7576 & 0.1904 & 0.897 & 0.473 \\
 RF\_M2 & 16 & 0.6649 & 0.3078 & 0.7681 & 0.1853 & 0.944 & 0.464 \\
 \bottomrule
 \end{tabular}
-\caption{Model ladder on the grouped main test split (single holdout at the configured seed). M0 uses pre- and post-deadline volume plus submission status; M1 adds post-deadline timing; M2 adds submission distance and is the primary model; M3 adds resource composition; M4 adds the first-TMA score and is a retrospective upper bound only. Thresholds are chosen on the validation part.}
+\caption{Model ladder on the grouped main test split (single holdout at the configured seed). M0 uses pre- and post-deadline volume plus submission status; M1 adds post-deadline timing; M2 adds submission distance and is the primary model; M3 adds resource composition. M4, which adds the first-TMA score, is omitted here because the frozen configuration excludes scores from the strict models; it is reported separately only as a retrospective upper bound. Thresholds are chosen on the validation part.}
 \label{tab:models}
 \end{table}
 The primary model reaches Fail AP 0.6611 against a no-skill floor of 0.3078. The ladder shows where the gain comes from: M0 already contains submission status and reaches 0.6544, the post-deadline timing block moves it to 0.6574, and the submission-distance terms add the rest up to 0.6611. Most of the predictive signal is submission status rather than the fine structure of the click sequence. A gradient-boosted alternative reaches 0.6649, within noise of the logistic ladder, so there is little evidence of a strong nonlinear pattern that the linear models miss.
@@ -460,6 +460,89 @@ M2 & 4857 & 43.8\% & 0.7549 & 0.7675 & 0.1896 \\
 \label{tab:c4}
 \end{table}
 Because Withdrawn is a positive case here, the AP level is much higher than in the binary design; the two numbers answer different questions and must not be placed in the same table.
+\clearpage
+\section{Verification of the exploratory extensions}
+The blocks in Appendix~A are exploratory. Four checks were added afterwards to test whether any of them survives: a pre-registered increment test, a transfer summary, a subgroup audit with a minimum detectable effect, and two negative controls (delay typology and sequence ordering). None of them changes a primary number.
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{lrr}
+\toprule
+Increment arm & Features & Fail AP \\
+\midrule
+M2\_frozen\_baseline & 16 & 0.66108 \\
+M2\_plus\_deep\_frozen & 24 & 0.66133 \\
+M2\_plus\_deep\_deduplicated & 20 & 0.66122 \\
+$\Delta$ deep\_deduplicated\_minus\_baseline & -- & +0.00016 \\
+$\Delta$ deep\_minus\_baseline & -- & +0.00027 \\
+\bottomrule
+\end{tabular}
+\caption{Pre-registered increment test (protocol frozen before the run). The decision rule was an interval that excludes zero \emph{and} a point estimate of at least 0.005; neither arm meets it, so the deep indicators add no predictive information.}
+\label{tab:v1}
+\end{table}
+The frozen arm moves Fail AP from 0.66108 to 0.66133, a difference of +0.00027 with a 95\% interval of [-0.00039, +0.00095]. A de-duplicated arm, which removes the two columns that duplicate primary features, gives the same verdict.
+\begin{table}[t]
+\centering
+\scriptsize
+\begin{tabular}{lrrrr}
+\toprule
+Split & Test records & Fail share & Fail AP & AP $-$ no-skill \\
+\midrule
+temporal & 11028 & 29.4\% & 0.6160 & 0.322 \\
+lomo\_AAA & 608 & 14.0\% & 0.4432 & 0.303 \\
+lomo\_BBB & 5439 & 31.6\% & 0.6523 & 0.337 \\
+lomo\_CCC & 2438 & 31.8\% & 0.5997 & 0.282 \\
+lomo\_DDD & 3894 & 34.3\% & 0.6760 & 0.333 \\
+lomo\_EEE & 2197 & 25.2\% & 0.6800 & 0.428 \\
+lomo\_FFF & 5230 & 31.1\% & 0.6700 & 0.359 \\
+\bottomrule
+\end{tabular}
+\caption{Extrapolation summary for the primary model. Raw AP is not comparable across folds because the Fail share differs from 0.14 to 0.34, so the last column is the comparable quantity. CCC has no 2013 presentation, which makes the temporal test partly a cross-module test.}
+\label{tab:v2}
+\end{table}
+\begin{table}[t]
+\centering
+\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llrrrr}
+\toprule
+Attribute & Features & AUC gap & 95\% interval & MDE (80\% power) & Survives BH \\
+\midrule
+gender & behaviour\_only & 0.043 & [0.009, 0.080] & 0.034 & no \\
+gender & all\_features & 0.051 & [0.017, 0.082] & 0.034 & yes \\
+imd\_band & behaviour\_only & -0.011 & [-0.051, 0.027] & 0.041 & no \\
+imd\_band & all\_features & -0.011 & [-0.047, 0.027] & 0.041 & no \\
+highest\_education & behaviour\_only & -0.015 & [-0.055, 0.019] & 0.037 & no \\
+highest\_education & all\_features & -0.016 & [-0.052, 0.022] & 0.037 & no \\
+disability & behaviour\_only & -0.009 & [-0.063, 0.052] & 0.061 & no \\
+disability & all\_features & -0.009 & [-0.064, 0.046] & 0.061 & no \\
+age\_band & behaviour\_only & 0.041 & [-0.000, 0.078] & 0.036 & no \\
+age\_band & all\_features & 0.036 & [-0.000, 0.075] & 0.036 & no \\
+\bottomrule
+\end{tabular}
+\caption{Subgroup audit. A gap smaller than the minimum detectable effect means the sample cannot resolve it, which is not the same as no difference. The bootstrap p-value floor is 1/repeats, so a surviving contrast whose p sits at that floor is significant only at the resolution of the bootstrap.}
+\label{tab:v3}
+\end{table}
+1 of 10 contrasts survive BH correction: gender (all\_features, gap +0.051, BH p 0.025). 7 contrasts have a gap smaller than the minimum detectable effect, so those are undetected rather than absent.
+Two negative controls complete the picture. The delay profiles in Appendix~A cannot test the published high/low/sporadic delayer typology: the clustering runs on (submission fraction, window length) and the window length is strongly bimodal, so the profiles are close to a split on window length alone. The honest statement is that this operationalisation cannot separate delay from window length, not that the typology is wrong.
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{lrrr}
+\toprule
+Sequence arm & Features & Fail AP & ROC-AUC \\
+\midrule
+mlp\_ordered\_daily & 20 & 0.5472 & 0.7105 \\
+mlp\_shuffled\_daily & 20 & 0.5495 & 0.7115 \\
+mlp\_bag\_summary & 8 & 0.5556 & 0.7125 \\
+mlp\_ordered\_plus\_M2 & 34 & 0.6550 & 0.7562 \\
+mlp\_bag\_plus\_M2 & 22 & 0.6562 & 0.7592 \\
+M2\_logistic\_reference & 16 & 0.6611 & 0.7647 \\
+\bottomrule
+\end{tabular}
+\caption{Ordering control on the same split. PyTorch was unavailable, so these are feed-forward networks on the ordered day vector rather than recurrent models; the contrast that matters is ordered versus shuffled.}
+\label{tab:v5}
+\end{table}
+Shuffling the fourteen day vectors changes Fail AP by -0.0022 (-0.0073 to 0.0031), so the order of the days carries no information beyond their multiset. This does not refute published sequence-model results, which use a different label and a different split; it says that within this design the sequence representation adds nothing.
 \section{Reproduction}
 \begin{verbatim}
 make test
