@@ -335,6 +335,37 @@ not the final submission.}}
             f"were already somewhat less active before the deadline, so the paired difference "
             f"answers a conditional question: given similar post-deadline clicks, what else "
             f"differs?")
+        # Pre-window detail: the run-up, including the final days, is reported as
+        # exploratory context because pairing does not balance it.
+        pre_rows = []
+        for feature, label in (("pre_before_due_clicks", "Clicks before the deadline"),
+                               ("pre_before_due_active_days", "Active days before"),
+                               ("pre_last1_rate_lift", "Last-day rate lift"),
+                               ("pre_last3_rate_lift", "Last-three-day rate lift"),
+                               ("pre_due_share", "Deadline-day click share")):
+            value = effect_of(feature)
+            if not np.isfinite(value):
+                continue
+            low = effect_of(feature, "ci_low")
+            high = effect_of(feature, "ci_high")
+            pre_rows.append([label, f(value, 3),
+                             f"[{f(low, 3)}, {f(high, 3)}]"])
+        if pre_rows:
+            parts.append(_table(
+                ["Pre-deadline indicator", "Fail $-$ Pass", "95\\% interval"],
+                pre_rows, "lrr",
+                "Pre-deadline context for the same pairs. Pairing fixes post-deadline "
+                "volume only, so these differences survive the match and are reported "
+                "rather than removed.", "tab:prewindow", size="\\footnotesize"))
+            lift1 = effect_of("pre_last1_rate_lift")
+            parts.append(
+                f"Fail records concentrate their clicks closer to the deadline: the "
+                f"last-day rate lift is {f(lift1, 3)} log units higher than their matched "
+                f"partners, and the last-three-day lift is "
+                f"{f(effect_of('pre_last3_rate_lift'), 3)}. The gap features point the "
+                f"same way: the signed relative pre/post gap is "
+                f"{f(effect_of('relative_click_gap'), 3)} higher for Fail, which makes "
+                f"sense because a smaller pre-window denominator inflates the ratio.")
 
     if len(primary):
         rows = []

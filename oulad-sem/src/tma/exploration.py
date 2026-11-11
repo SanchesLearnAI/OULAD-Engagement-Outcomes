@@ -237,3 +237,129 @@ def at_risk_warning_set(frame: pd.DataFrame, splits: dict, *, seed: int,
                      "brier": float(brier_score_loss(y, prob)),
                      "threshold_rule": rule})
     return data, pd.DataFrame(rows)
+
+
+def volume_clusters(post_clicks: np.ndarray, seed: int, k_range=(2, 5),
+                    n_init: int = 20) -> tuple[pd.DataFrame, np.ndarray, int]:
+    """C5: outcome-blind post-deadline click-volume clusters.
+
+    Zero-click records are kept in their own ``-1`` group instead of being
+    forced into a cluster, because "no clicks" is a distinct state rather than
+    the low end of a continuous scale.  k and the assignment never see the
+    outcome.
+    """
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import adjusted_rand_score, silhouette_score
+
+    clicks = np.asarray(post_clicks, dtype=float)
+    if clicks.ndim != 1 or np.any(~np.isfinite(clicks)) or np.any(clicks < 0):
+        raise ValueError("post clicks must be a finite nonnegative vector")
+    positive = clicks > 0
+    if positive.sum() < 10:
+        raise ValueError("Too few positive-click records to cluster")
+    x = np.log1p(clicks[positive]).reshape(-1, 1)
+    rng = np.random.default_rng(seed + 8100)
+    candidates, assignments = [], {}
+    for k in range(int(k_range[0]), int(k_range[1]) + 1):
+        model = KMeans(n_clusters=k, n_init=n_init, random_state=seed).fit(x)
+        order = np.argsort(model.cluster_centers_.ravel())
+        remap = np.empty(k, dtype=int)
+        remap[order] = np.arange(k)
+        labels = np.full(len(clicks), -1, dtype=int)
+        labels[positive] = remap[model.labels_]
+        stability = []
+        for repeat in range(3):
+            selected = rng.choice(len(x), size=int(0.8 * len(x)), replace=False)
+            refit = KMeans(n_clusters=k, n_init=10,
+                           random_state=seed + repeat + 1).fit(x[selected])
+            stability.append(adjusted_rand_score(model.labels_, refit.predict(x)))
+        candidates.append({"k": k,
+                           "silhouette": float(silhouette_score(
+                               x, model.labels_, sample_size=min(3000, len(x)),
+                               random_state=seed)),
+                           "stability_ari": float(np.mean(stability)),
+                           "min_cluster_share": float(np.bincount(model.labels_).min() / len(x)),
+                           "centers_clicks_ascending": ";".join(
+                               f"{np.expm1(model.cluster_centers_[j, 0]):.2f}"
+                               for j in order)})
+        assignments[k] = labels
+    table = pd.DataFrame(candidates)
+    best = int(table.sort_values(["silhouette", "stability_ari"],
+                                 ascending=False).iloc[0]["k"])
+    return table, assignments[best], best
+
+
+def volume_cluster_name(label: int, k: int) -> str:
+    if label == -1:
+        return "zero"
+    if k == 2:
+        return ["low", "high"][label]
+    if k == 3:
+        return ["low", "medium", "high"][label]
+    return f"volume_{label + 1}"
+
+
+def within_cluster_pairs(pairs: pd.DataFrame, labels: np.ndarray
+                         ) -> tuple[pd.DataFrame, int]:
+    """Keep the 5% pairs whose two members land in the same volume cluster.
+
+    Cross-cluster pairs are dropped rather than reassigned: they are pairs where
+    the matching tolerance still spans a meaningful volume difference.
+    """
+    if pairs.empty:
+        return pairs, 0
+    if max(int(pairs["fail_index"].max()), int(pairs["pass_index"].max())) >= len(labels):
+        raise ValueError("Pair indices do not fit the cluster labels")
+    fail_cluster = labels[pairs["fail_index"].to_numpy()]
+    pass_cluster = labels[pairs["pass_index"].to_numpy()]
+    crossed = int((fail_cluster != pass_cluster).sum())
+    keep = fail_cluster == pass_cluster
+    out = pairs.loc[keep].reset_index(drop=True)
+    out["cluster"] = fail_cluster[keep]
+    return out, crossed
+
+
+def cluster_summary(frame: pd.DataFrame, pairs: pd.DataFrame, labels: np.ndarray,
+                    k: int, *, metrics: list[str], seed: int,
+                    repeats: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Population mix, within-cluster balance and within-cluster paired effects."""
+    from .pairing import component_intervals, paired_differences
+
+    names = {label: volume_cluster_name(label, k) for label in [-1] + list(range(k))}
+    population = []
+    for label, group in frame.assign(cluster=labels).groupby("cluster"):
+        population.append({
+            "cluster": names[int(label)], "records": int(len(group)),
+            "fail_records": int(group["final_result"].eq("Fail").sum()),
+            "fail_fraction_unmatched": float(group["final_result"].eq("Fail").mean()),
+            "min_post_clicks": float(group["post_clicks"].min()),
+            "max_post_clicks": float(group["post_clicks"].max()),
+            "mean_post_clicks": float(group["post_clicks"].mean()),
+            "mean_pre_clicks": float(group["pre_clicks"].mean())})
+    balance, effects = [], []
+    for label, group in pairs.groupby("cluster"):
+        subset = group.reset_index(drop=True)
+        fail, passing = paired_differences(frame, subset, metrics)
+        pre_sd = np.sqrt((np.log1p(fail["pre_clicks"]).var(ddof=0)
+                          + np.log1p(passing["pre_clicks"]).var(ddof=0)) / 2)
+        balance.append({"cluster": names[int(label)], "pairs": int(len(subset)),
+                        "mean_post_clicks_fail": float(fail["post_clicks"].mean()),
+                        "mean_post_clicks_pass": float(passing["post_clicks"].mean()),
+                        "mean_pre_clicks_fail": float(fail["pre_clicks"].mean()),
+                        "mean_pre_clicks_pass": float(passing["pre_clicks"].mean()),
+                        "pre_log_click_smd": float(
+                            (np.log1p(fail["pre_clicks"]).mean()
+                             - np.log1p(passing["pre_clicks"]).mean()) / pre_sd)
+                        if pre_sd else 0.0})
+        available = [c for c in metrics if c in frame]
+        difference = fail[available].to_numpy(dtype=float) - passing[available].to_numpy(dtype=float)
+        interval = component_intervals(subset, difference, seed, repeats)
+        for j, name in enumerate(available):
+            effects.append({"cluster": names[int(label)], "feature": name,
+                            "pairs": int(len(subset)),
+                            "fail_mean": float(fail[name].mean()),
+                            "pass_mean": float(passing[name].mean()),
+                            "fail_minus_pass": float(difference[:, j].mean()),
+                            "ci_low": float(interval[0, j]),
+                            "ci_high": float(interval[1, j])})
+    return pd.DataFrame(population), pd.DataFrame(balance), pd.DataFrame(effects)
