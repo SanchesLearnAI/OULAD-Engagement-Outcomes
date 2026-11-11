@@ -1,0 +1,2 @@
+seed,delta_ap,ci_low,ci_high,bootstrap_repeats,resampling_unit
+42,0.0077744124712532114,0.0014316950020344665,0.012403068207024097,400,id_student

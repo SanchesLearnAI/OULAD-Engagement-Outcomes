@@ -53,6 +53,7 @@
 | 首次 TMA 分数联合匹配 | [tma_score_probe_20261103](tma_score_probe_20261103/README.md) | 使用首次 TMA 成绩；截止时不可见，最多作回顾性上界 |
 | 分数/排名模型消融 | [tma_score_model_20261103](tma_score_model_20261103/README.md) | 同上；成绩公布日未知 |
 | 成绩×点击变化 | [tma_score_gap_20261103](tma_score_gap_20261103/README.md) | 同上 |
+| 含分数逻辑回归与 GPU XGBoost | [xgboost_score_20261111](xgboost_score_20261111/README.md) | 相同五组按学生分组测试，XGBoost 平均 AP 0.7199；成绩公布日未知，仅作回顾性探索 |
 | HGB/校准方法探针 | [wu_method_probe_20261103](wu_method_probe_20261103/README.md)、[+28 天](wu_method_probe_28d_20261103/README.md) | 改编另一篇论文的模型设置，不是其退课任务的数值复现 |
 
 ## 其他相关实验

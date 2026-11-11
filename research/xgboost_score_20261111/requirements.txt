@@ -1,0 +1,2 @@
+# Install on top of the repository's requirements.txt.
+xgboost==3.4.1

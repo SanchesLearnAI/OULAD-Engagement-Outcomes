@@ -131,6 +131,7 @@ Historical baseline (day 0–27, the original proposal window):
 Index only, not part of the study narrative:
 
 - `results/tma_score_probe_20261103/`, `results/tma_score_model_20261103/`, `results/tma_score_gap_20261103/` — these use the first-TMA mark, which is not available as an online feature at the cutoff; retrospective upper bounds only.
+- [Score-inclusive logistic regression vs GPU XGBoost](results/xgboost_score_20261111/README.md) — same five student-group splits; retrospective mark-based model comparison and reproducible code.
 - `results/wu_method_probe_20261103/`, `results/wu_method_probe_28d_20261103/` — method probes adapted from an unrelated paper's withdrawal task, not a reproduction.
 - `results/assessment_node_20261103/` — the 2/3/4-week window ladder used to choose the observation horizon.
 
