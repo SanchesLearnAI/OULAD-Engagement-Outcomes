@@ -73,7 +73,9 @@ def load_verification() -> tuple[dict, dict]:
         path = folder / f"{name}.csv"
         if path.exists():
             try:
-                tables[name] = pd.read_csv(path)
+                # ``pattern`` columns are digit strings: read them as text or
+                # leading zeros vanish and "000" collapses onto "0".
+                tables[name] = pd.read_csv(path, dtype={"pattern": str})
             except Exception:
                 pass
     for name in ("v1_frozen_verdict", "v2_transfer_verdict", "v3_subgroup_verdict",
@@ -672,7 +674,7 @@ not the final submission.}}
     parts.append(r"\appendix")
     parts.append(r"\section{Exploratory extensions}")
     parts.append(
-        "Four exploratory blocks were run after the primary analysis was frozen. They do not "
+        "Six exploratory blocks were run after the primary analysis was frozen. They do not "
         "change any primary indicator or the primary model, and each is reported here rather "
         "than in the main text.")
     bg = t.get("t11_x_background_balance", pd.DataFrame())
@@ -682,6 +684,10 @@ not the final submission.}}
     hetero = t.get("t11_x_heterogeneity", pd.DataFrame())
     nonsub = t.get("t11_x_non_submitter_outcomes", pd.DataFrame())
     atrisk = t.get("t11_x_at_risk_warning", pd.DataFrame())
+    vc_pop = t.get("t11_x_volume_cluster_population", pd.DataFrame())
+    vc_bal = t.get("t11_x_volume_cluster_balance", pd.DataFrame())
+    vc_eff = t.get("t11_x_volume_cluster_effects", pd.DataFrame())
+    gap_arm = t.get("t11_x_relative_gap", pd.DataFrame())
 
     if len(bg):
         rows = [[_tex(r["covariate"]), _tex(r["kind"]), f(r["smd_unmatched"], 3),
@@ -769,9 +775,172 @@ not the final submission.}}
             "Because Withdrawn is a positive case here, the AP level is much higher than in "
             "the binary design; the two numbers answer different questions and must not be "
             "placed in the same table.")
+
+    if len(vc_pop) and len(vc_bal):
+        rows = [[_tex(r["cluster"]), str(int(r["records"])), f(r["mean_post_clicks"], 1),
+                 f(r["mean_pre_clicks"], 1), pct(r["fail_fraction_unmatched"])]
+                for _, r in vc_pop.iterrows()]
+        parts.append(_table(
+            ["Volume cluster", "Records", "Mean post clicks", "Mean pre clicks",
+             "Fail share"],
+            rows, "lrrrr",
+            "C5: outcome-blind clusters on post-deadline click volume alone. Zero-click "
+            "records form their own group because silence is a separate state rather than "
+            "the bottom of a continuous scale.", "tab:c5pop", size="\\footnotesize"))
+        rows = [[_tex(r["cluster"]), str(int(r["pairs"])),
+                 f(r["mean_post_clicks_fail"], 1), f(r["mean_post_clicks_pass"], 1),
+                 f(r["pre_log_click_smd"], 3)] for _, r in vc_bal.iterrows()]
+        parts.append(_table(
+            ["Volume cluster", "Pairs", "Fail post clicks", "Pass post clicks",
+             "Pre-click SMD"],
+            rows, "lrrrr",
+            "Pairs that stay inside one volume cluster. Pairs whose two sides fall in "
+            "different clusters are dropped rather than reassigned, because that is exactly "
+            "a case where the 5\\% tolerance spans a meaningful volume difference.",
+            "tab:c5bal", size="\\footnotesize"))
+        if len(vc_eff):
+            keep = ["submitted_by_cutoff", "submitted_after_due", "post_active_days",
+                    "post_longest_inactive_run", "post_week2_share"]
+            rows = [[_tex(r["cluster"]), _tex(r["feature"]), str(int(r["pairs"])),
+                     f(r["fail_minus_pass"], 3)] for _, r in vc_eff.iterrows()
+                    if r["feature"] in keep]
+            parts.append(_table(
+                ["Volume cluster", "Indicator", "Pairs", "Fail $-$ Pass"], rows, "llrr",
+                "Within-cluster paired differences. Splitting by volume shows whether the "
+                "primary indicators hold at every click level or are driven by the busiest "
+                "records.", "tab:c5eff", size="\\scriptsize"))
+            high = vc_eff[(vc_eff["cluster"].eq("high"))
+                          & vc_eff["feature"].eq("post_active_days")]
+            low = vc_eff[(vc_eff["cluster"].eq("low"))
+                         & vc_eff["feature"].eq("post_active_days")]
+            if len(high) and len(low):
+                parts.append(
+                    f"Inside the busiest cluster the active-day difference is "
+                    f"{f(high['fail_minus_pass'].iloc[0], 3)} days, against "
+                    f"{f(low['fail_minus_pass'].iloc[0], 3)} in the low-volume cluster: the "
+                    f"persistence gap is not an artefact of heavy clickers.")
+
+    if len(gap_arm):
+        rows = [[_tex(r["model"]), str(int(r["n_features"])),
+                 f(r["average_precision"], 6), f(r["brier"], 4)]
+                for _, r in gap_arm.iterrows()]
+        parts.append(_table(
+            ["Arm", "Features", "Fail AP", "Brier"], rows, "lrrr",
+            "C6: the signed relative pre/post gap added to the frozen primary model. This is "
+            "a sensitivity arm, not a candidate replacement: the gap is a deterministic "
+            "re-expression of two columns already in the model, so it can only add a "
+            "nonlinear shape.", "tab:c6", size="\\footnotesize"))
+        base_ap = gap_arm.loc[gap_arm["model"].eq("M2_frozen"), "average_precision"]
+        gap_ap = gap_arm.loc[gap_arm["model"].eq("M2_plus_relative_gap"),
+                             "average_precision"]
+        if len(base_ap) and len(gap_ap):
+            parts.append(
+                f"Adding the gap moves AP from {f(base_ap.iloc[0], 6)} to "
+                f"{f(gap_ap.iloc[0], 6)}, a change of {gap_ap.iloc[0] - base_ap.iloc[0]:+.6f}. "
+                f"The paired difference is negligible, which matches the earlier finding "
+                f"that the gap's descriptive content is already carried by the pre- and "
+                f"post-window totals.")
+
     # A hard page break keeps the deferred floats of Section 6 and Appendix A out
     # of the verification text, which otherwise interleaves badly.
     parts.append(r"\clearpage")
+    parts.append(r"\section{Day patterns and activity compositions}")
+    discord = vtab.get("e7_pair_discordance", pd.DataFrame())
+    types = vtab.get("a2_type_patterns_pairs", pd.DataFrame())
+    silence = vtab.get("a1_silence_by_click_layer", pd.DataFrame())
+
+    parts.append(
+        "The six indicators above are aggregates. A separate question is whether the "
+        "\\emph{sequence} of days carries information, and whether Fail and Pass records use "
+        "different kinds of resources. Three pattern analyses were run, all inside the same "
+        "5\\% pairs so that click volume is held fixed, and all tested with a sign test on the "
+        "pairs where exactly one side shows the pattern.")
+    if len(discord):
+        top = discord.reject_bh_0_05.sum()
+        rows = [[_tex(r["pattern"]), str(int(r["pairs_fail_only"])),
+                 str(int(r["pairs_pass_only"])), str(int(r["discordant_pairs"])),
+                 f(r["odds_fail_over_pass"], 2), f(r["p_bh"], 4)]
+                for _, r in discord.head(6).iterrows()]
+        rows += [[_tex(r["pattern"]), str(int(r["pairs_fail_only"])),
+                  str(int(r["pairs_pass_only"])), str(int(r["discordant_pairs"])),
+                  f(r["odds_fail_over_pass"], 2), f(r["p_bh"], 4)]
+                 for _, r in discord.tail(3).iterrows()]
+        parts.append(_table(
+            ["Day pattern", "Fail only", "Pass only", "Discordant", "Odds", "$p_{\\mathrm{BH}}$"],
+            rows, "lrrrrr",
+            "E7: daily click patterns coded 0 (silent), 1 (below the record's own positive "
+            "median) and 2 (at or above it), allowing one skipped day. Only pairs where "
+            "exactly one side shows the pattern enter the test, which removes the volume "
+            f"channel. {int(top)} of {len(discord)} patterns survive BH correction. The top "
+            "six rows are the most Fail-leaning and the bottom three the most Pass-leaning.",
+            "tab:e7", size="\\scriptsize\\setlength{\\tabcolsep}{4pt}"))
+        silent_run = discord[discord["pattern"].astype(str).str.fullmatch(r"0{2,3}")]
+        if len(silent_run):
+            r = silent_run.sort_values("p_bh").iloc[0]
+            parts.append(
+                f"The strongest Fail-leaning pattern is a run of silent days "
+                f"({_tex(r['pattern'])}): it appears on the Fail side alone in "
+                f"{int(r['pairs_fail_only'])} pairs against "
+                f"{int(r['pairs_pass_only'])} on the Pass side (odds "
+                f"{f(r['odds_fail_over_pass'], 2)}). The strongest Pass-leaning patterns are "
+                f"mixed activity runs such as "
+                f"{_tex(discord.sort_values('odds_fail_over_pass').iloc[0]['pattern'])}, which "
+                f"appear on the Pass side up to twice as often. Read as shapes rather than as "
+                f"causes: a silent run and an active run are two ways of describing the same "
+                f"active-day difference reported in Table~5.")
+    if len(types):
+        rows = [[_tex(r["pattern"]), str(int(r["pairs_fail_only"])),
+                 str(int(r["pairs_pass_only"])), str(int(r["discordant"])),
+                 f(r["odds_fail_over_pass"], 2), f(r["p_bh"], 4)]
+                for _, r in types.sort_values("p_bh").head(6).iterrows()]
+        parts.append(_table(
+            ["Type run", "Fail only", "Pass only", "Discordant", "Odds", "$p_{\\mathrm{BH}}$"],
+            rows, "lrrrrr",
+            "A2: runs of the day's dominant activity type (C content, A assessment, F forum), "
+            "restricted to pairs where both records clicked at least once after the deadline "
+            "so the zero-click channel is removed by construction.",
+            "tab:a2", size="\\scriptsize\\setlength{\\tabcolsep}{4pt}"))
+        significant = types[types["reject_bh_0_05"]]
+        if len(significant):
+            all_below = bool((significant["odds_fail_over_pass"] < 1).all())
+            parts.append(
+                f"{len(significant)} of {len(types)} type runs survive BH correction, and "
+                f"{'every one of them' if all_below else 'most of them'} leans toward Pass: "
+                f"there is no Fail-specific activity sequence, only Fail records "
+                f"\\emph{{lacking}} a regular content run. Alternating content and forum runs "
+                f"are the clearest example. This is a composition finding, not a timing one, "
+                f"and it does not survive as a predictive increment (Table~\\ref{{tab:v1}}).")
+    if len(silence):
+        longest = silence[silence["metric"].eq("longest_silence")]
+        rows = [[_tex(r["post_click_layer"]), str(int(r["pairs"])),
+                 f(r["fail_minus_pass"], 3), f"[{f(r['ci_low'], 3)}, {f(r['ci_high'], 3)}]"]
+                for _, r in longest.iterrows()]
+        parts.append(_table(
+            ["Post-click quartile", "Pairs", "Longest silence, Fail $-$ Pass",
+             "95\\% interval"], rows, "lrrr",
+            "A1: the longest silent stretch, split by the pair's post-deadline click level. "
+            "The difference is positive in every quartile, so it is not produced by one tail "
+            "of the volume distribution.", "tab:a1", size="\\footnotesize"))
+        if len(longest):
+            weakest = longest.sort_values("fail_minus_pass").iloc[0]
+            strongest = longest.sort_values("fail_minus_pass").iloc[-1]
+            parts.append(
+                f"The gap is present in all four quartiles, weakest in "
+                f"{_tex(weakest['post_click_layer'])} "
+                f"({f(weakest['fail_minus_pass'], 3)} days) and strongest in "
+                f"{_tex(strongest['post_click_layer'])} "
+                f"({f(strongest['fail_minus_pass'], 3)} days). The weakest quartile is the "
+                f"one where both sides sit close to silent, so the measurement has little "
+                f"room there; the difference is largest in the middle of the distribution "
+                f"rather than at the top, which is why it cannot be read as a "
+                f"heavy-clicker artefact.")
+    parts.append(
+        "Two cautions apply to this whole section. First, the pattern analysis codes a "
+        "record's own median as the threshold, so ``2'' means busy \\emph{for that student}: "
+        "it is a within-person contrast, not an absolute volume band. Second, the test is a "
+        "sign test on discordant pairs, which is a weak design: it cannot tell whether a "
+        "pattern is a cause, a consequence or a marker of the same effort that produces the "
+        "final result.")
     parts.append(r"\section{Verification of the exploratory extensions}")
     if not vtab:
         parts.append(

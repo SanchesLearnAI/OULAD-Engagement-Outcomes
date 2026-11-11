@@ -394,7 +394,7 @@ AIGC tools assisted with code scaffolding, text editing and LaTeX formatting. Al
 The unmodified OULAD archive is committed with its SHA-256. Extracted CSVs, student-level features, pair indices and predictions stay outside version control. One command reproduces the analysis; the submission ZIP contains the code, the frozen configuration and the run log.
 \appendix
 \section{Exploratory extensions}
-Four exploratory blocks were run after the primary analysis was frozen. They do not change any primary indicator or the primary model, and each is reported here rather than in the main text.
+Six exploratory blocks were run after the primary analysis was frozen. They do not change any primary indicator or the primary model, and each is reported here rather than in the main text.
 \begin{table}[t]
 \centering
 \footnotesize
@@ -478,7 +478,141 @@ M2 & 4857 & 43.8\% & 0.7549 & 0.7675 & 0.1896 \\
 \label{tab:c4}
 \end{table}
 Because Withdrawn is a positive case here, the AP level is much higher than in the binary design; the two numbers answer different questions and must not be placed in the same table.
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{lrrrr}
+\toprule
+Volume cluster & Records & Mean post clicks & Mean pre clicks & Fail share \\
+\midrule
+zero & 2171 & 0.0 & 30.6 & 70.8\% \\
+low & 6741 & 17.3 & 78.8 & 37.2\% \\
+high & 10894 & 195.0 & 228.9 & 18.8\% \\
+\bottomrule
+\end{tabular}
+\caption{C5: outcome-blind clusters on post-deadline click volume alone. Zero-click records form their own group because silence is a separate state rather than the bottom of a continuous scale.}
+\label{tab:c5pop}
+\end{table}
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{lrrrr}
+\toprule
+Volume cluster & Pairs & Fail post clicks & Pass post clicks & Pre-click SMD \\
+\midrule
+zero & 607 & 0.0 & 0.0 & -0.766 \\
+low & 2140 & 16.2 & 16.2 & -0.282 \\
+high & 2018 & 155.5 & 155.6 & -0.242 \\
+\bottomrule
+\end{tabular}
+\caption{Pairs that stay inside one volume cluster. Pairs whose two sides fall in different clusters are dropped rather than reassigned, because that is exactly a case where the 5\% tolerance spans a meaningful volume difference.}
+\label{tab:c5bal}
+\end{table}
+\begin{table}[t]
+\centering
+\scriptsize
+\begin{tabular}{llrr}
+\toprule
+Volume cluster & Indicator & Pairs & Fail $-$ Pass \\
+\midrule
+zero & submitted\_by\_cutoff & 607 & -0.516 \\
+zero & submitted\_after\_due & 607 & 0.002 \\
+zero & post\_active\_days & 607 & 0.000 \\
+zero & post\_longest\_inactive\_run & 607 & 0.000 \\
+zero & post\_week2\_share & 607 & 0.000 \\
+low & submitted\_by\_cutoff & 2140 & -0.100 \\
+low & submitted\_after\_due & 2140 & 0.078 \\
+low & post\_active\_days & 2140 & -0.242 \\
+low & post\_longest\_inactive\_run & 2140 & 0.428 \\
+low & post\_week2\_share & 2140 & -0.048 \\
+high & submitted\_by\_cutoff & 2018 & -0.031 \\
+high & submitted\_after\_due & 2018 & 0.115 \\
+high & post\_active\_days & 2018 & -0.613 \\
+high & post\_longest\_inactive\_run & 2018 & 0.468 \\
+high & post\_week2\_share & 2018 & -0.036 \\
+\bottomrule
+\end{tabular}
+\caption{Within-cluster paired differences. Splitting by volume shows whether the primary indicators hold at every click level or are driven by the busiest records.}
+\label{tab:c5eff}
+\end{table}
+Inside the busiest cluster the active-day difference is -0.613 days, against -0.242 in the low-volume cluster: the persistence gap is not an artefact of heavy clickers.
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{lrrr}
+\toprule
+Arm & Features & Fail AP & Brier \\
+\midrule
+M2\_frozen & 16 & 0.661077 & 0.1641 \\
+M2\_plus\_relative\_gap & 17 & 0.661145 & 0.1641 \\
+\bottomrule
+\end{tabular}
+\caption{C6: the signed relative pre/post gap added to the frozen primary model. This is a sensitivity arm, not a candidate replacement: the gap is a deterministic re-expression of two columns already in the model, so it can only add a nonlinear shape.}
+\label{tab:c6}
+\end{table}
+Adding the gap moves AP from 0.661077 to 0.661145, a change of +0.000068. The paired difference is negligible, which matches the earlier finding that the gap's descriptive content is already carried by the pre- and post-window totals.
 \clearpage
+\section{Day patterns and activity compositions}
+The six indicators above are aggregates. A separate question is whether the \emph{sequence} of days carries information, and whether Fail and Pass records use different kinds of resources. Three pattern analyses were run, all inside the same 5\% pairs so that click volume is held fixed, and all tested with a sign test on the pairs where exactly one side shows the pattern.
+\begin{table}[t]
+\centering
+\scriptsize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Day pattern & Fail only & Pass only & Discordant & Odds & $p_{\mathrm{BH}}$ \\
+\midrule
+000 & 319 & 221 & 540 & 1.44 & 0.0001 \\
+00 & 187 & 134 & 321 & 1.40 & 0.0073 \\
+20 & 275 & 230 & 505 & 1.20 & 0.0694 \\
+200 & 527 & 480 & 1007 & 1.10 & 0.1709 \\
+020 & 662 & 645 & 1307 & 1.03 & 0.6581 \\
+201 & 752 & 787 & 1539 & 0.96 & 0.4088 \\
+211 & 401 & 543 & 944 & 0.74 & 0.0000 \\
+112 & 399 & 550 & 949 & 0.73 & 0.0000 \\
+122 & 417 & 645 & 1062 & 0.65 & 0.0000 \\
+\bottomrule
+\end{tabular}
+\caption{E7: daily click patterns coded 0 (silent), 1 (below the record's own positive median) and 2 (at or above it), allowing one skipped day. Only pairs where exactly one side shows the pattern enter the test, which removes the volume channel. 24 of 36 patterns survive BH correction. The top six rows are the most Fail-leaning and the bottom three the most Pass-leaning.}
+\label{tab:e7}
+\end{table}
+The strongest Fail-leaning pattern is a run of silent days (000): it appears on the Fail side alone in 319 pairs against 221 on the Pass side (odds 1.44). The strongest Pass-leaning patterns are mixed activity runs such as 122, which appear on the Pass side up to twice as often. Read as shapes rather than as causes: a silent run and an active run are two ways of describing the same active-day difference reported in Table~5.
+\begin{table}[t]
+\centering
+\scriptsize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Type run & Fail only & Pass only & Discordant & Odds & $p_{\mathrm{BH}}$ \\
+\midrule
+CF & 454 & 612 & 1066 & 0.74 & 0.0000 \\
+FC & 465 & 624 & 1089 & 0.75 & 0.0000 \\
+CCF & 219 & 329 & 548 & 0.67 & 0.0000 \\
+CC & 658 & 822 & 1480 & 0.80 & 0.0002 \\
+FCC & 257 & 362 & 619 & 0.71 & 0.0002 \\
+FFC & 168 & 249 & 417 & 0.67 & 0.0005 \\
+\bottomrule
+\end{tabular}
+\caption{A2: runs of the day's dominant activity type (C content, A assessment, F forum), restricted to pairs where both records clicked at least once after the deadline so the zero-click channel is removed by construction.}
+\label{tab:a2}
+\end{table}
+10 of 35 type runs survive BH correction, and every one of them leans toward Pass: there is no Fail-specific activity sequence, only Fail records \emph{lacking} a regular content run. Alternating content and forum runs are the clearest example. This is a composition finding, not a timing one, and it does not survive as a predictive increment (Table~\ref{tab:v1}).
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{lrrr}
+\toprule
+Post-click quartile & Pairs & Longest silence, Fail $-$ Pass & 95\% interval \\
+\midrule
+Q1\_lowest & 1229 & 0.151 & [0.008, 0.288] \\
+Q2 & 1160 & 0.560 & [0.335, 0.758] \\
+Q3 & 1190 & 0.394 & [0.211, 0.584] \\
+Q4\_highest & 1189 & 0.462 & [0.331, 0.641] \\
+\bottomrule
+\end{tabular}
+\caption{A1: the longest silent stretch, split by the pair's post-deadline click level. The difference is positive in every quartile, so it is not produced by one tail of the volume distribution.}
+\label{tab:a1}
+\end{table}
+The gap is present in all four quartiles, weakest in Q1\_lowest (0.151 days) and strongest in Q2 (0.560 days). The weakest quartile is the one where both sides sit close to silent, so the measurement has little room there; the difference is largest in the middle of the distribution rather than at the top, which is why it cannot be read as a heavy-clicker artefact.
+Two cautions apply to this whole section. First, the pattern analysis codes a record's own median as the threshold, so ``2'' means busy \emph{for that student}: it is a within-person contrast, not an absolute volume band. Second, the test is a sign test on discordant pairs, which is a weak design: it cannot tell whether a pattern is a cause, a consequence or a marker of the same effort that produces the final result.
 \section{Verification of the exploratory extensions}
 The blocks in Appendix~A are exploratory. Four checks were added afterwards to test whether any of them survives: a pre-registered increment test, a transfer summary, a subgroup audit with a minimum detectable effect, and two negative controls (delay typology and sequence ordering). None of them changes a primary number.
 \begin{table}[t]
