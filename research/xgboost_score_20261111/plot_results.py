@@ -10,19 +10,25 @@ import pandas as pd
 
 def plot(metrics_path: Path, output: Path) -> None:
     metrics = pd.read_csv(metrics_path).sort_values("seed")
-    positions = range(len(metrics))
-    fig, ax = plt.subplots(figsize=(8.2, 4.6), layout="constrained")
-    ax.plot(positions, metrics.baseline_ap, "o-", linewidth=2.2,
-            color="#555555", label=f"Score logistic regression (mean {metrics.baseline_ap.mean():.4f})")
-    ax.plot(positions, metrics.xgboost_ap, "o-", linewidth=2.2,
-            color="#6756aa", label=f"GPU XGBoost (mean {metrics.xgboost_ap.mean():.4f})")
-    ax.set_xticks(list(positions), metrics.seed.astype(str))
-    ax.set_ylim(.695, .735)
+    positions = list(range(len(metrics)))
+    fig, ax = plt.subplots(figsize=(8.2, 4.5), layout="constrained")
+    ax.bar(positions, metrics.delta_ap, width=.6, color="#6756aa")
+    mean_delta = metrics.delta_ap.mean()
+    ax.axhline(mean_delta, color="#555555", linewidth=1.3, linestyle="--",
+               label=f"Five-split mean +{mean_delta:.4f}")
+    for position, delta in zip(positions, metrics.delta_ap):
+        ax.annotate(f"{delta:+.4f}", (position, delta), xytext=(0, 4 if delta >= 0 else -4),
+                    textcoords="offset points", ha="center",
+                    va="bottom" if delta >= 0 else "top", fontsize=9)
+    ax.set_xticks(positions, metrics.seed.astype(str))
+    ax.set_ylim(min(0, metrics.delta_ap.min() * 1.25),
+                max(0, metrics.delta_ap.max() * 1.25))
     ax.set_xlabel("Student-group split seed")
-    ax.set_ylabel("Fail average precision (AP)")
-    ax.set_title("Score-inclusive logistic baseline vs GPU XGBoost")
+    ax.set_ylabel("Fail AP difference (XGBoost − logistic)")
+    ax.set_title("XGBoost gains were small and positive on all five splits")
     ax.grid(axis="y", alpha=.22)
-    ax.legend(frameon=False, loc="lower right")
+    ax.set_axisbelow(True)
+    ax.legend(frameon=False, loc="upper right")
     output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output, dpi=170)
 

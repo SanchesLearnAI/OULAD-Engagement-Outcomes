@@ -33,6 +33,7 @@ NUMERIC = [
     "score_recorded_for_submission", "unsubmitted_x_inactive_run",
 ]
 SEEDS = (42, 143, 144, 145, 146)
+BASELINE_NAME = "S_single_unsubmitted_x_inactive_run"
 REFERENCE_AP = (0.7186571521619861, 0.7188570756997005,
                 0.7004578184803578, 0.7053049239504816,
                 0.7249313395187422)
@@ -42,14 +43,22 @@ def prepare(features_path: Path, scores_path: Path, output: Path) -> None:
     frame = pd.read_parquet(features_path)
     scores = pd.read_parquet(scores_path)
     key = ["code_module", "code_presentation", "id_student"]
+    if frame.duplicated(key).any() or scores.duplicated(key).any():
+        raise ValueError("Enrolment keys must be unique in both input tables")
     if not frame[key].equals(scores[key]):
         raise ValueError("Feature and score rows must have identical enrolment keys")
     if len(frame) != 19806 or int(frame.y_fail.sum()) != 6092:
         raise ValueError("Unexpected cohort; this benchmark requires the frozen cohort")
+    baseline_features = MODELS[BASELINE_NAME]
+    if (len(NUMERIC) != len(set(NUMERIC)) or
+            set(NUMERIC) != set(baseline_features) - {"module_presentation"}):
+        raise ValueError("XGBoost numeric features no longer match the logistic baseline")
 
     # features_scores.parquet includes eventual scores. Hide any score not
     # recorded for a submission by the d+14 observation cutoff.
     available = scores.has_score_by_cutoff.eq(1)
+    if scores.loc[available, "score"].isna().any():
+        raise ValueError("A score marked available is missing")
     frame["first_tma_score"] = scores.score.where(available)
     frame["score_recorded_for_submission"] = available.astype(int)
     frame["unsubmitted_x_inactive_run"] = (
@@ -72,7 +81,7 @@ def prepare(features_path: Path, scores_path: Path, output: Path) -> None:
             raise AssertionError("Student appears in both train and test")
         baseline = _fit_predict(
             frame.iloc[train], frame.iloc[test],
-            MODELS["S_single_unsubmitted_x_inactive_run"])
+            baseline_features)
         ap = average_precision_score(labels[test], baseline)
         if not np.isclose(ap, expected, atol=1e-10, rtol=0):
             raise AssertionError(f"Baseline mismatch for seed {seed}: {ap} != {expected}")

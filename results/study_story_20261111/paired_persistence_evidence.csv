@@ -1,0 +1,13 @@
+feature,specification,pairs,estimate,ci_low,ci_high,unit,source,holm_p_main
+post_active_days,Post clicks,4768,-0.3682885906040268,-0.4403392246962256,-0.2952354972077138,days,oulad-sem/outputs/tables/t06_primary_holm.csv,0.006
+post_active_days,Post + pre clicks,664,-0.3975903614457831,-0.5867360007065889,-0.2191686029921324,days,oulad-sem/outputs/tables/t06_pre_volume_sensitivity.csv,
+post_active_days,Post clicks + score*,2770,-0.3209386281588448,-0.4274636730709465,-0.2148725290257865,days,results/tma_score_gap_20261103/joint_effects.csv,
+post_active_days,Post + pre + score*,410,-0.2804878048780488,-0.5707926829268292,0.0171341463414633,days,results/tma_score_gap_20261103/joint_effects.csv,
+post_longest_inactive_run,Post clicks,4768,0.3888422818791946,0.3030413340398981,0.4731044411395589,days,oulad-sem/outputs/tables/t06_primary_holm.csv,0.006
+post_longest_inactive_run,Post + pre clicks,664,0.3463855421686747,0.1323209072155651,0.5604343355294287,days,oulad-sem/outputs/tables/t06_pre_volume_sensitivity.csv,
+post_longest_inactive_run,Post clicks + score*,2770,0.235740072202166,0.1192269075909671,0.3550901687427696,days,results/tma_score_gap_20261103/joint_effects.csv,
+post_longest_inactive_run,Post + pre + score*,410,0.2219512195121951,-0.078170731707317,0.5002439024390242,days,results/tma_score_gap_20261103/joint_effects.csv,
+post_week2_share,Post clicks,4768,-3.68408836969918,-4.96502798964531,-2.41070249244166,percentage points,oulad-sem/outputs/tables/t06_primary_holm.csv,0.006
+post_week2_share,Post + pre clicks,664,-6.32942232653348,-9.246801079224019,-3.2457017756325097,percentage points,oulad-sem/outputs/tables/t06_pre_volume_sensitivity.csv,
+post_week2_share,Post clicks + score*,2770,-3.73046603784295,-5.47751372317873,-2.10838735670848,percentage points,results/tma_score_gap_20261103/joint_effects.csv,
+post_week2_share,Post + pre + score*,410,-0.76712007673176,-4.5744433190545,3.1637981484202595,percentage points,results/tma_score_gap_20261103/joint_effects.csv,

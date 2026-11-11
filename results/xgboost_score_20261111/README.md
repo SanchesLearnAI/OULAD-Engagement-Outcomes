@@ -1,6 +1,6 @@
 # XGBoost 与含分数逻辑回归的对照（探索性）
 
-本实验从融合版 `feat/oulad-sem-tma` 的提交 `c761727` 出发，比较已有的 `S_single_unsubmitted_x_inactive_run` 逻辑回归与 GPU XGBoost。正类为最终 `Fail`。两者使用相同的 19,806 条二分类记录、同一批 19 个课程呈现和五组按学生 ID 分组的 80/20 训练/测试划分。原逻辑回归五组 AP 在输入准备阶段逐一精确复现。
+本实验是[两条线研究叙事](../../research/STUDY_STORY_20261111.md)中的**回顾性建模侧线**。它从融合版 `feat/oulad-sem-tma` 的提交 `c761727` 出发，比较已有的 `S_single_unsubmitted_x_inactive_run` 逻辑回归与 GPU XGBoost。正类为最终 `Fail`。两者使用相同的 19,806 条二分类记录、同一批 19 个课程呈现和五组按学生 ID 分组的 80/20 训练/测试划分。原逻辑回归五组 AP 在输入准备阶段逐一精确复现；模型差异不是配对行为 finding 的证据。
 
 ## 结果
 
@@ -15,7 +15,7 @@
 
 五组平均 ROC-AUC：逻辑回归 0.815161，XGBoost 0.820006；五组平均 Brier：0.149428 与 0.147897。详细数值、内部验证 AP、参数和轮数见 [metrics.csv](metrics.csv)。种子 42 的学生分组 bootstrap（400 次）给出 ΔAP 95% 区间 **[+0.001432, +0.012403]**，见 [interval_seed42.csv](interval_seed42.csv)。五组测试集彼此重叠，`5/5` 提升不能当作五次独立显著性检验。
 
-![同一测试集上的 AP 对照](ap_comparison.png)
+![同一批学生分组测试上的 AP 差值](ap_comparison.png)
 
 ## 特征与训练
 
