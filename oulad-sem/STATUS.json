@@ -1,19 +1,19 @@
 {
   "schema_version": "1.0",
-  "run_id": "run-20261108T101537Z-28e708",
+  "run_id": "run-20261111T064710Z-d4c613",
   "mode": "full",
-  "updated_at": "2026-11-09T06:36:56.547Z",
+  "updated_at": "2026-11-11T06:48:30.966Z",
   "current_stage": "S12",
   "next_stage": null,
   "stages": {
     "S00": {
       "status": "pass",
-      "started_at": "2026-11-08T10:15:38.582Z",
-      "finished_at": "2026-11-08T10:15:41.336Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S00.stage.json",
+      "started_at": "2026-11-11T06:47:10.492Z",
+      "finished_at": "2026-11-11T06:47:12.916Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S00.stage.json",
       "artifacts": [
-        "runs/run-20261108T101537Z-28e708/env.json",
+        "runs/run-20261111T064710Z-d4c613/env.json",
         "data/raw/oulad/courses.csv",
         "data/raw/oulad/assessments.csv",
         "data/raw/oulad/vle.csv",
@@ -21,16 +21,16 @@
         "data/raw/oulad/studentRegistration.csv",
         "data/raw/oulad/studentAssessment.csv",
         "data/raw/oulad/studentVle.csv",
-        "runs/run-20261108T101537Z-28e708/manifest.json"
+        "runs/run-20261111T064710Z-d4c613/manifest.json"
       ],
       "notes": ""
     },
     "S01": {
       "status": "pass",
-      "started_at": "2026-11-08T10:15:42.795Z",
-      "finished_at": "2026-11-08T10:15:47.441Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S01.stage.json",
+      "started_at": "2026-11-11T06:47:13.517Z",
+      "finished_at": "2026-11-11T06:47:15.079Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S01.stage.json",
       "artifacts": [
         "data/interim/cache/courses.parquet",
         "data/interim/cache/assessments.parquet",
@@ -48,10 +48,10 @@
     },
     "S02": {
       "status": "pass",
-      "started_at": "2026-11-08T10:15:48.797Z",
-      "finished_at": "2026-11-08T10:15:53.280Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S02.stage.json",
+      "started_at": "2026-11-11T06:47:15.628Z",
+      "finished_at": "2026-11-11T06:47:18.026Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S02.stage.json",
       "artifacts": [
         "outputs/tables/t02_cohort_flow.csv",
         "outputs/tables/t02_presentations.csv",
@@ -65,10 +65,10 @@
     },
     "S03": {
       "status": "pass",
-      "started_at": "2026-11-08T10:15:54.719Z",
-      "finished_at": "2026-11-08T10:15:56.988Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S03.stage.json",
+      "started_at": "2026-11-11T06:47:18.681Z",
+      "finished_at": "2026-11-11T06:47:20.178Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S03.stage.json",
       "artifacts": [
         "outputs/tables/t03_outcome_mix.csv",
         "outputs/tables/t03_daily_profile.csv",
@@ -80,10 +80,10 @@
     },
     "S04": {
       "status": "pass",
-      "started_at": "2026-11-08T10:15:58.193Z",
-      "finished_at": "2026-11-08T10:15:59.644Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S04.stage.json",
+      "started_at": "2026-11-11T06:47:20.573Z",
+      "finished_at": "2026-11-11T06:47:21.406Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S04.stage.json",
       "artifacts": [
         "data/processed/features_scores.parquet",
         "data/processed/features.parquet",
@@ -93,10 +93,10 @@
     },
     "S05": {
       "status": "pass",
-      "started_at": "2026-11-08T10:16:01.506Z",
-      "finished_at": "2026-11-08T10:16:01.915Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S05.stage.json",
+      "started_at": "2026-11-11T06:47:22.388Z",
+      "finished_at": "2026-11-11T06:47:22.765Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S05.stage.json",
       "artifacts": [
         "data/processed/splits.json",
         "outputs/tables/t05_split_summary.csv",
@@ -106,10 +106,10 @@
     },
     "S06": {
       "status": "pass",
-      "started_at": "2026-11-08T10:16:03.252Z",
-      "finished_at": "2026-11-08T10:16:05.941Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S06.stage.json",
+      "started_at": "2026-11-11T06:47:23.306Z",
+      "finished_at": "2026-11-11T06:47:27.447Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S06.stage.json",
       "artifacts": [
         "outputs/tables/t06_balance.csv",
         "outputs/tables/t06_effects.csv",
@@ -124,10 +124,10 @@
     },
     "S07": {
       "status": "pass",
-      "started_at": "2026-11-08T10:16:16.340Z",
-      "finished_at": "2026-11-08T10:16:17.003Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S07.stage.json",
+      "started_at": "2026-11-11T06:47:28.756Z",
+      "finished_at": "2026-11-11T06:47:29.314Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S07.stage.json",
       "artifacts": [
         "outputs/tables/t07_cluster_candidates.csv",
         "outputs/tables/t07_cluster_profile.csv",
@@ -137,10 +137,10 @@
     },
     "S08": {
       "status": "pass",
-      "started_at": "2026-11-08T10:16:19.226Z",
-      "finished_at": "2026-11-08T10:16:38.532Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S08.stage.json",
+      "started_at": "2026-11-11T06:47:30.703Z",
+      "finished_at": "2026-11-11T06:47:53.490Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S08.stage.json",
       "artifacts": [
         "outputs/tables/t08_model_metrics.csv",
         "outputs/tables/t08_calibration.csv",
@@ -154,10 +154,10 @@
     },
     "S09": {
       "status": "pass",
-      "started_at": "2026-11-08T10:16:40.749Z",
-      "finished_at": "2026-11-08T10:16:42.839Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S09.stage.json",
+      "started_at": "2026-11-11T06:47:54.870Z",
+      "finished_at": "2026-11-11T06:47:56.643Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S09.stage.json",
       "artifacts": [
         "outputs/tables/t09_cutoff_metrics.csv",
         "outputs/tables/t09_incremental.csv",
@@ -167,10 +167,10 @@
     },
     "S10": {
       "status": "pass",
-      "started_at": "2026-11-08T10:16:44.976Z",
-      "finished_at": "2026-11-08T10:16:46.100Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S10.stage.json",
+      "started_at": "2026-11-11T06:47:57.954Z",
+      "finished_at": "2026-11-11T06:47:58.696Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S10.stage.json",
       "artifacts": [
         "outputs/tables/t10_class_metrics.csv",
         "outputs/tables/t10_cumulative_incidence.csv",
@@ -182,10 +182,10 @@
     },
     "S11": {
       "status": "pass",
-      "started_at": "2026-11-08T10:16:47.542Z",
-      "finished_at": "2026-11-08T10:17:01.392Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S11.stage.json",
+      "started_at": "2026-11-11T06:48:00.156Z",
+      "finished_at": "2026-11-11T06:48:25.196Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S11.stage.json",
       "artifacts": [
         "outputs/tables/t11_specs.csv",
         "outputs/tables/t11_spec_effects.csv",
@@ -199,25 +199,30 @@
         "outputs/tables/t11_x_heterogeneity.csv",
         "outputs/tables/t11_x_non_submitter_outcomes.csv",
         "outputs/tables/t11_x_at_risk_warning.csv",
+        "outputs/tables/t11_x_volume_cluster_candidates.csv",
+        "outputs/tables/t11_x_volume_cluster_population.csv",
+        "outputs/tables/t11_x_volume_cluster_balance.csv",
+        "outputs/tables/t11_x_volume_cluster_effects.csv",
+        "outputs/tables/t11_x_relative_gap.csv",
         "outputs/figures/f11_spec_curve.png"
       ],
       "notes": ""
     },
     "S12": {
       "status": "pass",
-      "started_at": "2026-11-09T06:36:50.167Z",
-      "finished_at": "2026-11-09T06:36:56.547Z",
-      "log": "runs/run-20261108T101537Z-28e708/run.jsonl",
-      "stage_json": "runs/run-20261108T101537Z-28e708/stages/S12.stage.json",
+      "started_at": "2026-11-11T06:48:25.850Z",
+      "finished_at": "2026-11-11T06:48:30.966Z",
+      "log": "runs/run-20261111T064710Z-d4c613/run.jsonl",
+      "stage_json": "runs/run-20261111T064710Z-d4c613/stages/S12.stage.json",
       "artifacts": [
-        "runs/run-20261108T101537Z-28e708/manifest_all.json",
+        "runs/run-20261111T064710Z-d4c613/manifest_all.json",
         "outputs/Report.pdf",
         "REPORT.md",
         "outputs/Poster.pdf",
         "README.md",
         "REQUIREMENTS.lock",
         "DATA_DOWNLOAD.md",
-        "runs/run-20261108T101537Z-28e708/STATUS.final.json",
+        "runs/run-20261111T064710Z-d4c613/STATUS.final.json",
         "Group_09_Project.zip"
       ],
       "notes": ""

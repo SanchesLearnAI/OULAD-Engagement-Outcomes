@@ -99,6 +99,24 @@ The primary match pairs 4,768 Fail records, covering 78.3\% of all Fail records,
 \begin{table}[t]
 \centering
 \footnotesize
+\begin{tabular}{lrr}
+\toprule
+Pre-deadline indicator & Fail $-$ Pass & 95\% interval \\
+\midrule
+Clicks before the deadline & -20.952 & [-24.818, -17.380] \\
+Active days before & -0.955 & [-1.055, -0.857] \\
+Last-day rate lift & 0.187 & [0.127, 0.246] \\
+Last-three-day rate lift & 0.072 & [0.022, 0.123] \\
+Deadline-day click share & 0.020 & [0.013, 0.027] \\
+\bottomrule
+\end{tabular}
+\caption{Pre-deadline context for the same pairs. Pairing fixes post-deadline volume only, so these differences survive the match and are reported rather than removed.}
+\label{tab:prewindow}
+\end{table}
+Fail records concentrate their clicks closer to the deadline: the last-day rate lift is 0.187 log units higher than their matched partners, and the last-three-day lift is 0.072. The gap features point the same way: the signed relative pre/post gap is 0.142 higher for Fail, which makes sense because a smaller pre-window denominator inflates the ratio.
+\begin{table}[t]
+\centering
+\footnotesize
 \begin{tabular}{lrrcccc}
 \toprule
 Primary indicator & Pairs & Fail $-$ Pass & 95\% interval & $p$ & $p_{\mathrm{Holm}}$ & Reject \\
@@ -190,14 +208,14 @@ M0 & 7 & 0.6544 & 0.3078 & 0.7585 & 0.1658 & 0.909 & 0.472 \\
 M1 & 14 & 0.6574 & 0.3078 & 0.7606 & 0.1651 & 0.912 & 0.477 \\
 M2 & 16 & 0.6611 & 0.3078 & 0.7647 & 0.1641 & 0.918 & 0.475 \\
 M3 & 36 & 0.6608 & 0.3078 & 0.7653 & 0.1640 & 0.912 & 0.470 \\
-RF\_M0 & 7 & 0.6541 & 0.3078 & 0.7576 & 0.1904 & 0.897 & 0.473 \\
-RF\_M2 & 16 & 0.6649 & 0.3078 & 0.7681 & 0.1853 & 0.944 & 0.464 \\
+RF\_M0 & 7 & 0.6541 & 0.3078 & 0.7573 & 0.1903 & 0.880 & 0.471 \\
+RF\_M2 & 16 & 0.6641 & 0.3078 & 0.7671 & 0.1853 & 0.906 & 0.478 \\
 \bottomrule
 \end{tabular}
 \caption{Model ladder on the grouped main test split (single holdout at the configured seed). M0 uses pre- and post-deadline volume plus submission status; M1 adds post-deadline timing; M2 adds submission distance and is the primary model; M3 adds resource composition. M4, which adds the first-TMA score, is omitted here because the frozen configuration excludes scores from the strict models; it is reported separately only as a retrospective upper bound. Thresholds are chosen on the validation part.}
 \label{tab:models}
 \end{table}
-The primary model reaches Fail AP 0.6611 against a no-skill floor of 0.3078. The ladder shows where the gain comes from: M0 already contains submission status and reaches 0.6544, the post-deadline timing block moves it to 0.6574, and the submission-distance terms add the rest up to 0.6611. Most of the predictive signal is submission status rather than the fine structure of the click sequence. A gradient-boosted alternative reaches 0.6649, within noise of the logistic ladder, so there is little evidence of a strong nonlinear pattern that the linear models miss.
+The primary model reaches Fail AP 0.6611 against a no-skill floor of 0.3078. The ladder shows where the gain comes from: M0 already contains submission status and reaches 0.6544, the post-deadline timing block moves it to 0.6574, and the submission-distance terms add the rest up to 0.6611. Most of the predictive signal is submission status rather than the fine structure of the click sequence. A gradient-boosted alternative reaches 0.6641, within noise of the logistic ladder, so there is little evidence of a strong nonlinear pattern that the linear models miss.
 The threshold rule actually used is recorded per model (M0: target\_precision, M1: target\_precision, M2: target\_precision, M3: target\_precision, RF\_M0: target\_precision, RF\_M2: target\_precision). The pipeline first looks for a threshold that reaches 0.80 precision on the validation part and falls back to the maximum-F1 threshold when no such point exists, so the reported precision and recall describe a realisable operating point rather than the maximum of the precision-recall curve.
 \begin{figure}[t]
 \centering
@@ -245,11 +263,11 @@ Split & Train & Test & Train Fail & Test Fail & Student overlap \\
 main\_train\_test & 11892 & 3944 & 30.7\% & 30.8\% & 0 \\
 main\_train\_val & 11892 & 3970 & 30.7\% & 30.9\% & 0 \\
 temporal & 8162 & 11028 & 33.2\% & 29.4\% & 0 \\
-group\_kfold\_0 & 15844 & 3962 & 30.7\% & 31.2\% & 0 \\
-group\_kfold\_1 & 15845 & 3961 & 30.7\% & 31.1\% & 0 \\
-group\_kfold\_2 & 15845 & 3961 & 30.8\% & 30.4\% & 0 \\
-group\_kfold\_3 & 15845 & 3961 & 30.9\% & 30.3\% & 0 \\
-group\_kfold\_4 & 15845 & 3961 & 30.7\% & 30.8\% & 0 \\
+group\_kfold\_0 & 15844 & 3962 & 31.0\% & 29.7\% & 0 \\
+group\_kfold\_1 & 15845 & 3961 & 30.8\% & 30.7\% & 0 \\
+group\_kfold\_2 & 15845 & 3961 & 30.6\% & 31.3\% & 0 \\
+group\_kfold\_3 & 15845 & 3961 & 30.7\% & 31.0\% & 0 \\
+group\_kfold\_4 & 15845 & 3961 & 30.7\% & 31.0\% & 0 \\
 lomo\_AAA & 19196 & 608 & 31.3\% & 14.0\% & 0 \\
 lomo\_BBB & 14362 & 5439 & 30.5\% & 31.6\% & 0 \\
 lomo\_CCC & 16216 & 2438 & 31.5\% & 31.8\% & 0 \\
@@ -396,8 +414,8 @@ studied\_credits & numeric & 0.075 & 0.005 & yes \\
 \caption{Pre-entry covariates of the matched pairs. Pairing was designed to balance post-deadline clicks only, so a remaining difference here is expected and is reported rather than corrected.}
 \label{tab:c1}
 \end{table}
-The largest residual imbalance is highest\_education at -0.360 standard deviations; education, IMD band and previous attempts remain the least balanced covariates. Restricting the pairs to those that also agree exactly on education and IMD band keeps 3.3\% of them, which is too small to replace the primary comparison.
-On that surviving subset the active-day difference is -0.148 days with a much wider interval, so the direction holds but the precision does not.
+The largest residual imbalance is highest\_education at -0.360 standard deviations; education, IMD band and previous attempts remain the least balanced covariates. Restricting the pairs to those that also agree exactly on education and IMD band keeps 3.1\% of them, which is too small to replace the primary comparison.
+On that surviving subset the active-day difference is -0.120 days with a much wider interval, so the direction holds but the precision does not.
 \begin{table}[t]
 \centering
 \footnotesize

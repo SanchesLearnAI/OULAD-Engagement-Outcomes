@@ -30,8 +30,8 @@ Within the same module presentation, among students whose post-deadline clicks a
 | M1 | 0.6574 | 0.3078 | 0.7606 | 0.1651 |
 | M2 | 0.6611 | 0.3078 | 0.7647 | 0.1641 |
 | M3 | 0.6608 | 0.3078 | 0.7653 | 0.1640 |
-| RF_M0 | 0.6541 | 0.3078 | 0.7576 | 0.1904 |
-| RF_M2 | 0.6649 | 0.3078 | 0.7681 | 0.1853 |
+| RF_M0 | 0.6541 | 0.3078 | 0.7573 | 0.1903 |
+| RF_M2 | 0.6641 | 0.3078 | 0.7671 | 0.1853 |
 
 M4 contains the first-TMA score and is a retrospective upper bound only.
 

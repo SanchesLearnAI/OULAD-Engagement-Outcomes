@@ -2,6 +2,17 @@ column,dtype,missing,missing_share,origin
 pre_clicks,float64,0,0.0,studentVle
 pre_active_days,float64,0,0.0,studentVle
 last3_share,float64,0,0.0,studentVle
+pre_before_due_clicks,float64,0,0.0,studentVle
+pre_before_due_active_days,float64,0,0.0,studentVle
+pre_last1_share,float64,0,0.0,studentVle
+pre_last3_share,float64,0,0.0,studentVle
+pre_due_share,float64,0,0.0,studentVle
+pre_last1_rate_lift,float64,0,0.0,studentVle
+pre_last3_rate_lift,float64,0,0.0,studentVle
+pre_last1_lift_x_late,float64,0,0.0,studentVle
+pre_last3_lift_x_late,float64,0,0.0,studentVle
+relative_click_gap,float64,0,0.0,derived
+both_zero_clicks,int64,0,0.0,derived
 post_clicks,float64,0,0.0,studentVle
 post_active_days,float64,0,0.0,studentVle
 post_longest_inactive_run,int64,0,0.0,studentVle
