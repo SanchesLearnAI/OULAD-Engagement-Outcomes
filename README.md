@@ -11,12 +11,15 @@ week. These are observational differences, and stronger matching on both prior
 engagement and TMA marks leaves too few pairs for a firm independent-effect
 claim.
 
-Read the [two-track study story](research/STUDY_STORY_20261111.md) first. It
-connects the **behavior-evidence track** (the main result) to the **modeling
-track** (logistic regression and XGBoost as a retrospective check of the shared
-features). The [frozen reporting protocol](research/TMA_PRIMARY_PROTOCOL.md)
-defines the cohort, metrics and limits; `oulad-sem/` runs that design end to
-end. The earlier experiments remain indexed below.
+Read the [study story](research/STUDY_STORY_20261111.md) first. It layers the
+evidence by strength rather than by topic: the **main result** (paired
+persistence at matched post-deadline clicks), the **boundary** (how far that
+result survives stricter control of prior engagement and marks), and the
+**auxiliary fit** (logistic regression and XGBoost as a retrospective check that
+the same features carry ranking information). The
+[frozen reporting protocol](research/TMA_PRIMARY_PROTOCOL.md) defines the cohort,
+metrics and limits; `oulad-sem/` runs that design end to end. The earlier
+experiments remain indexed below.
 
 ## Repository layout
 
@@ -25,7 +28,7 @@ Two code bases share one dataset and deliberately stay in separate directories:
 | Path | Role | Tests |
 |---|---|---|
 | `oulad_analysis/`, `tests/` | Research and exploration code: cohort construction, pairing, clustering, feature ablations, model comparisons. Python 3.11, `unittest`, `duckdb`. | `python -m unittest discover -s tests -v` (28 tests) |
-| `oulad-sem/` | Validation and delivery pipeline: frozen config with a config hash, gated stages S00–S12, JSONL run log plus schema validation, ZIP packaging. Python 3.11, `pytest`, own `Makefile`. | `cd oulad-sem && make test` (13 tests) |
+| `oulad-sem/` | Validation and delivery pipeline: frozen config with a config hash, gated stages S00–S12, JSONL run log plus schema validation, ZIP packaging. Python 3.11, `pytest`, own `Makefile`. | `cd oulad-sem && make test` (60 tests) |
 
 `oulad_analysis/` contains the earlier exploration and reference code.
 `oulad-sem/` executes and packages the main TMA design. The score-inclusive
