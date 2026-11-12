@@ -32,8 +32,10 @@ Two code bases share one dataset and deliberately stay in separate directories:
 
 `oulad_analysis/` contains the earlier exploration and reference code.
 `oulad-sem/` executes and packages the main TMA design. The score-inclusive
-XGBoost experiment lives under `research/xgboost_score_20261111/`; its
-aggregate results live under `results/xgboost_score_20261111/`.
+XGBoost experiments live under `research/xgboost_score_20261111/` (mark-based,
+retrospective) and `research/xgboost_noscore_20261112/` (score-free, comparable
+with the frozen M2); their aggregate results sit in the matching `results/`
+folders.
 
 - `data/oulad.zip` — unmodified public archive, checksum in [data/README.md](data/README.md).
 - `results/<name>_<date>/` — reviewed aggregate tables, protocols and figures.
@@ -134,6 +136,7 @@ Index only, not part of the study narrative:
 
 - `results/tma_score_probe_20261103/`, `results/tma_score_model_20261103/`, `results/tma_score_gap_20261103/` — these use the first-TMA mark, which is not available as an online feature at the cutoff; retrospective upper bounds only.
 - [Score-inclusive logistic regression vs GPU XGBoost](results/xgboost_score_20261111/README.md) — same five student-group splits; retrospective mark-based model comparison and reproducible code.
+- [Score-free M2 vs GPU XGBoost](results/xgboost_noscore_20261112/README.md) — the deployable counterpart: same 16 features as M2, no mark information, ΔAP +0.0073 over five splits.
 - `results/wu_method_probe_20261103/`, `results/wu_method_probe_28d_20261103/` — method probes adapted from an unrelated paper's withdrawal task, not a reproduction.
 - `results/assessment_node_20261103/` — the 2/3/4-week window ladder used to choose the observation horizon.
 

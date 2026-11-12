@@ -1,0 +1,5 @@
+# GPU host ran these exact versions (Python 3.8.10).
+numpy<2
+pandas<2.1
+scikit-learn>=1.3,<1.4
+xgboost>=2.1,<2.2

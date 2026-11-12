@@ -1,0 +1,39 @@
+{
+  "baseline": "M2 logistic regression, 16 score-free features",
+  "seeds": [
+    42,
+    143,
+    144,
+    145,
+    146
+  ],
+  "positive_class": "Fail",
+  "n_records": 19806,
+  "n_fail": 6092,
+  "feature_count_numeric": 16,
+  "feature_count_category": 19,
+  "score_information_used": false,
+  "selection": "inner student-group validation sklearn AP; final outer-train refit",
+  "candidate_depth_rate": [
+    [
+      3,
+      0.03
+    ],
+    [
+      5,
+      0.03
+    ],
+    [
+      3,
+      0.05
+    ]
+  ],
+  "device": "cuda:0",
+  "requested_device": "cuda",
+  "xgboost": "2.1.4",
+  "sklearn": "1.3.2",
+  "numpy": "1.24.4",
+  "input_sha256": "72deaf59aa8ec06e1a7cfcf9297e5458be8a3179aac13259958d554a95154480",
+  "test_previously_inspected": true,
+  "limitations": "Retrospective comparison on a repeatedly inspected split; the baseline itself was selected after seeing these data. A positive delta is an exploratory gain, not deployment value."
+}

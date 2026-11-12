@@ -1,0 +1,44 @@
+{
+  "purpose": "score-free XGBoost arm on the frozen M2 feature set",
+  "features": [
+    "log_pre_clicks",
+    "pre_active_days",
+    "last3_share",
+    "log_post_clicks",
+    "log_post_clicks_squared",
+    "submitted_by_cutoff",
+    "submitted_after_due",
+    "post_active_days",
+    "post_both_weeks",
+    "post_longest_inactive_run",
+    "post_week2_share",
+    "post_peak7_share",
+    "post_entropy_norm",
+    "post_first_active_day",
+    "days_early",
+    "days_late"
+  ],
+  "n_features_numeric": 16,
+  "n_category": 19,
+  "seeds": [
+    42,
+    143,
+    144,
+    145,
+    146
+  ],
+  "n_records": 19806,
+  "n_fail": 6092,
+  "baseline_model": "M2 logistic regression (no scores)",
+  "baseline_ap_by_seed": {
+    "42": 0.6715365307345672,
+    "143": 0.6791652188284922,
+    "144": 0.6572166023212913,
+    "145": 0.6657032250361925,
+    "146": 0.6834553200839317
+  },
+  "features_sha256": "6462c03c31e6abfc1d514cfe94e95798cf0ae73ec672df43229e6d436ab30b2e",
+  "script_sha256": "de29421583d95f9f392d75aaa9eeaf55f8014680a6908f81253c72017628004a",
+  "npz_sha256": "72deaf59aa8ec06e1a7cfcf9297e5458be8a3179aac13259958d554a95154480",
+  "score_information_used": false
+}
