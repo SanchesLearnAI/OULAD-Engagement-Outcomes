@@ -3,23 +3,20 @@
 Group 9 data mining project on the [Open University Learning Analytics Dataset
 (OULAD)](https://doi.org/10.24432/C5KK69).
 
-The study asks whether, **within the same module presentation and among students
-with comparable VLE click volume, submission timing and post-deadline
-persistence are associated with eventually failing the module**. The main
-design anchors each presentation on the deadline `d` of its first
-positive-weight tutor-marked assignment (TMA): engagement is observed for 14
-days before (`d−13…d`) and 14 days after (`d+1…d+14`) that deadline, and Fail
-records are paired 1:1 with Pass/Distinction records whose **post-deadline**
-clicks are within 5%. Final Withdrawn records are described separately and are
-excluded from the binary comparison. All findings are observational
-associations, not causal effects.
+The main finding is about **when students engage, given similar post-deadline
+click totals**. Within the same module presentation, 4,768 Fail/Pass pairs have
+post-deadline click totals within 5%. The Fail side is active on fewer days,
+has longer no-click runs, and places a smaller share of clicks in the second
+week. These are observational differences, and stronger matching on both prior
+engagement and TMA marks leaves too few pairs for a firm independent-effect
+claim.
 
-Read first: the [frozen primary protocol](research/TMA_PRIMARY_PROTOCOL.md), the
-[exploratory two-week protocol](research/TMA_TWO_WEEK_PROTOCOL_20261103.md),
-the [two-week aggregate results](results/tma_two_week_20261103/README.md), and the
-[2026-11-04 synthesis](research/TMA_SYNTHESIS_20261104.md). The `oulad-sem/`
-pipeline now executes the frozen protocol end to end; `results/` keeps the
-exploratory tables that led to it.
+Read the [two-track study story](research/STUDY_STORY_20261111.md) first. It
+connects the **behavior-evidence track** (the main result) to the **modeling
+track** (logistic regression and XGBoost as a retrospective check of the shared
+features). The [frozen reporting protocol](research/TMA_PRIMARY_PROTOCOL.md)
+defines the cohort, metrics and limits; `oulad-sem/` runs that design end to
+end. The earlier experiments remain indexed below.
 
 ## Repository layout
 
@@ -30,10 +27,10 @@ Two code bases share one dataset and deliberately stay in separate directories:
 | `oulad_analysis/`, `tests/` | Research and exploration code: cohort construction, pairing, clustering, feature ablations, model comparisons. Python 3.11, `unittest`, `duckdb`. | `python -m unittest discover -s tests -v` (28 tests) |
 | `oulad-sem/` | Validation and delivery pipeline: frozen config with a config hash, gated stages S00–S12, JSONL run log plus schema validation, ZIP packaging. Python 3.11, `pytest`, own `Makefile`. | `cd oulad-sem && make test` (13 tests) |
 
-`oulad_analysis/` is where exploratory questions are developed. `oulad-sem/`
-is where a frozen design is executed end to end and packaged. Once the TMA
-replacement in `oulad-sem/` lands, that pipeline carries the main study; the
-research code stays as the exploration and reference implementation.
+`oulad_analysis/` contains the earlier exploration and reference code.
+`oulad-sem/` executes and packages the main TMA design. The score-inclusive
+XGBoost experiment lives under `research/xgboost_score_20261111/`; its
+aggregate results live under `results/xgboost_score_20261111/`.
 
 - `data/oulad.zip` — unmodified public archive, checksum in [data/README.md](data/README.md).
 - `results/<name>_<date>/` — reviewed aggregate tables, protocols and figures.
@@ -111,6 +108,8 @@ two-week design; the earlier day-0–27 design is archived under
 
 ## Results index
 
+Start with the [two-track story and behavior evidence figure](research/STUDY_STORY_20261111.md).
+
 Main design (TMA, 14 days before and after the deadline, post-deadline click
 pairing):
 
@@ -131,6 +130,7 @@ Historical baseline (day 0–27, the original proposal window):
 Index only, not part of the study narrative:
 
 - `results/tma_score_probe_20261103/`, `results/tma_score_model_20261103/`, `results/tma_score_gap_20261103/` — these use the first-TMA mark, which is not available as an online feature at the cutoff; retrospective upper bounds only.
+- [Score-inclusive logistic regression vs GPU XGBoost](results/xgboost_score_20261111/README.md) — same five student-group splits; retrospective mark-based model comparison and reproducible code.
 - `results/wu_method_probe_20261103/`, `results/wu_method_probe_28d_20261103/` — method probes adapted from an unrelated paper's withdrawal task, not a reproduction.
 - `results/assessment_node_20261103/` — the 2/3/4-week window ladder used to choose the observation horizon.
 
@@ -171,22 +171,9 @@ deadline.
 5. The OULAD test splits have been inspected many times across rounds, so intervals and increments are exploratory.
 6. VLE `activity_type` is a platform category, not content quality; `studentVle` has day-level clicks only, so study time cannot be measured.
 
-## Evaluation and deliverables
-
-Split by student ID before modeling; compare models on the same held-out
-records. Report average precision for Fail, with the Fail prevalence as the
-no-skill reference, alongside recall/F1 at a validation-chosen threshold, Brier
-score and calibration. Check class balance, pairing balance, cluster stability,
-tolerance sensitivity and consistency across presentations.
-
-- Nov 7: data preparation, study population, features, exploratory analysis.
-- Nov 20: clustering, exception analysis, model comparisons, ablations.
-- Nov 27: poster submission; Dec 4: poster presentation.
-- Dec 11: final report, code, README and project package (`Group_09_Project.zip`).
-
-Use GitHub issues for tasks and decisions. Record processing rules, matching
-thresholds, seeds and model settings. Do not commit extracted CSVs, student-level
-outputs or predictions.
+Student-level features, matched-pair indices and predictions belong in the
+Git-ignored `outputs/` directories; committed result folders contain aggregate
+tables and figures only.
 
 ## Data source
 

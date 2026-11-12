@@ -1,6 +1,6 @@
 # 研究材料索引
 
-最新阅读入口：[2026-11-04 综合结论](TMA_SYNTHESIS_20261104.md)，统一模型 AP、匹配口径、行为证据优先级及新非线性属性的检验结果。
+最新阅读入口：[两条线的研究叙事（2026-11-11）](STUDY_STORY_20261111.md)：以相近点击量配对的行为差异为主线，以逻辑回归和 XGBoost 的回顾性拟合为侧线。旧版 [2026-11-04 综合结论](TMA_SYNTHESIS_20261104.md) 保留为探索历史。
 
 以 [项目总入口](../README.md) 和 [主问题：首次计分 TMA 前后各 14 天](TMA_TWO_WEEK_PROTOCOL_20261103.md) 为起点。研究主问题已于 2026-11-08 改为两周设计；[+21/+28 天记录](ACTIVE_TMA_21_28_RESEARCH.md) 改为窗口敏感性，[进展与发现](RESEARCH_STATUS_20261103.md) 保留为历史状态。本目录的脚本从仓库根目录定位数据和输出；请在仓库根目录运行文中命令。
 
@@ -8,9 +8,9 @@
 
 | 问题 | 观察窗口与研究重点 | 设计和结果入口 |
 |---|---|---|
-| **原 proposal：历史四周基线** | 开课第 0–27 天；同课程、同开课批次、总点击相近时，比较最终通过与失败者的四周行为 | [原实施计划](PROJECT_PLAN.md)；[四周配对结果](../results/matched_20261102/README.md)；[模型与聚类诊断](../results/revised_20261102/README.md) |
+| **主问题：首次计分 TMA 前后各 14 天** | 前段用于起点核查，主配对按截止后 14 天点击量；比较后段时间行为与结果 | [新叙事](STUDY_STORY_20261111.md)；[冻结协议](TMA_PRIMARY_PROTOCOL.md)；[完整结果](../results/tma_two_week_20261103/README.md)；[成绩配对](../results/tma_score_gap_20261103/README.md) |
 | **窗口敏感性：首次计分 TMA 截止后 +21/+28 天** | 以每批次首次计分 TMA 截止日为锚点，分别观察至 +21、+28 天；按前后合计点击配对 | [完整记录](ACTIVE_TMA_21_28_RESEARCH.md)；[+21/+28 天配对结果](../results/tma_matched_21_28_20261103/README.md)；[节点模型](../results/assessment_node_windows_20261103/README.md) |
-| **主问题：首次计分 TMA 前后各 14 天** | 前段用于起点核查，主配对按截止后 14 天点击量；比较后段时间行为与结果 | [事前协议](TMA_TWO_WEEK_PROTOCOL_20261103.md)；[完整结果](../results/tma_two_week_20261103/README.md)；[点击量分簇](../results/tma_click_clusters_20261103/README.md)；[相对差距模型](../results/tma_relative_gap_20261103/README.md)；[成绩交互](../results/tma_score_gap_20261103/README.md)；[提交时间距离](../results/tma_submission_timing_20261103/README.md)；[截止前短时点击爆发](../results/tma_predeadline_burst_20261103/README.md) |
+| **原 proposal：历史四周基线** | 开课第 0–27 天；同课程、同开课批次、总点击相近时，比较最终通过与失败者的四周行为 | [原实施计划](PROJECT_PLAN.md)；[四周配对结果](../results/matched_20261102/README.md)；[模型与聚类诊断](../results/revised_20261102/README.md) |
 
 各设计的人群范围、时间锚点和特征窗口可能不同，模型指标与配对差值不能直接混排。主问题按截止后点击匹配；+21/+28 天窗口敏感性平衡的是截止前后**合计**点击。其[点击量分簇补充](../results/tma_click_clusters_20261103/README.md)已在零/低/高点击组内比较行为，但前段参与仍不平衡。原四周的聚类是另一项补充探索。各轮汇总文件见[结果索引](../results/README.md)。
 
