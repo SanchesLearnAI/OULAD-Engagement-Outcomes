@@ -1,6 +1,6 @@
 # 汇总实验结果索引
 
-独立报告：[行为证据](../research/BEHAVIOR_REPORT.md)与[预测建模](../research/MODELING_REPORT.md)。[融合叙事](../research/STUDY_STORY_20261111.md)解释两者的共同特征处理；[旧版整合结论](../research/TMA_SYNTHESIS_20261104.md)保留为探索历史。
+独立报告：[行为证据](../research/BEHAVIOR_REPORT.md)（主线）与[预测建模](../research/MODELING_REPORT.md)（辅助线）。[融合叙事：主结果 / 证据边界 / 辅助拟合](../research/STUDY_STORY_20261111.md)解释两者的共同特征处理与三层证据关系；[旧版整合结论（2026-11-04）](../research/TMA_SYNTHESIS_20261104.md) 保留为探索历史。
 
 这里保存可审阅的汇总表、协议和图。主问题是首次计分 TMA 截止前后各 14 天、按截止后点击量配对的两周设计，定义见[仓库 README](../README.md)、[冻结协议](../research/TMA_PRIMARY_PROTOCOL.md)和[方法文档](../METHODS.md)；+21/+28 天是窗口敏感性，第 0–27 天是历史基线。学生级 `parquet` 与配对/预测明细放在 `../outputs/`，由 Git 忽略。每轮结果应先读其 README，再比较同一人群、同一观察终点下的模型差值。全部模型结果基于已反复探索的 OULAD 数据。
 
@@ -55,6 +55,7 @@
 | 分数/排名模型消融 | [tma_score_model_20261103](tma_score_model_20261103/README.md) | 同上；成绩公布日未知 |
 | 成绩×点击变化 | [tma_score_gap_20261103](tma_score_gap_20261103/README.md) | 其中的成绩配对用于主叙事的严格敏感性；成绩公布日未知 |
 | 含分数逻辑回归与 GPU XGBoost | [xgboost_score_20261111](xgboost_score_20261111/README.md) | 相同五组按学生分组测试，XGBoost 平均 AP 0.7199；成绩公布日未知，仅作回顾性探索 |
+| **不含成绩的 M2 对照（可部署）** | [xgboost_noscore_20261112](xgboost_noscore_20261112/README.md) | 与冻结 M2 同 16 特征、同五组切分；XGBoost 平均 AP 0.6788 vs M2 0.6714，ΔAP +0.0073，五种种子全为正；不涉及成绩 |
 | HGB/校准方法探针 | [wu_method_probe_20261103](wu_method_probe_20261103/README.md)、[+28 天](wu_method_probe_28d_20261103/README.md) | 改编另一篇论文的模型设置，不是其退课任务的数值复现 |
 
 ## 其他相关实验

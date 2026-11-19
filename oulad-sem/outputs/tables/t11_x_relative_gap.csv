@@ -1,0 +1,3 @@
+model,n_features,average_precision,brier,threshold_rule
+M2_frozen,16,0.6610774443376342,0.16406193067874972,target_precision
+M2_plus_relative_gap,17,0.6611450836745918,0.1640505401856991,target_precision

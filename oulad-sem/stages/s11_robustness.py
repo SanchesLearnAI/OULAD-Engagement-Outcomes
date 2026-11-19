@@ -14,9 +14,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from src.data import KEY, read_master, read_splits, read_tma_features, read_vle
-from src.tma import daily, effects, pairing
+from src.tma import daily, effects, modeling, pairing
 from src.tma import exploration
 from src.tma.anchor import binary_cohort
+
+from sklearn.metrics import average_precision_score, brier_score_loss
 
 SPECS = [
     ("primary", {"post_days": 14, "tolerance": 0.05, "match_on": "post_clicks",
@@ -274,6 +276,84 @@ def run(ctx, st):
                     "models": int(len(table))})
                 st.check("explore_at_risk_recorded", True,
                          "withdrawal is a positive case here, unlike the binary design")
+
+    with st.step("exploration_c5_volume_clusters"):
+        flags = cfg.get("exploration", {}) or {}
+        if flags.get("volume_clusters", False):
+            features = read_tma_features(ctx)
+            k_lo, k_hi = cfg["clustering"]["k_range"]
+            candidates, labels, best_k = exploration.volume_clusters(
+                features["post_clicks"].to_numpy(), seed,
+                k_range=(k_lo, k_hi),
+                n_init=int(cfg["clustering"].get("n_init", 20)))
+            candidates.to_csv(ctx.paths.tables_dir / "t11_x_volume_cluster_candidates.csv",
+                              index=False)
+            st.artifact(ctx.paths.tables_dir / "t11_x_volume_cluster_candidates.csv",
+                        rows=len(candidates), cols=candidates.shape[1],
+                        message="C5 cluster candidates")
+            tolerance = float(cfg["study"]["tolerance"])
+            main_pairs = pairing.make_pairs(features, tolerance, seed,
+                                            str(cfg["study"]["match_on"]))
+            within, crossed = exploration.within_cluster_pairs(main_pairs, labels)
+            population, balance, cluster_effects = exploration.cluster_summary(
+                features, within, labels, best_k,
+                metrics=list(cfg["study"]["primary_metrics"]),
+                seed=seed, repeats=repeats)
+            for name, table in (("population", population), ("balance", balance),
+                                ("effects", cluster_effects)):
+                p = ctx.paths.tables_dir / f"t11_x_volume_cluster_{name}.csv"
+                table.to_csv(p, index=False)
+                st.artifact(p, rows=len(table), cols=table.shape[1] if len(table) else 0,
+                            message=f"C5 within-cluster {name}")
+            st.metric("explore_volume_clusters", {
+                "k": int(best_k), "pairs_total": int(len(main_pairs)),
+                "pairs_within_cluster": int(len(within)),
+                "pairs_crossing_clusters": int(crossed),
+                "cluster_sizes": population.set_index("cluster")["records"].to_dict()})
+            st.check("explore_volume_clusters_recorded", True,
+                     f"k={best_k}; {crossed} pairs dropped because the two sides "
+                     f"fell in different volume clusters")
+
+    with st.step("exploration_c6_relative_gap"):
+        flags = cfg.get("exploration", {}) or {}
+        if flags.get("relative_gap", False):
+            features = read_tma_features(ctx)
+            # Exploratory arm only: the frozen ladder (S08) must not change.
+            base = [c for c in modeling.columns_for(features, "M2") if c in features]
+            candidate = base + ["relative_click_gap"]
+            splits = read_splits(ctx)
+            tr = np.array(splits["main"]["train"])
+            va = np.array(splits["main"]["val"])
+            te = np.array(splits["main"]["test"])
+            rows = []
+            preds = {}
+            for name, cols in (("M2_frozen", base), ("M2_plus_relative_gap", candidate)):
+                prob, thr, rule = modeling._fit(features, cols, tr, te, "logistic",
+                                               seed, va,
+                                               float(cfg["models"]["precision_target"]))
+                preds[name] = prob
+                rows.append({"model": name, "n_features": len(cols),
+                             "average_precision": float(
+                                 average_precision_score(features["y_fail"].to_numpy()[te],
+                                                         prob)),
+                             "brier": float(brier_score_loss(
+                                 features["y_fail"].to_numpy()[te], prob)),
+                             "threshold_rule": rule})
+            table = pd.DataFrame(rows)
+            p = ctx.paths.tables_dir / "t11_x_relative_gap.csv"
+            table.to_csv(p, index=False)
+            st.artifact(p, rows=len(table), cols=table.shape[1],
+                        message="C6 relative pre/post click gap ablation")
+            gap = (table.loc[table["model"].eq("M2_plus_relative_gap"),
+                             "average_precision"].iloc[0]
+                   - table.loc[table["model"].eq("M2_frozen"),
+                               "average_precision"].iloc[0])
+            st.metric("explore_relative_gap", {
+                "delta_ap": float(gap),
+                "gap_mean": float(features["relative_click_gap"].mean()),
+                "both_zero_records": int(features["both_zero_clicks"].sum())})
+            st.check("explore_relative_gap_recorded", True,
+                     f"exploratory arm only; delta AP={gap:+.5f}")
 
     with st.step("figure"):
         eff = pd.DataFrame(effect_rows)

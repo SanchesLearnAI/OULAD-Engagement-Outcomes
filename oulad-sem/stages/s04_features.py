@@ -69,11 +69,17 @@ def run(ctx, st):
         fp = ctx.paths.processed_dir / "features.parquet"
         frame.to_parquet(fp, index=False)
         st.artifact(fp, rows=len(frame), cols=frame.shape[1], message="TMA features")
-        cols = ["pre_clicks", "pre_active_days", "last3_share", "post_clicks",
-                "post_active_days", "post_longest_inactive_run", "post_week2_share",
-                "post_both_weeks", "post_peak7_share", "post_entropy_norm",
-                "post_first_active_day", "submitted_by_cutoff", "submitted_after_due",
-                "days_early", "days_late", "relative_submission_day"]
+        columns = ["pre_clicks", "pre_active_days", "last3_share",
+                   "pre_before_due_clicks", "pre_before_due_active_days",
+                   "pre_last1_share", "pre_last3_share", "pre_due_share",
+                   "pre_last1_rate_lift", "pre_last3_rate_lift",
+                   "pre_last1_lift_x_late", "pre_last3_lift_x_late",
+                   "relative_click_gap", "both_zero_clicks",
+                   "post_clicks",
+                   "post_active_days", "post_longest_inactive_run", "post_week2_share",
+                   "post_both_weeks", "post_peak7_share", "post_entropy_norm",
+                   "post_first_active_day", "submitted_by_cutoff", "submitted_after_due",
+                   "days_early", "days_late", "relative_submission_day"]
         rows = [{"column": c, "dtype": str(frame[c].dtype),
                  "missing": int(frame[c].isna().sum()),
                  "missing_share": float(frame[c].isna().mean()),
@@ -81,7 +87,7 @@ def run(ctx, st):
                  else "studentAssessment (masked to d+post_days)"
                  if c in ("submitted_by_cutoff", "submitted_after_due", "days_early",
                           "days_late", "relative_submission_day") else "derived"}
-                for c in cols if c in frame]
+                for c in columns if c in frame]
         rows += [{"column": c, "dtype": str(frame[c].dtype),
                   "missing": int(frame[c].isna().sum()),
                   "missing_share": float(frame[c].isna().mean()), "origin": "vle.csv"}

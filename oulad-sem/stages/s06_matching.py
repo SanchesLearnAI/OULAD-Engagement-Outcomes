@@ -12,6 +12,10 @@ from src.logging_utils import StageFailure
 from src.tma import effects, pairing
 
 EXTRA_FEATURES = ["pre_clicks", "pre_active_days", "last3_share",
+                  "pre_before_due_clicks", "pre_before_due_active_days",
+                  "pre_last1_share", "pre_last3_share", "pre_due_share",
+                  "pre_last1_rate_lift", "pre_last3_rate_lift",
+                  "relative_click_gap", "both_zero_clicks",
                   "post_both_weeks", "post_peak7_share", "post_entropy_norm",
                   "post_first_active_day", "post_resource_type_count",
                   "post_resource_entropy"]

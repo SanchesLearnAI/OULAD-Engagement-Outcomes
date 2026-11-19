@@ -32,8 +32,8 @@ The frozen configuration is `config/config.yaml` with its SHA-256 in `config/con
 
 ## This run
 
-- run id: `run-20261108T101537Z-28e708` (mode `full`)
-- config: `sha256:6772d0022b7e1d6fecd07ed46d7f0b461f770980135861ffbec6c3295e0e7926`
+- run id: `run-20261111T064710Z-d4c613` (mode `full`)
+- config: `sha256:2bc4d5928c655f891121cbea2ca9062794f8eff07c54abd6bec1797dbbb8f040`
 - eligible records: 24,125
 - binary records: 19,806, Fail 6,092 (30.8%)
 - presentations: 19
