@@ -11,10 +11,9 @@ week. These are observational differences, and stronger matching on both prior
 engagement and TMA marks leaves too few pairs for a firm independent-effect
 claim.
 
-Read the [two-track study story](research/STUDY_STORY_20261111.md) first. It
-connects the **behavior-evidence track** (the main result) to the **modeling
-track** (logistic regression and XGBoost as a retrospective check of the shared
-features). The [frozen reporting protocol](research/TMA_PRIMARY_PROTOCOL.md)
+The two standalone reports cover [behavior evidence](research/BEHAVIOR_REPORT.md)
+and [predictive modeling](research/MODELING_REPORT.md). The [two-track study
+story](research/STUDY_STORY_20261111.md) connects them. The [frozen reporting protocol](research/TMA_PRIMARY_PROTOCOL.md)
 defines the cohort, metrics and limits; `oulad-sem/` runs that design end to
 end. The earlier experiments remain indexed below.
 

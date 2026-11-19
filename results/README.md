@@ -1,6 +1,6 @@
 # 汇总实验结果索引
 
-最新综合入口：[相近点击量下的行为证据与模型拟合（2026-11-11）](../research/STUDY_STORY_20261111.md)。[旧版整合结论（2026-11-04）](../research/TMA_SYNTHESIS_20261104.md) 保留为探索历史。
+独立报告：[行为证据](../research/BEHAVIOR_REPORT.md)与[预测建模](../research/MODELING_REPORT.md)。[融合叙事](../research/STUDY_STORY_20261111.md)解释两者的共同特征处理；[旧版整合结论](../research/TMA_SYNTHESIS_20261104.md)保留为探索历史。
 
 这里保存可审阅的汇总表、协议和图。主问题是首次计分 TMA 截止前后各 14 天、按截止后点击量配对的两周设计，定义见[仓库 README](../README.md)、[冻结协议](../research/TMA_PRIMARY_PROTOCOL.md)和[方法文档](../METHODS.md)；+21/+28 天是窗口敏感性，第 0–27 天是历史基线。学生级 `parquet` 与配对/预测明细放在 `../outputs/`，由 Git 忽略。每轮结果应先读其 README，再比较同一人群、同一观察终点下的模型差值。全部模型结果基于已反复探索的 OULAD 数据。
 
