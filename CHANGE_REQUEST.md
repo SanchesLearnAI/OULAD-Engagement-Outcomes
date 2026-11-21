@@ -43,3 +43,22 @@ New run ids required. The primary tables must be identical to the previous run
 because the new columns are additions that the frozen ladder does not read; the
 verification script `verify_restored_parity.py` asserts that and the gap
 distribution against the TMA branch's published table.
+
+## PR #6 review corrections
+
+- C5 uses the same per-indicator pairing rule as S06. Submission-day means,
+  differences and intervals use only pairs where both students submitted by
+  the observation cutoff. The balance table still counts every pair.
+- The earlier delivery (`fe6d90b`, scikit-learn 1.8.0) and the restored
+  delivery (`0fc923c`, scikit-learn 1.9.1) assigned equal-sized student
+  groups to different five-fold partitions. The older GroupKFold sorted
+  without a stable tie rule. The TMA pipeline now explicitly uses the
+  restored delivery's rule: larger student groups first, descending student
+  ID for ties, and the first least-loaded fold. This reproduces the restored
+  fold memberships across scikit-learn versions. The 60/20/20 primary,
+  temporal, and leave-one-module-out split rules are unchanged.
+- Git keeps `oulad-sem/config/config.yaml` in LF format so a Windows
+  checkout can pass the same byte-level config hash as Linux and macOS.
+
+The five-fold tables from the two historical runs describe different test
+records and should be identified by their run ID when comparing results.

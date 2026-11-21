@@ -114,6 +114,27 @@ def build_splits(master: pd.DataFrame, config: dict, seed: int):
     return cohort, splits, info
 
 
+def _tma_group_folds(groups: np.ndarray, n_splits: int) -> list[dict]:
+    """Use the published TMA fold order across scikit-learn versions."""
+    students, student_index, counts = np.unique(
+        groups, return_inverse=True, return_counts=True)
+    if not 2 <= n_splits <= len(students):
+        raise ValueError("TMA fold count must be between 2 and the number of students")
+    # Largest groups first. Equal sizes use descending student ID, matching
+    # the stable GroupKFold ordering used for the 2026-11-11 delivery.
+    order = np.argsort(counts, kind="stable")[::-1]
+    fold_sizes = np.zeros(n_splits, dtype=int)
+    student_fold = np.empty(len(students), dtype=int)
+    for i in order:
+        fold = int(fold_sizes.argmin())
+        student_fold[i] = fold
+        fold_sizes[fold] += counts[i]
+    record_fold = student_fold[student_index]
+    return [{"fold": f, "train": np.flatnonzero(record_fold != f).tolist(),
+             "test": np.flatnonzero(record_fold == f).tolist()}
+            for f in range(n_splits)]
+
+
 def build_tma_splits(cohort: pd.DataFrame, config: dict, seed: int):
     """Grouped, temporal and leave-one-module-out splits for the TMA cohort.
 
@@ -132,10 +153,7 @@ def build_tma_splits(cohort: pd.DataFrame, config: dict, seed: int):
     val_rel, test_rel = next(gss2.split(temp.reshape(-1, 1), y.iloc[temp], groups[temp]))
     val, test = temp[val_rel], temp[test_rel]
 
-    folds = []
-    gkf = GroupKFold(n_splits=int(config["splits"]["n_splits"]))
-    for i, (tr, te) in enumerate(gkf.split(cohort, y, groups)):
-        folds.append({"fold": i, "train": tr.tolist(), "test": te.tolist()})
+    folds = _tma_group_folds(groups, int(config["splits"]["n_splits"]))
 
     tr_pres = list(config["splits"]["temporal_train"])
     te_pres = list(config["splits"]["temporal_test"])

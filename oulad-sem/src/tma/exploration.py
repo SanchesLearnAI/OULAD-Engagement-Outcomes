@@ -323,7 +323,8 @@ def cluster_summary(frame: pd.DataFrame, pairs: pd.DataFrame, labels: np.ndarray
                     k: int, *, metrics: list[str], seed: int,
                     repeats: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Population mix, within-cluster balance and within-cluster paired effects."""
-    from .pairing import component_intervals, paired_differences
+    from .effects import effect_table
+    from .pairing import paired_differences
 
     names = {label: volume_cluster_name(label, k) for label in [-1] + list(range(k))}
     population = []
@@ -336,7 +337,7 @@ def cluster_summary(frame: pd.DataFrame, pairs: pd.DataFrame, labels: np.ndarray
             "max_post_clicks": float(group["post_clicks"].max()),
             "mean_post_clicks": float(group["post_clicks"].mean()),
             "mean_pre_clicks": float(group["pre_clicks"].mean())})
-    balance, effects = [], []
+    balance, cluster_effects = [], []
     for label, group in pairs.groupby("cluster"):
         subset = group.reset_index(drop=True)
         fail, passing = paired_differences(frame, subset, metrics)
@@ -351,15 +352,9 @@ def cluster_summary(frame: pd.DataFrame, pairs: pd.DataFrame, labels: np.ndarray
                             (np.log1p(fail["pre_clicks"]).mean()
                              - np.log1p(passing["pre_clicks"]).mean()) / pre_sd)
                         if pre_sd else 0.0})
-        available = [c for c in metrics if c in frame]
-        difference = fail[available].to_numpy(dtype=float) - passing[available].to_numpy(dtype=float)
-        interval = component_intervals(subset, difference, seed, repeats)
-        for j, name in enumerate(available):
-            effects.append({"cluster": names[int(label)], "feature": name,
-                            "pairs": int(len(subset)),
-                            "fail_mean": float(fail[name].mean()),
-                            "pass_mean": float(passing[name].mean()),
-                            "fail_minus_pass": float(difference[:, j].mean()),
-                            "ci_low": float(interval[0, j]),
-                            "ci_high": float(interval[1, j])})
-    return pd.DataFrame(population), pd.DataFrame(balance), pd.DataFrame(effects)
+        table = effect_table(frame, subset, metrics, seed, repeats)
+        if not table.empty:
+            table.insert(0, "cluster", names[int(label)])
+            cluster_effects.append(table)
+    effects = pd.concat(cluster_effects, ignore_index=True) if cluster_effects else pd.DataFrame()
+    return pd.DataFrame(population), pd.DataFrame(balance), effects

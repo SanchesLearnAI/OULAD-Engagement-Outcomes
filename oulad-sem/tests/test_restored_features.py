@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from src.tma import daily, exploration
+from src.splits import _tma_group_folds
 
 
 def test_pre_features_reconcile_to_the_window():
@@ -101,3 +102,37 @@ def test_cluster_names_are_stable():
     assert exploration.volume_cluster_name(0, 2) == "low"
     assert exploration.volume_cluster_name(2, 3) == "high"
     assert exploration.volume_cluster_name(3, 4) == "volume_4"
+
+
+def test_cluster_effect_counts_only_pairs_with_both_submission_days():
+    frame = pd.DataFrame({
+        "final_result": ["Fail", "Pass", "Fail", "Pass"],
+        "post_clicks": [10, 10, 10, 10],
+        "pre_clicks": [1, 2, 3, 4],
+        "relative_submission_day": [3.0, 1.0, np.nan, -5.0],
+        "post_active_days": [3, 4, 1, 3],
+    })
+    pairs = pd.DataFrame({"fail_index": [0, 2], "pass_index": [1, 3],
+                          "fail_student": [11, 33], "pass_student": [22, 44],
+                          "cluster": [0, 0]})
+    _, balance, effects = exploration.cluster_summary(
+        frame, pairs, np.zeros(len(frame), dtype=int), 2,
+        metrics=["relative_submission_day", "post_active_days"], seed=42, repeats=50,
+    )
+    assert balance.loc[0, "pairs"] == 2
+    effect = effects.set_index("feature")
+    assert effect.loc["relative_submission_day", "pairs"] == 1
+    assert effect.loc["relative_submission_day",
+                      ["fail_mean", "pass_mean", "fail_minus_pass", "ci_low", "ci_high"]].tolist() == [
+                          3.0, 1.0, 2.0, 2.0, 2.0]
+    assert effect.loc["post_active_days", "pairs"] == 2
+
+
+def test_tma_folds_have_a_fixed_tie_order_and_keep_students_together():
+    groups = np.array([10, 40, 20, 30, 20, 40, 50, 10])
+    folds = _tma_group_folds(groups, 3)
+    # Equal-size groups 40, 20, 10 go into folds 0, 1, 2 respectively.
+    # The two singleton groups then go into folds 0 and 1 in descending ID order.
+    assert [f["test"] for f in folds] == [[1, 5, 6], [2, 3, 4], [0, 7]]
+    for fold in folds:
+        assert not set(groups[fold["train"]]) & set(groups[fold["test"]])
