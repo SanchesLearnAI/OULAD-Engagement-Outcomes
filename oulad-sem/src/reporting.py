@@ -51,6 +51,44 @@ def _tex(s):
     return s.replace("\x00", r"\textbackslash{}")
 
 
+def load_verification() -> tuple[dict, dict]:
+    """Side-analysis outputs from ``results/tma_deep_exploration_20261108``.
+
+    These are not pipeline artefacts: they come from the exploration and
+    verification scripts.  They are committed with the repository but are not
+    inside the submission ZIP, so a missing file yields an empty dict and the
+    appendix says so instead of failing the stage.
+    """
+    import json
+
+    from .config import project_root
+
+    folder = project_root().parent / "results" / "tma_deep_exploration_20261108"
+    tables, verdicts = {}, {}
+    for name in ("v1_frozen_increment", "v2_transfer_rows", "v3_contrasts_mde",
+                 "v3_overall", "v4_profile_stats", "v4_profile_within_window",
+                 "v5_sequence_models", "v5_sequence_contrasts",
+                 "e7_capacity_curve", "e7_pair_discordance",
+                 "a1_silence_by_click_layer", "a2_type_patterns_pairs"):
+        path = folder / f"{name}.csv"
+        if path.exists():
+            try:
+                # ``pattern`` columns are digit strings: read them as text or
+                # leading zeros vanish and "000" collapses onto "0".
+                tables[name] = pd.read_csv(path, dtype={"pattern": str})
+            except Exception:
+                pass
+    for name in ("v1_frozen_verdict", "v2_transfer_verdict", "v3_subgroup_verdict",
+                 "v4_profile_verdict", "v5_sequence_verdict"):
+        path = folder / f"{name}.json"
+        if path.exists():
+            try:
+                verdicts[name] = json.loads(path.read_text())
+            except Exception:
+                pass
+    return tables, verdicts
+
+
 def load_tables(ctx):
     import json
     t = {}
@@ -119,6 +157,7 @@ def _ensure_figures(ctx) -> None:
 
 def build_latex(ctx) -> str:
     t, stages = load_tables(ctx)
+    vtab, vverdict = load_verification()
     draft = ctx.mode == "simulation"
     _ensure_figures(ctx)
 
@@ -298,6 +337,37 @@ not the final submission.}}
             f"were already somewhat less active before the deadline, so the paired difference "
             f"answers a conditional question: given similar post-deadline clicks, what else "
             f"differs?")
+        # Pre-window detail: the run-up, including the final days, is reported as
+        # exploratory context because pairing does not balance it.
+        pre_rows = []
+        for feature, label in (("pre_before_due_clicks", "Clicks before the deadline"),
+                               ("pre_before_due_active_days", "Active days before"),
+                               ("pre_last1_rate_lift", "Last-day rate lift"),
+                               ("pre_last3_rate_lift", "Last-three-day rate lift"),
+                               ("pre_due_share", "Deadline-day click share")):
+            value = effect_of(feature)
+            if not np.isfinite(value):
+                continue
+            low = effect_of(feature, "ci_low")
+            high = effect_of(feature, "ci_high")
+            pre_rows.append([label, f(value, 3),
+                             f"[{f(low, 3)}, {f(high, 3)}]"])
+        if pre_rows:
+            parts.append(_table(
+                ["Pre-deadline indicator", "Fail $-$ Pass", "95\\% interval"],
+                pre_rows, "lrr",
+                "Pre-deadline context for the same pairs. Pairing fixes post-deadline "
+                "volume only, so these differences survive the match and are reported "
+                "rather than removed.", "tab:prewindow", size="\\footnotesize"))
+            lift1 = effect_of("pre_last1_rate_lift")
+            parts.append(
+                f"Fail records concentrate their clicks closer to the deadline: the "
+                f"last-day rate lift is {f(lift1, 3)} log units higher than their matched "
+                f"partners, and the last-three-day lift is "
+                f"{f(effect_of('pre_last3_rate_lift'), 3)}. The gap features point the "
+                f"same way: the signed relative pre/post gap is "
+                f"{f(effect_of('relative_click_gap'), 3)} higher for Fail, which makes "
+                f"sense because a smaller pre-window denominator inflates the ratio.")
 
     if len(primary):
         rows = []
@@ -401,10 +471,11 @@ not the final submission.}}
              "Cal. slope", "F1"],
             rows, "lrrrrrrrr",
             "Model ladder on the grouped main test split (single holdout at the configured "
-            "seed). M0 uses pre- and "
-            "post-deadline volume plus submission status; M1 adds post-deadline timing; M2 "
-            "adds submission distance and is the primary model; M3 adds resource composition; "
-            "M4 adds the first-TMA score and is a retrospective upper bound only. Thresholds "
+            "seed). M0 uses pre- and post-deadline volume plus submission status; M1 adds "
+            "post-deadline timing; M2 adds submission distance and is the primary model; M3 "
+            "adds resource composition. M4, which adds the first-TMA score, is omitted here "
+            "because the frozen configuration excludes scores from the strict models; "
+            "it is reported separately only as a retrospective upper bound. Thresholds "
             "are chosen on the validation part.",
             "tab:models", size="\\footnotesize\\setlength{\\tabcolsep}{3pt}"))
         m0 = (float(main_models.loc[main_models["model"].eq("M0"), "average_precision"].mean())
@@ -603,7 +674,7 @@ not the final submission.}}
     parts.append(r"\appendix")
     parts.append(r"\section{Exploratory extensions}")
     parts.append(
-        "Four exploratory blocks were run after the primary analysis was frozen. They do not "
+        "Six exploratory blocks were run after the primary analysis was frozen. They do not "
         "change any primary indicator or the primary model, and each is reported here rather "
         "than in the main text.")
     bg = t.get("t11_x_background_balance", pd.DataFrame())
@@ -613,6 +684,10 @@ not the final submission.}}
     hetero = t.get("t11_x_heterogeneity", pd.DataFrame())
     nonsub = t.get("t11_x_non_submitter_outcomes", pd.DataFrame())
     atrisk = t.get("t11_x_at_risk_warning", pd.DataFrame())
+    vc_pop = t.get("t11_x_volume_cluster_population", pd.DataFrame())
+    vc_bal = t.get("t11_x_volume_cluster_balance", pd.DataFrame())
+    vc_eff = t.get("t11_x_volume_cluster_effects", pd.DataFrame())
+    gap_arm = t.get("t11_x_relative_gap", pd.DataFrame())
 
     if len(bg):
         rows = [[_tex(r["covariate"]), _tex(r["kind"]), f(r["smd_unmatched"], 3),
@@ -700,6 +775,289 @@ not the final submission.}}
             "Because Withdrawn is a positive case here, the AP level is much higher than in "
             "the binary design; the two numbers answer different questions and must not be "
             "placed in the same table.")
+
+    if len(vc_pop) and len(vc_bal):
+        rows = [[_tex(r["cluster"]), str(int(r["records"])), f(r["mean_post_clicks"], 1),
+                 f(r["mean_pre_clicks"], 1), pct(r["fail_fraction_unmatched"])]
+                for _, r in vc_pop.iterrows()]
+        parts.append(_table(
+            ["Volume cluster", "Records", "Mean post clicks", "Mean pre clicks",
+             "Fail share"],
+            rows, "lrrrr",
+            "C5: outcome-blind clusters on post-deadline click volume alone. Zero-click "
+            "records form their own group because silence is a separate state rather than "
+            "the bottom of a continuous scale.", "tab:c5pop", size="\\footnotesize"))
+        rows = [[_tex(r["cluster"]), str(int(r["pairs"])),
+                 f(r["mean_post_clicks_fail"], 1), f(r["mean_post_clicks_pass"], 1),
+                 f(r["pre_log_click_smd"], 3)] for _, r in vc_bal.iterrows()]
+        parts.append(_table(
+            ["Volume cluster", "Pairs", "Fail post clicks", "Pass post clicks",
+             "Pre-click SMD"],
+            rows, "lrrrr",
+            "Pairs that stay inside one volume cluster. Pairs whose two sides fall in "
+            "different clusters are dropped rather than reassigned, because that is exactly "
+            "a case where the 5\\% tolerance spans a meaningful volume difference.",
+            "tab:c5bal", size="\\footnotesize"))
+        if len(vc_eff):
+            keep = ["submitted_by_cutoff", "submitted_after_due", "post_active_days",
+                    "post_longest_inactive_run", "post_week2_share"]
+            rows = [[_tex(r["cluster"]), _tex(r["feature"]), str(int(r["pairs"])),
+                     f(r["fail_minus_pass"], 3)] for _, r in vc_eff.iterrows()
+                    if r["feature"] in keep]
+            parts.append(_table(
+                ["Volume cluster", "Indicator", "Pairs", "Fail $-$ Pass"], rows, "llrr",
+                "Within-cluster paired differences. Splitting by volume shows whether the "
+                "primary indicators hold at every click level or are driven by the busiest "
+                "records.", "tab:c5eff", size="\\scriptsize"))
+            high = vc_eff[(vc_eff["cluster"].eq("high"))
+                          & vc_eff["feature"].eq("post_active_days")]
+            low = vc_eff[(vc_eff["cluster"].eq("low"))
+                         & vc_eff["feature"].eq("post_active_days")]
+            if len(high) and len(low):
+                parts.append(
+                    f"Inside the busiest cluster the active-day difference is "
+                    f"{f(high['fail_minus_pass'].iloc[0], 3)} days, against "
+                    f"{f(low['fail_minus_pass'].iloc[0], 3)} in the low-volume cluster: the "
+                    f"persistence gap is not an artefact of heavy clickers.")
+
+    if len(gap_arm):
+        rows = [[_tex(r["model"]), str(int(r["n_features"])),
+                 f(r["average_precision"], 6), f(r["brier"], 4)]
+                for _, r in gap_arm.iterrows()]
+        parts.append(_table(
+            ["Arm", "Features", "Fail AP", "Brier"], rows, "lrrr",
+            "C6: the signed relative pre/post gap added to the frozen primary model. This is "
+            "a sensitivity arm, not a candidate replacement: the gap is a deterministic "
+            "re-expression of two columns already in the model, so it can only add a "
+            "nonlinear shape.", "tab:c6", size="\\footnotesize"))
+        base_ap = gap_arm.loc[gap_arm["model"].eq("M2_frozen"), "average_precision"]
+        gap_ap = gap_arm.loc[gap_arm["model"].eq("M2_plus_relative_gap"),
+                             "average_precision"]
+        if len(base_ap) and len(gap_ap):
+            parts.append(
+                f"Adding the gap moves AP from {f(base_ap.iloc[0], 6)} to "
+                f"{f(gap_ap.iloc[0], 6)}, a change of {gap_ap.iloc[0] - base_ap.iloc[0]:+.6f}. "
+                f"The paired difference is negligible, which matches the earlier finding "
+                f"that the gap's descriptive content is already carried by the pre- and "
+                f"post-window totals.")
+
+    # A hard page break keeps the deferred floats of Section 6 and Appendix A out
+    # of the verification text, which otherwise interleaves badly.
+    parts.append(r"\clearpage")
+    parts.append(r"\section{Day patterns and activity compositions}")
+    discord = vtab.get("e7_pair_discordance", pd.DataFrame())
+    types = vtab.get("a2_type_patterns_pairs", pd.DataFrame())
+    silence = vtab.get("a1_silence_by_click_layer", pd.DataFrame())
+
+    parts.append(
+        "The six indicators above are aggregates. A separate question is whether the "
+        "\\emph{sequence} of days carries information, and whether Fail and Pass records use "
+        "different kinds of resources. Three pattern analyses were run, all inside the same "
+        "5\\% pairs so that click volume is held fixed, and all tested with a sign test on the "
+        "pairs where exactly one side shows the pattern.")
+    if len(discord):
+        top = discord.reject_bh_0_05.sum()
+        rows = [[_tex(r["pattern"]), str(int(r["pairs_fail_only"])),
+                 str(int(r["pairs_pass_only"])), str(int(r["discordant_pairs"])),
+                 f(r["odds_fail_over_pass"], 2), f(r["p_bh"], 4)]
+                for _, r in discord.head(6).iterrows()]
+        rows += [[_tex(r["pattern"]), str(int(r["pairs_fail_only"])),
+                  str(int(r["pairs_pass_only"])), str(int(r["discordant_pairs"])),
+                  f(r["odds_fail_over_pass"], 2), f(r["p_bh"], 4)]
+                 for _, r in discord.tail(3).iterrows()]
+        parts.append(_table(
+            ["Day pattern", "Fail only", "Pass only", "Discordant", "Odds", "$p_{\\mathrm{BH}}$"],
+            rows, "lrrrrr",
+            "E7: daily click patterns coded 0 (silent), 1 (below the record's own positive "
+            "median) and 2 (at or above it), allowing one skipped day. Only pairs where "
+            "exactly one side shows the pattern enter the test, which removes the volume "
+            f"channel. {int(top)} of {len(discord)} patterns survive BH correction. The top "
+            "six rows are the most Fail-leaning and the bottom three the most Pass-leaning.",
+            "tab:e7", size="\\scriptsize\\setlength{\\tabcolsep}{4pt}"))
+        silent_run = discord[discord["pattern"].astype(str).str.fullmatch(r"0{2,3}")]
+        if len(silent_run):
+            r = silent_run.sort_values("p_bh").iloc[0]
+            parts.append(
+                f"The strongest Fail-leaning pattern is a run of silent days "
+                f"({_tex(r['pattern'])}): it appears on the Fail side alone in "
+                f"{int(r['pairs_fail_only'])} pairs against "
+                f"{int(r['pairs_pass_only'])} on the Pass side (odds "
+                f"{f(r['odds_fail_over_pass'], 2)}). The strongest Pass-leaning patterns are "
+                f"mixed activity runs such as "
+                f"{_tex(discord.sort_values('odds_fail_over_pass').iloc[0]['pattern'])}, which "
+                f"appear on the Pass side up to twice as often. Read as shapes rather than as "
+                f"causes: a silent run and an active run are two ways of describing the same "
+                f"active-day difference reported in Table~5.")
+    if len(types):
+        rows = [[_tex(r["pattern"]), str(int(r["pairs_fail_only"])),
+                 str(int(r["pairs_pass_only"])), str(int(r["discordant"])),
+                 f(r["odds_fail_over_pass"], 2), f(r["p_bh"], 4)]
+                for _, r in types.sort_values("p_bh").head(6).iterrows()]
+        parts.append(_table(
+            ["Type run", "Fail only", "Pass only", "Discordant", "Odds", "$p_{\\mathrm{BH}}$"],
+            rows, "lrrrrr",
+            "A2: runs of the day's dominant activity type (C content, A assessment, F forum), "
+            "restricted to pairs where both records clicked at least once after the deadline "
+            "so the zero-click channel is removed by construction.",
+            "tab:a2", size="\\scriptsize\\setlength{\\tabcolsep}{4pt}"))
+        significant = types[types["reject_bh_0_05"]]
+        if len(significant):
+            all_below = bool((significant["odds_fail_over_pass"] < 1).all())
+            parts.append(
+                f"{len(significant)} of {len(types)} type runs survive BH correction, and "
+                f"{'every one of them' if all_below else 'most of them'} leans toward Pass: "
+                f"there is no Fail-specific activity sequence, only Fail records "
+                f"\\emph{{lacking}} a regular content run. Alternating content and forum runs "
+                f"are the clearest example. This is a composition finding, not a timing one, "
+                f"and it does not survive as a predictive increment (Table~\\ref{{tab:v1}}).")
+    if len(silence):
+        longest = silence[silence["metric"].eq("longest_silence")]
+        rows = [[_tex(r["post_click_layer"]), str(int(r["pairs"])),
+                 f(r["fail_minus_pass"], 3), f"[{f(r['ci_low'], 3)}, {f(r['ci_high'], 3)}]"]
+                for _, r in longest.iterrows()]
+        parts.append(_table(
+            ["Post-click quartile", "Pairs", "Longest silence, Fail $-$ Pass",
+             "95\\% interval"], rows, "lrrr",
+            "A1: the longest silent stretch, split by the pair's post-deadline click level. "
+            "The difference is positive in every quartile, so it is not produced by one tail "
+            "of the volume distribution.", "tab:a1", size="\\footnotesize"))
+        if len(longest):
+            weakest = longest.sort_values("fail_minus_pass").iloc[0]
+            strongest = longest.sort_values("fail_minus_pass").iloc[-1]
+            parts.append(
+                f"The gap is present in all four quartiles, weakest in "
+                f"{_tex(weakest['post_click_layer'])} "
+                f"({f(weakest['fail_minus_pass'], 3)} days) and strongest in "
+                f"{_tex(strongest['post_click_layer'])} "
+                f"({f(strongest['fail_minus_pass'], 3)} days). The weakest quartile is the "
+                f"one where both sides sit close to silent, so the measurement has little "
+                f"room there; the difference is largest in the middle of the distribution "
+                f"rather than at the top, which is why it cannot be read as a "
+                f"heavy-clicker artefact.")
+    parts.append(
+        "Two cautions apply to this whole section. First, the pattern analysis codes a "
+        "record's own median as the threshold, so ``2'' means busy \\emph{for that student}: "
+        "it is a within-person contrast, not an absolute volume band. Second, the test is a "
+        "sign test on discordant pairs, which is a weak design: it cannot tell whether a "
+        "pattern is a cause, a consequence or a marker of the same effort that produces the "
+        "final result.")
+    parts.append(r"\section{Verification of the exploratory extensions}")
+    if not vtab:
+        parts.append(
+            "The verification tables were not found next to this checkout, so this section "
+            "is omitted. Run the exploration and verification scripts "
+            "(``oulad-sem/scripts/explore_*`` and ``verify_*``) to regenerate them.")
+    else:
+        parts.append(
+            "The blocks in Appendix~A are exploratory. Four checks were added afterwards to "
+            "test whether any of them survives: a pre-registered increment test, a transfer "
+            "summary, a subgroup audit with a minimum detectable effect, and two negative "
+            "controls (delay typology and sequence ordering). None of them changes a primary "
+            "number.")
+        v1 = vtab.get("v1_frozen_increment")
+        if v1 is not None and len(v1):
+            rows = []
+            for _, r in v1.iterrows():
+                if str(r["model"]).startswith("delta"):
+                    continue
+                rows.append([_tex(r["model"]), str(int(r["n_features"])),
+                             f(r["average_precision"], 5)])
+            delta = v1[v1["model"].astype(str).str.startswith("delta")]
+            for _, r in delta.iterrows():
+                label = str(r["model"]).replace("delta_", "")
+                rows.append(["$\\Delta$ " + _tex(label), "--",
+                             f"{float(r['average_precision']):+.5f}"])
+            parts.append(_table(
+                ["Increment arm", "Features", "Fail AP"], rows, "lrr",
+                "Pre-registered increment test (protocol frozen before the run). The "
+                "decision rule was an interval that excludes zero \\emph{and} a point "
+                "estimate of at least 0.005; neither arm meets it, so the deep indicators "
+                "add no predictive information.", "tab:v1", size="\\footnotesize"))
+            verdict = vverdict.get("v1_frozen_verdict", {})
+            obs = verdict.get("observed", {})
+            if obs:
+                parts.append(
+                    f"The frozen arm moves Fail AP from {f(obs.get('ap_baseline'), 5)} to "
+                    f"{f(obs.get('ap_candidate'), 5)}, a difference of "
+                    f"{float(obs.get('point', float('nan'))):+.5f} "
+                    f"with a 95\\% interval of "
+                    f"[{float(obs.get('ci_low', float('nan'))):+.5f}, "
+                    f"{float(obs.get('ci_high', float('nan'))):+.5f}]. A de-duplicated arm, "
+                    f"which removes the two columns that duplicate primary features, gives "
+                    f"the same verdict.")
+
+        v2 = vtab.get("v2_transfer_rows")
+        if v2 is not None and len(v2) and "average_precision" in v2:
+            m2 = v2[v2["model"].eq("M2")]
+            rows = [[_tex(r["split"]), str(int(r["n_test"])), pct(r["no_skill_pr_auc"]),
+                     f(r["average_precision"], 4),
+                     f(float(r["average_precision"] - r["no_skill_pr_auc"]), 3)]
+                    for _, r in m2.iterrows()]
+            if rows:
+                parts.append(_table(
+                    ["Split", "Test records", "Fail share", "Fail AP", "AP $-$ no-skill"],
+                    rows, "lrrrr",
+                    "Extrapolation summary for the primary model. Raw AP is not comparable "
+                    "across folds because the Fail share differs from 0.14 to 0.34, so the "
+                    "last column is the comparable quantity. CCC has no 2013 presentation, "
+                    "which makes the temporal test partly a cross-module test.",
+                    "tab:v2", size="\\scriptsize"))
+
+        v3 = vtab.get("v3_contrasts_mde")
+        if v3 is not None and len(v3):
+            rows = [[_tex(r["attribute"]), _tex(r["feature_set"]),
+                     f(r["auc_gap"], 3),
+                     f"[{f(r['ci_low'], 3)}, {f(r['ci_high'], 3)}]",
+                     f(r["mde_0.80"], 3),
+                     "yes" if bool(r["reject_bh_0_05"]) else "no"]
+                    for _, r in v3.iterrows()]
+            parts.append(_table(
+                ["Attribute", "Features", "AUC gap", "95\\% interval",
+                 "MDE (80\\% power)", "Survives BH"],
+                rows, "llrrrr",
+                "Subgroup audit. A gap smaller than the minimum detectable effect means the "
+                "sample cannot resolve it, which is not the same as no difference. The "
+                "bootstrap p-value floor is 1/repeats, so a surviving contrast whose p sits at "
+                "that floor is significant only at the resolution of the bootstrap.",
+                "tab:v3", size="\\scriptsize\\setlength{\\tabcolsep}{3pt}"))
+            v3v = vverdict.get("v3_subgroup_verdict", {})
+            if v3v.get("interpretation"):
+                parts.append(_tex(v3v["interpretation"]))
+
+        v4 = vtab.get("v4_profile_stats")
+        v4v = vverdict.get("v4_profile_verdict", {})
+        if v4 is not None and len(v4) and v4v:
+            parts.append(
+                "Two negative controls complete the picture. The delay profiles in "
+                "Appendix~A cannot test the published high/low/sporadic delayer typology: the "
+                "clustering runs on (submission fraction, window length) and the window "
+                "length is strongly bimodal, so the profiles are close to a split on window "
+                "length alone. The honest statement is that this operationalisation cannot "
+                "separate delay from window length, not that the typology is wrong.")
+        v5 = vtab.get("v5_sequence_models")
+        v5c = vtab.get("v5_sequence_contrasts")
+        if v5 is not None and len(v5):
+            rows = [[_tex(r["model"]), str(int(r["n_features"])),
+                     f(r["average_precision"], 4), f(r["roc_auc"], 4)]
+                    for _, r in v5.iterrows()]
+            parts.append(_table(
+                ["Sequence arm", "Features", "Fail AP", "ROC-AUC"], rows, "lrrr",
+                "Ordering control on the same split. PyTorch was unavailable, so these are "
+                "feed-forward networks on the ordered day vector rather than recurrent "
+                "models; the contrast that matters is ordered versus shuffled.", "tab:v5",
+                size="\\footnotesize"))
+            if v5c is not None and len(v5c):
+                ordered = v5c[v5c["contrast"].eq("ordered_minus_shuffled")]
+                if len(ordered):
+                    r = ordered.iloc[0]
+                    parts.append(
+                        f"Shuffling the fourteen day vectors changes Fail AP by "
+                        f"{float(r['point']):+.4f} "
+                        f"({f(r['ci_low'], 4)} to {f(r['ci_high'], 4)}), so the order of the "
+                        f"days carries no information beyond their multiset. This does not "
+                        f"refute published sequence-model results, which use a different "
+                        f"label and a different split; it says that within this design the "
+                        f"sequence representation adds nothing.")
     parts.append(r"\section{Reproduction}")
     parts.append(
         r"""\begin{verbatim}

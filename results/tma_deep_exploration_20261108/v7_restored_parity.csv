@@ -1,0 +1,10 @@
+check,detail,reference,restored,abs_diff
+relative_gap_mean,Fail,-0.31917641520170625,-0.31917641520170625,0.0
+relative_gap_median,Fail,-0.3563218390804598,-0.3563218390804598,0.0
+relative_gap_mean,Pass/Distinction,-0.21991206630029642,-0.21991206630029642,0.0
+relative_gap_median,Pass/Distinction,-0.2222222222222222,-0.2222222222222222,0.0
+both_zero_records,all,789.0,789.0,0.0
+before_due_reconciles,pre_clicks minus deadline-day share,0.0,1.4210854715202004e-14,1.4210854715202004e-14
+due_share_in_unit_interval,0 <= pre_due_share <= 1,1.0,1.0,0.0
+interaction_zero_when_on_time,lift x late,1.0,1.0,0.0
+frozen_ladder_ignores_new_columns,none,0.0,0.0,0.0

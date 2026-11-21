@@ -73,6 +73,8 @@ exploration:
   heterogeneity: true               # C2 random-effects summary per presentation
   non_submitters: true              # C3 records without a submission by d+14
   at_risk_warning: true             # C4 Fail-or-Withdrawn in the at-risk set
+  volume_clusters: true             # C5 within post-click-volume-cluster pairs
+  relative_gap: true                # C6 exploratory relative pre/post gap arm
 
 models:
   ladder: [M0, M1, M2, M3, M4]

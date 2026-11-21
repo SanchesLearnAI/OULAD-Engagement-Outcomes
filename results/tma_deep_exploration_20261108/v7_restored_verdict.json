@@ -1,0 +1,9 @@
+{
+  "relative_gap_matches_reference": true,
+  "both_zero_matches_reference": true,
+  "burst_identities_hold": true,
+  "frozen_ladder_untouched": true,
+  "columns_added": 13,
+  "new_config_sha256": "2bc4d5928c655f891121cbea2ca9062794f8eff07c54abd6bec1797dbbb8f040",
+  "caveat": "The burst features are verified through identities and through the frozen ladder staying clean, not by reproducing the TMA branch's per-pair table: that table used a score-conditional subset."
+}

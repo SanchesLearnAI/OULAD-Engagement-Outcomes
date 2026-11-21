@@ -12,10 +12,15 @@ engagement and TMA marks leaves too few pairs for a firm independent-effect
 claim.
 
 The two standalone reports cover [behavior evidence](research/BEHAVIOR_REPORT.md)
-and [predictive modeling](research/MODELING_REPORT.md). The [two-track study
-story](research/STUDY_STORY_20261111.md) connects them. The [frozen reporting protocol](research/TMA_PRIMARY_PROTOCOL.md)
-defines the cohort, metrics and limits; `oulad-sem/` runs that design end to
-end. The earlier experiments remain indexed below.
+(main line) and [predictive modeling](research/MODELING_REPORT.md) (auxiliary
+line). The [two-track study story](research/STUDY_STORY_20261111.md) connects
+them across three evidence tiers: the **main result** (paired persistence at
+matched post-deadline clicks), the **boundary** (how far that result survives
+stricter control of prior engagement and marks), and the **auxiliary fit**
+(logistic regression and GPU XGBoost, both score-free and mark-inclusive). The
+[frozen reporting protocol](research/TMA_PRIMARY_PROTOCOL.md) defines the cohort,
+metrics and limits; `oulad-sem/` runs that design end to end. The earlier
+experiments remain indexed below.
 
 ## Repository layout
 
@@ -24,12 +29,14 @@ Two code bases share one dataset and deliberately stay in separate directories:
 | Path | Role | Tests |
 |---|---|---|
 | `oulad_analysis/`, `tests/` | Research and exploration code: cohort construction, pairing, clustering, feature ablations, model comparisons. Python 3.11, `unittest`, `duckdb`. | `python -m unittest discover -s tests -v` (28 tests) |
-| `oulad-sem/` | Validation and delivery pipeline: frozen config with a config hash, gated stages S00–S12, JSONL run log plus schema validation, ZIP packaging. Python 3.11, `pytest`, own `Makefile`. | `cd oulad-sem && make test` (13 tests) |
+| `oulad-sem/` | Validation and delivery pipeline: frozen config with a config hash, gated stages S00–S12, JSONL run log plus schema validation, ZIP packaging. Python 3.11, `pytest`, own `Makefile`. | `cd oulad-sem && make test` (60 tests) |
 
 `oulad_analysis/` contains the earlier exploration and reference code.
-`oulad-sem/` executes and packages the main TMA design. The score-inclusive
-XGBoost experiment lives under `research/xgboost_score_20261111/`; its
-aggregate results live under `results/xgboost_score_20261111/`.
+`oulad-sem/` executes and packages the main TMA design. The GPU XGBoost
+experiments live under `research/xgboost_score_20261111/` (mark-based,
+retrospective) and `research/xgboost_noscore_20261112/` (score-free, comparable
+with the frozen M2); their aggregate results sit in the matching `results/`
+folders.
 
 - `data/oulad.zip` — unmodified public archive, checksum in [data/README.md](data/README.md).
 - `results/<name>_<date>/` — reviewed aggregate tables, protocols and figures.
@@ -130,6 +137,7 @@ Index only, not part of the study narrative:
 
 - `results/tma_score_probe_20261103/`, `results/tma_score_model_20261103/`, `results/tma_score_gap_20261103/` — these use the first-TMA mark, which is not available as an online feature at the cutoff; retrospective upper bounds only.
 - [Score-inclusive logistic regression vs GPU XGBoost](results/xgboost_score_20261111/README.md) — same five student-group splits; retrospective mark-based model comparison and reproducible code.
+- [Score-free M2 vs GPU XGBoost](results/xgboost_noscore_20261112/README.md) — the deployable counterpart: same 16 features as M2, no mark information, ΔAP +0.0073 over five splits.
 - `results/wu_method_probe_20261103/`, `results/wu_method_probe_28d_20261103/` — method probes adapted from an unrelated paper's withdrawal task, not a reproduction.
 - `results/assessment_node_20261103/` — the 2/3/4-week window ladder used to choose the observation horizon.
 
@@ -146,6 +154,8 @@ of it and are indexed in [results/README.md](results/README.md):
   latency, multi-deadline trajectories, activity composition, day patterns,
   data minimisation, delay profiles and silence structure, plus an alert-capacity
   curve.
+- **Chinese report** — `oulad-sem/Report_zh.pdf`, generated from the same tables by
+  `oulad-sem/scripts/build_report_zh.py`. The English report is authoritative.
 - **Verification** — `oulad-sem/scripts/verify_*.py` with protocols in
   `research/VERIFICATION_PLAN.md` and `research/TMA_DEEP_PROTOCOL.md`. The
   pre-registered increment check found no gain (ΔAP +0.0013, interval

@@ -166,7 +166,11 @@ def week_features(post: np.ndarray, post_days: int) -> dict[str, np.ndarray]:
 
 
 def pre_features(pre: np.ndarray) -> dict[str, np.ndarray]:
-    """Pre-window volume features; the last three days are the burst window."""
+    """Pre-window volume features; the last three days are the burst window.
+
+    ``pre`` has 14 columns for relative days ``d-13 .. d``, so column ``-1`` is
+    the deadline day itself and is excluded from the before-due aggregates.
+    """
     total = pre.sum(axis=1)
     last3 = pre[:, -3:].sum(axis=1)
     return {
@@ -176,6 +180,62 @@ def pre_features(pre: np.ndarray) -> dict[str, np.ndarray]:
         "last3_share": np.divide(last3, total, out=np.zeros(len(pre)),
                                  where=total > 0),
     }
+
+
+def burst_features(pre: np.ndarray, submitted_after_due: np.ndarray
+                   ) -> dict[str, np.ndarray]:
+    """Pre-deadline click-burst features, ported from ``tma_predeadline_burst``.
+
+    The burst is the last one and three days *before* the deadline.  ``pre`` is
+    ``d-13 .. d``; the deadline day is a separate quantity because it is the day
+    the assignment is due rather than part of the run-up.
+    """
+    if pre.shape[1] != 14:
+        raise ValueError("burst features need the 14-day pre window")
+    before_due = pre[:, :-1].sum(axis=1)          # d-13 .. d-1
+    last1 = pre[:, -2]                            # d-1
+    last3 = pre[:, -4:-1].sum(axis=1)             # d-3 .. d-1
+    early12 = pre[:, :-2].sum(axis=1)             # d-13 .. d-2
+    early10 = pre[:, :-4].sum(axis=1)             # d-13 .. d-4
+    due_day = pre[:, -1]
+    positive = before_due > 0
+    last1_share = np.divide(last1, before_due, out=np.zeros(len(pre)), where=positive)
+    last3_share = np.divide(last3, before_due, out=np.zeros(len(pre)), where=positive)
+    due_share = np.divide(due_day, before_due + due_day, out=np.zeros(len(pre)),
+                          where=(before_due + due_day) > 0)
+    last1_lift = np.log1p(last1) - np.log1p(early12 / 12)
+    last3_lift = np.log1p(last3 / 3) - np.log1p(early10 / 10)
+    late = np.asarray(submitted_after_due, dtype=float)
+    return {
+        "pre_before_due_clicks": before_due,
+        "log_pre_before_due_clicks": np.log1p(before_due),
+        "pre_before_due_active_days": (pre[:, :-1] > 0).sum(axis=1).astype(float),
+        "pre_last1_share": last1_share,
+        "pre_last3_share": last3_share,
+        "pre_due_share": due_share,
+        "pre_last1_rate_lift": last1_lift,
+        "pre_last3_rate_lift": last3_lift,
+        "pre_last1_lift_x_late": last1_lift * late,
+        "pre_last3_lift_x_late": last3_lift * late,
+    }
+
+
+def relative_click_gap(pre_clicks: np.ndarray, post_clicks: np.ndarray) -> np.ndarray:
+    """Signed pre/post click gap in ``[-1, 1]``, ported from the TMA branch.
+
+    ``(post - pre) / (post + pre)``; returns 0 when both windows are empty, so a
+    fully inactive record is neutral rather than undefined.
+    """
+    pre = np.asarray(pre_clicks, dtype=float)
+    post = np.asarray(post_clicks, dtype=float)
+    if pre.shape != post.shape:
+        raise ValueError("pre and post clicks need the same shape")
+    if np.any(~np.isfinite(pre)) or np.any(~np.isfinite(post)):
+        raise ValueError("click counts must be finite")
+    if np.any(pre < 0) or np.any(post < 0):
+        raise ValueError("click counts cannot be negative")
+    total = pre + post
+    return np.divide(post - pre, total, out=np.zeros_like(total), where=total > 0)
 
 
 def build_daily_features(frame: pd.DataFrame, daily: pd.DataFrame,
@@ -197,11 +257,25 @@ def build_daily_features(frame: pd.DataFrame, daily: pd.DataFrame,
         out[name] = values
     for name, values in week_features(post, post_days).items():
         out[name] = values
+    if pre_days == 14:
+        # The burst definition needs the exact 14-day pre window; the
+        # interaction terms need the submission flag, so they only appear when
+        # the caller already carries it.
+        late = out["submitted_after_due"].to_numpy() if "submitted_after_due" in out \
+            else np.zeros(len(out))
+        for name, values in burst_features(pre, late).items():
+            out[name] = values
+        quality_extra = {"burst_features": True}
+    else:
+        quality_extra = {"burst_features": False}
     out["log_pre_clicks"] = np.log1p(out["pre_clicks"])
     out["log_post_clicks"] = np.log1p(out["post_clicks"])
     out["log_post_clicks_squared"] = out["log_post_clicks"] ** 2
     out["post_clicks_squared"] = out["post_clicks"] ** 2
     out["post_minus_pre_log"] = out["log_post_clicks"] - out["log_pre_clicks"]
+    out["relative_click_gap"] = relative_click_gap(out["pre_clicks"], out["post_clicks"])
+    out["both_zero_clicks"] = (
+        out["pre_clicks"].eq(0) & out["post_clicks"].eq(0)).astype(int)
     out["module_presentation"] = out["code_module"] + "_" + out["code_presentation"]
 
     quality = {
@@ -210,6 +284,7 @@ def build_daily_features(frame: pd.DataFrame, daily: pd.DataFrame,
         "zero_post_click_records": int(out["post_clicks"].eq(0).sum()),
         "post_days": int(post_days),
         "pre_days": int(pre_days),
+        **quality_extra,
     }
     if resources is not None:
         types = sorted(resources["activity_type"].unique().tolist())

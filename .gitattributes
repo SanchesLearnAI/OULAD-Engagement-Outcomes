@@ -1,0 +1,2 @@
+# The pipeline checks the byte-level SHA-256 of its frozen configuration.
+oulad-sem/config/config.yaml text eol=lf
